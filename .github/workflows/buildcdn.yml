@@ -40,6 +40,7 @@ jobs:
           path: dist/*
       
   uploadrelease:
+    needs: build
     strategy:
       matrix:
         zipreleases: [taranis-x9,taranis-x7,nv14,horus]
@@ -49,7 +50,7 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with: 
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: dist/${{ matrix.zipreleases }}.zi*
+          file: dist/${{ matrix.zipreleases }}.z*
           tag: latest
           overwrite: true
           file_glob: true
