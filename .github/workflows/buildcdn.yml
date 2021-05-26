@@ -50,6 +50,9 @@ jobs:
         with:
           name: sdcard-latest
           path: .
+      - name: Debug List
+        run: |
+          ls
       - name: Upload Binaries to Release
         uses: svenstaro/upload-release-action@v2
         with: 
