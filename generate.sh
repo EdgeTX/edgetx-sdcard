@@ -1,15 +1,17 @@
 #!/bin/bash
 
-cp index.json dist/
 mkdir dist
+cp index.json dist/
+cp -r sdcard sdcard-build
 
-for dir in sdcard/*/; do mkdir -- "$dir/SOUNDS"; done
-for dir in sdcard/*/; do cp -r sounds/* "$dir/SOUNDS/"; done
+for dir in sdcard-build/*/; do mkdir -- "$dir/SOUNDS"; done
+for dir in sdcard-build/*/; do cp -r sounds/* "$dir/SOUNDS/"; done
+for dir in sdcard-build/*/; do cp -r global/* "$dir/"; done
 
-cd sdcard
+cd sdcard-build
 for d in * ; do
     zip -r ../dist/$d.zip $d/*
 done
 cd ..
 
-for dir in sdcard/*/; do rm -rf -- "$dir/SOUNDS"; done
+rm -r sdcard-build
