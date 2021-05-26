@@ -31,11 +31,12 @@ jobs:
           chmod +x generate.sh
           ./generate.sh
       
-      - name: Upload a Build Artifact
-        uses: actions/upload-artifact@v2.2.3
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v2
         with:
-          # Artifact name
-          name: sdcard-latest
-          # A file, directory or wildcard pattern that describes what to upload
-          path: dist/*
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: dist/*.zip
+          tag: latest
+          overwrite: true
+          file_glob: true
       
