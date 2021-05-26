@@ -46,11 +46,15 @@ jobs:
         zipreleases: [taranis-x9,taranis-x7,nv14,horus]
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/download-artifact@master
+        with:
+          name: sdcard-latest
+          path: .
       - name: Upload Binaries to Release
         uses: svenstaro/upload-release-action@v2
         with: 
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: dist/${{ matrix.zipreleases }}.z*
+          file: ${{ matrix.zipreleases }}.zip
           tag: latest
           overwrite: true
           file_glob: true
