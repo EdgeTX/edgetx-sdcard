@@ -30,15 +30,6 @@ jobs:
         run: |
           chmod +x generate.sh
           ./generate.sh
-      
-      - name: Upload Binaries to Release
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: dist/*
-          tag: latest
-          overwrite: true
-          file_glob: true
 
       - name: Upload a Build Artifact
         uses: actions/upload-artifact@v2.2.3
@@ -48,3 +39,17 @@ jobs:
           # A file, directory or wildcard pattern that describes what to upload
           path: dist/*
       
+  uploadrelease:
+    strategy:
+      matrix:
+        zipreleases: [taranis-x9,taranis-x7,nv14,horus]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Upload Binaries to Release
+        uses: svenstaro/upload-release-action@v2
+        with: 
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: dist/${{ matrix.zipreleases }}*
+          tag: latest
+          overwrite: true
+          file_glob: true
