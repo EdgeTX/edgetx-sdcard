@@ -31,12 +31,20 @@ jobs:
           chmod +x generate.sh
           ./generate.sh
       
-      - name: Upload binaries to release
+      - name: Upload Binaries to Release
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: dist/*.zip
+          file: dist/*
           tag: latest
           overwrite: true
           file_glob: true
+
+      - name: Upload a Build Artifact
+        uses: actions/upload-artifact@v2.2.3
+        with:
+          # Artifact name
+          name: sdcard-latest
+          # A file, directory or wildcard pattern that describes what to upload
+          path: dist/*
       
