@@ -50,14 +50,11 @@ jobs:
         with:
           name: sdcard-latest
           path: .
-      - name: Debug List
-        run: |
-          ls
       - name: Upload Binaries to Release
         uses: svenstaro/upload-release-action@v2
         with: 
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: sdcard/${{ matrix.zipreleases }}.zip
+          file: ${{ matrix.zipreleases }}.zip
           tag: latest
           overwrite: true
           file_glob: true
