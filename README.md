@@ -15,6 +15,7 @@ All platforms here are based on screen size/color. <br>
 - nv14.zip
     - FlySky Nirvana NV14
 - taranis-x7.zip (128x64 BW Screens)
+    - T-Lite
     - QX7
     - X9 Lite
     - X-Lite
