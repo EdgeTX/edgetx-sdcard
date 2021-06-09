@@ -46,6 +46,7 @@ jobs:
           path: dist/*
       
   uploadrelease:
+    if: github.event_name != 'pull_request'
     needs: build
     strategy:
       matrix:
