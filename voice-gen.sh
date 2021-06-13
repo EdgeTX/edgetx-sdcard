@@ -1,9 +1,6 @@
 #!/bin/bash
 
 generate_lang () {
-  #spx config @key --set 59efcbd1a4fd4a1a9da40559594a6daf
-  #spx config @region --set eastus
-
   while read line
   do
       filename=`echo -n $line | awk -F ';' '{print $2}'`
