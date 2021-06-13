@@ -7,6 +7,11 @@ mkdir dist
 cp index.json dist/
 cp -r sdcard sdcard-build
 
+for f in voices/*
+do
+  generate_lang $f en-IE-EmilyNeural
+done
+
 for dir in sdcard-build/*/; do mkdir -- "$dir/SOUNDS"; done
 for dir in sdcard-build/*/; do cp -r global/* "$dir/"; done
 
