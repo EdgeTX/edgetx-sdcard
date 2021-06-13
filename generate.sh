@@ -5,7 +5,6 @@ cp index.json dist/
 cp -r sdcard sdcard-build
 
 for dir in sdcard-build/*/; do mkdir -- "$dir/SOUNDS"; done
-for dir in sdcard-build/*/; do cp -r sounds/* "$dir/SOUNDS/"; done
 for dir in sdcard-build/*/; do cp -r global/* "$dir/"; done
 
 cd sdcard-build
