@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# include voice generator script
+. $(dirname "$0")/voice-gen.sh
+
 mkdir dist
 cp index.json dist/
 cp -r sdcard sdcard-build
