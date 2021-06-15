@@ -192,9 +192,9 @@ SOUNDS/en/SYSTEM;inactiv.wav;inactivity alarm
 SOUNDS/en/SYSTEM;thralert.wav;throttle warning
 SOUNDS/en/SYSTEM;swalert.wav;switch warning
 SOUNDS/en/SYSTEM;eebad.wav;bad eeprom
-SOUNDS/en/SYSTEM;hello.wav;Welcome to open tea ex
-SOUNDS/en/SYSTEM;rssi_org.wav;RF signal, low
-SOUNDS/en/SYSTEM;rssi_red.wav;RF signal, critical
+SOUNDS/en/SYSTEM;hello.wav;Welcome to edge tea ex
+SOUNDS/en/SYSTEM;rssi_org.wav;RF signal low
+SOUNDS/en/SYSTEM;rssi_red.wav;RF signal critical
 SOUNDS/en/SYSTEM;swr_red.wav;radio antenna defective
 SOUNDS/en/SYSTEM;telemko.wav;telemetry lost
 SOUNDS/en/SYSTEM;telemok.wav;telemetry recovered
@@ -208,29 +208,29 @@ SOUNDS/en;armed.wav;armed
 SOUNDS/en;disarm.wav;disarmed
 SOUNDS/en;thrcut.wav;throttle  cut
 SOUNDS/en;thract.wav;throttle  active
-SOUNDS/en;gearup.wav;gear, up!
-SOUNDS/en;geardn.wav;gear, down!
-SOUNDS/en;flapup.wav;flaps, up!
-SOUNDS/en;flapdn.wav;flaps, down!
-SOUNDS/en;splrup.wav;spoiler, up!
-SOUNDS/en;splrdn.wav;spoiler, down!
-SOUNDS/en;trnon.wav;trainer, on!
-SOUNDS/en;trnoff.wav;trainer, off!
-SOUNDS/en;engoff.wav;engine, off!
-SOUNDS/en;tohigh.wav;too. high
-SOUNDS/en;tolow.wav;too. low
-SOUNDS/en;lowbat.wav;low. battery
-SOUNDS/en;crowon.wav;crow, on!
-SOUNDS/en;crowof.wav;crow, off!
-SOUNDS/en;siglow.wav;rf. signal, low!
-SOUNDS/en;sigcrt.wav;rf. signal, critical!
+SOUNDS/en;gearup.wav;gear up!
+SOUNDS/en;geardn.wav;gear down!
+SOUNDS/en;flapup.wav;flaps up!
+SOUNDS/en;flapdn.wav;flaps down!
+SOUNDS/en;splrup.wav;spoiler up!
+SOUNDS/en;splrdn.wav;spoiler down!
+SOUNDS/en;trnon.wav;trainer on!
+SOUNDS/en;trnoff.wav;trainer off!
+SOUNDS/en;engoff.wav;engine off!
+SOUNDS/en;tohigh.wav;too high
+SOUNDS/en;tolow.wav;too low
+SOUNDS/en;lowbat.wav;low battery
+SOUNDS/en;crowon.wav;crow on!
+SOUNDS/en;crowof.wav;crow off!
+SOUNDS/en;siglow.wav;rf signal low!
+SOUNDS/en;sigcrt.wav;rf signal critical!
 SOUNDS/en;lq.wav;LQ
 SOUNDS/en;rfmode.wav;RF mode
-SOUNDS/en;spdmod.wav;high. speed. mode, active
-SOUNDS/en;thmmod.wav;thermal. mode, on
-SOUNDS/en;nrmmod.wav;normal. mode, on
-SOUNDS/en;lnding.wav;landing. mode, on
-SOUNDS/en;acro.wav;acro. mode, on
+SOUNDS/en;spdmod.wav;high speed mode active
+SOUNDS/en;thmmod.wav;thermal mode on
+SOUNDS/en;nrmmod.wav;normal mode on
+SOUNDS/en;lnding.wav;landing mode on
+SOUNDS/en;acro.wav;acro mode on
 SOUNDS/en;fm-1.wav;flight mode one
 SOUNDS/en;fm-2.wav;flight mode two
 SOUNDS/en;fm-3.wav;flight mode three
@@ -239,8 +239,8 @@ SOUNDS/en;fm-5.wav;flight mode five
 SOUNDS/en;fm-6.wav;flight mode six
 SOUNDS/en;fm-7.wav;flight mode seven
 SOUNDS/en;fm-8.wav;flight mode eight
-SOUNDS/en;vrion.wav;vario, on
-SOUNDS/en;vrioff.wav;vario, off
+SOUNDS/en;vrion.wav;vario on
+SOUNDS/en;vrioff.wav;vario off
 SOUNDS/en;fm-pwr.wav;flight mode power
 SOUNDS/en;fm-lnd.wav;flight mode land
 SOUNDS/en;fm-flt.wav;flight mode float
