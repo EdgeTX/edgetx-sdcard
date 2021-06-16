@@ -6,6 +6,7 @@ generate_lang () {
   do
       filename=`echo -n $line | awk -F ';' '{print $2}'`
       text=`echo -n $line | awk -F ';' '{print $3}'`
+      mkdir -p global/SOUNDS/$3/SYSTEM/
       if test -f global/SOUNDS/$3/SYSTEM/$filename; then
           echo "File $filename already exists. Skipping."
       else
