@@ -1,6 +1,7 @@
 #!/bin/bash
 
 generate_lang () {
+  mkdir global/SOUNDS
   while read line
   do
       filename=`echo -n $line | awk -F ';' '{print $2}'`
