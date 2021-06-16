@@ -1,3 +1,7 @@
 dist/
 sdcard-build/
 .DS_Store
+key
+region
+log-*
+exception*

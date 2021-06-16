@@ -164,7 +164,7 @@ SOUNDS/pt/SYSTEM;rssi_red.wav;recepção de sinal crítica
 SOUNDS/pt/SYSTEM;swr_red.wav;Problema com a antena do transmissor
 SOUNDS/pt/SYSTEM;servoko.wav;servo overload
 SOUNDS/pt/SYSTEM;rxko.wav;power overload
-SOUNDS/pt/SYSTEM;modelpwr.wav;receiver still connected
+SOUNDS/pt/SYSTEM;modelpwr.wav;O receptor ainda está conectado
 SOUNDS/pt/SYSTEM;0141.wav;cronómetro
 SOUNDS/pt/SYSTEM;0142.wav;cronómetro
 SOUNDS/pt/SYSTEM;0143.wav;transmissão
@@ -203,8 +203,8 @@ SOUNDS/pt;engoff.wav;motor desligado
 SOUNDS/pt;tohigh.wav;muito alto
 SOUNDS/pt;tolow.wav;muito baixo
 SOUNDS/pt;lowbat.wav;bateria fraca
-SOUNDS/pt;crowon.wav;crou, activo
-SOUNDS/pt;crowof.wav;crou, desligado
+SOUNDS/pt;crowon.wav;crou activo
+SOUNDS/pt;crowof.wav;crou desligado
 SOUNDS/pt;spdmod.wav;modo de velocidade
 SOUNDS/pt;thmmod.wav;modo de térmica
 SOUNDS/pt;nrmmod.wav;modo de voo normal
