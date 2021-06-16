@@ -1,5 +1,6 @@
 dist/
 sdcard-build/
+global/SOUNDS/
 .DS_Store
 key
 region
