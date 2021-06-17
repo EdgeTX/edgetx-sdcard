@@ -11,9 +11,7 @@ generate_lang () {
           echo "File $filename already exists. Skipping."
       else
           echo "File $filename does not exists. Creating."
-          set -xe
-          spx synthesize --text \"$text\" --voice $2 --audio output global/SOUNDS/$3/SYSTEM/$filename && sleep 10
-          set +xe
+          spx synthesize --text \""$text"\ --voice $2 --audio output global/SOUNDS/$3/SYSTEM/$filename && sleep 10
       fi
   done < $1
 }
