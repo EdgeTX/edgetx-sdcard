@@ -3,9 +3,6 @@
 # include voice generator script
 . $(dirname "$0")/voice-gen.sh
 
-spx config @key --set $AZURE_KEY
-spx config @region --set $AZURE_REGION
-
 mkdir dist
 cp index.json dist/
 cp -r sdcard sdcard-build
