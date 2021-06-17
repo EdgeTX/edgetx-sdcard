@@ -43,6 +43,9 @@ jobs:
 
       # Runs a set of commands using the runners shell
       - name: Generate ZIPs
+        env:
+          AZURE_KEY: ${{ secrets.AZURE_KEY }}
+          AZURE_REGION: ${{ secrets.AZURE_REGION }}
         run: |
           chmod +x generate.sh
           ./generate.sh
