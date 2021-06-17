@@ -12,7 +12,7 @@ generate_lang () {
       else
           echo "File $filename does not exists. Creating."
           set -xe
-          spx synthesize --text \""$text"\" --voice $2 --audio output global/SOUNDS/$3/SYSTEM/$filename && sleep 10
+          spx synthesize --text \"$text\" --voice $2 --audio output global/SOUNDS/$3/SYSTEM/$filename && sleep 10
           set +xe
       fi
   done < $1
