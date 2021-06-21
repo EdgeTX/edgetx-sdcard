@@ -24,4 +24,4 @@ All platforms here are based on screen size/color. <br>
     - X9D Plus
     - X9D Plus 2019
 
-EdgeTX sound files can be found in a dedicated repository at: https://github.com/EdgeTX/edgetx-sdcard.git
+EdgeTX sound files can be found in a dedicated repository at: https://github.com/EdgeTX/edgetx-sdcard-sounds/
