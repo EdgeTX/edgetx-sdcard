@@ -1,8 +1,10 @@
 dist/
 sdcard-build/
-global/SOUNDS/
 .DS_Store
 key
 region
 log-*
 exception*
+
+global/SOUNDS/*
+!global/SOUNDS/.gitkeep 
