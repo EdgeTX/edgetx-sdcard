@@ -31,14 +31,6 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
-      - uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: '3.1.x' # SDK Version to use; x will use the latest version of the 3.1 channel
-      
-      - name: Install Speech CLI
-        run: |
-          dotnet tool install --global Microsoft.CognitiveServices.Speech.CLI
-
       # Runs a set of commands using the runners shell
       - name: Generate ZIPs
         run: |
