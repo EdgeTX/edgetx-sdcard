@@ -8,7 +8,9 @@ for dir in sdcard-build/*/; do cp -r global/* "$dir/"; done
 
 cd sdcard-build
 for d in * ; do
-    zip -r ../dist/$d.zip $d/*
+    cd $d
+    zip -r ../../dist/$d.zip *
+    cd ..
 done
 cd ..
 
