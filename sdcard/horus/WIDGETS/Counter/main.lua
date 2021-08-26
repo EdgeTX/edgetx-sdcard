@@ -38,9 +38,9 @@ end
 function refresh(pie)
   pie.counter = pie.counter + 1
   if pie.options.Shadow == 1 then
-    lcd.drawNumber(pie.zone.x, pie.zone.y, pie.counter, LEFT + DBLSIZE + DEFAULT_COLOR);
+    lcd.drawNumber(pie.zone.x, pie.zone.y, pie.counter, LEFT + DBLSIZE + COLOR_THEME_SECONDARY1);
   else
-    lcd.drawNumber(pie.zone.x, pie.zone.y, pie.counter, LEFT + DBLSIZE + DEFAULT_COLOR + SHADOWED);
+    lcd.drawNumber(pie.zone.x, pie.zone.y, pie.counter, LEFT + DBLSIZE + COLOR_THEME_SECONDARY1 + SHADOWED);
   end
 end
 
