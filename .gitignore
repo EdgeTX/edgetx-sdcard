@@ -5,6 +5,7 @@ key
 region
 log-*
 exception*
+**/*.luac
 
 global/SOUNDS/*
 !global/SOUNDS/.gitkeep 
