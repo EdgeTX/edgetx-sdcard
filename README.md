@@ -12,7 +12,7 @@ All platforms here are based on screen size/color. <br>
     - Horus x10s
     - Horus x12s
     - Most color screen radios...
-- nv14.zip
+- nv14.zip (320x480 Vertical Color Screen)
     - FlySky Nirvana NV14
 - taranis-x7.zip (128x64 BW Screens)
     - T-Lite
