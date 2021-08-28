@@ -45,7 +45,7 @@ jobs:
           # A file, directory or wildcard pattern that describes what to upload
           path: dist/*
       
-  uploadrelease:
+  prepare-release:
     if: github.event_name != 'pull_request'
     needs: build
     strategy:
@@ -57,11 +57,23 @@ jobs:
         with:
           name: sdcard-latest
           path: .
-      - name: Upload Binaries to Release
-        uses: svenstaro/upload-release-action@v2
-        with: 
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ${{ matrix.zipreleases }}.zip
-          tag: latest
-          overwrite: true
-          file_glob: true
+
+  upload-release:
+    needs: prepare-release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@master
+        with:
+          name: sdcard-latest
+          path: .
+      - name: Deploy release
+        uses: marvinpinto/action-automatic-releases@latest
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: 'latest'
+          prerelease: false
+          files: |
+            taranis-x9.zip
+            taranis-x7.zip
+            nv14.zip
+            horus.zip
