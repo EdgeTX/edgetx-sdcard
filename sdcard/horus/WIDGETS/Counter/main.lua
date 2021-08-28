@@ -15,15 +15,12 @@
 ---- #                                                                       #
 ---- #########################################################################
 local options = {
-  { "Option1", SOURCE, 1 },
-  { "Option2", VALUE, 1000 },
-  { "Option3", COLOR, RED },
+  { "Color", COLOR, COLOR_THEME_SECONDARY1 },
   { "Shadow", BOOL, 0 }
 }
 
 local function create(zone, options)
   local pie = { zone=zone, options=options, counter=0 }
-  print(options.Option2)
   return pie
 end
 
@@ -37,10 +34,13 @@ end
 
 function refresh(pie)
   pie.counter = pie.counter + 1
-  if pie.options.Shadow == 1 then
-    lcd.drawNumber(pie.zone.x, pie.zone.y, pie.counter, LEFT + DBLSIZE + COLOR_THEME_SECONDARY1);
+
+  lcd.setColor(CUSTOM_COLOR, pie.options.Color)
+
+  if pie.options.Shadow == 0 then
+    lcd.drawNumber(pie.zone.x, pie.zone.y, pie.counter, LEFT + DBLSIZE + CUSTOM_COLOR);
   else
-    lcd.drawNumber(pie.zone.x, pie.zone.y, pie.counter, LEFT + DBLSIZE + COLOR_THEME_SECONDARY1 + SHADOWED);
+    lcd.drawNumber(pie.zone.x, pie.zone.y, pie.counter, LEFT + DBLSIZE + CUSTOM_COLOR + SHADOWED);
   end
 end
 
