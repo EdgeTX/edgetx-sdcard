@@ -1,1 +1,1 @@
-Scripts that need to be available in TOOLS menu should be in this directory
+Scripts that need to be available in TOOLS menu should be in this directory.

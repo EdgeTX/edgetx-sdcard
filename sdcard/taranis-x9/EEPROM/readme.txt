@@ -1,2 +1,2 @@
-EEprom backups go in this folder.
-EEprom backups can be generated from VERSION screen in RADIO SETUP
+EEPROM backups go in this folder.
+EEPROM backups can be generated from HARDWARE screen in RADIO SETUP.
