@@ -58,12 +58,23 @@ local function evt2str(event)
 end
 
 -- Returns a function to animate tap events on the square
-local function TapAnimation()
+local function TapAnimation(tapCount)
   local delta = 20
   local maxS = 250
   local s = options.size
+  local txt
   
-  local function animate()
+  if tapCount == 1 then
+    txt = "Single tap"
+  elseif tapCount == 2 then
+    txt = "DOUBLE TAP!!"
+  else
+    txt = tapCount .. " TAPS!!!"
+  end
+    
+  
+  local function a()
+    lcd.drawText(x, y, txt, VCENTER + CENTER + DBLSIZE + ORANGE)
     s = s + delta
     lcd.drawRectangle(x - 0.5 * s, y - 0.5 * s, s, s)
     
@@ -72,7 +83,7 @@ local function TapAnimation()
     end
   end
   
-  return animate
+  return a
 end
 
 -- Returns a function to animate swipe events shooting little bullets
@@ -80,7 +91,7 @@ local function SwipeAnimation(deltaX, deltaY)
   local x = x
   local y = y
   
-  local function animate()
+  local function a()
     local x2 = x + deltaX
     local y2 = y + deltaY
     
@@ -92,7 +103,7 @@ local function SwipeAnimation(deltaX, deltaY)
     end
   end
   
-  return animate
+  return a
 end
 
 function widget.refresh(event, touchState)
@@ -132,7 +143,7 @@ function widget.refresh(event, touchState)
           -- If the finger hit the square, then play the animation
           if stick then
             playTone(200, 50, 100, PLAY_NOW)
-            animate = TapAnimation()
+            animate = TapAnimation(touchState.tapCount)
           end
           
         elseif event == EVT_TOUCH_SLIDE then -- Sliding the finger gives a SLIDE instead of BREAK or TAP
@@ -152,7 +163,7 @@ function widget.refresh(event, touchState)
           elseif touchState.swipeDown then
             animate = SwipeAnimation(0, 20)
             playTone(10000, 200, 100, PLAY_NOW, -60)
-            
+          
           elseif stick then
             -- If the finger hit the square, then move it around. (x, y) is the current position
             x = touchState.x
