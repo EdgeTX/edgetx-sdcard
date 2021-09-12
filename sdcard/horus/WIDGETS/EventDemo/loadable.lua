@@ -57,7 +57,7 @@ local function evt2str(event)
   end
 end
 
--- Returns a function to animate tap events on the square
+-- Sets a function to animate tap events on the square
 local function TapAnimation(tapCount)
   local delta = 20
   local maxS = 250
@@ -73,7 +73,7 @@ local function TapAnimation(tapCount)
   end
     
   
-  local function a()
+  animate = function()
     lcd.drawText(x, y, txt, VCENTER + CENTER + DBLSIZE + ORANGE)
     s = s + delta
     lcd.drawRectangle(x - 0.5 * s, y - 0.5 * s, s, s)
@@ -82,16 +82,14 @@ local function TapAnimation(tapCount)
       animate = nil
     end
   end
-  
-  return a
 end
 
--- Returns a function to animate swipe events shooting little bullets
+-- Sets a function to animate swipe events shooting little bullets
 local function SwipeAnimation(deltaX, deltaY)
   local x = x
   local y = y
   
-  local function a()
+  animate = function()
     local x2 = x + deltaX
     local y2 = y + deltaY
     
@@ -102,8 +100,6 @@ local function SwipeAnimation(deltaX, deltaY)
       animate = nil
     end
   end
-  
-  return a
 end
 
 function widget.refresh(event, touchState)
@@ -143,25 +139,25 @@ function widget.refresh(event, touchState)
           -- If the finger hit the square, then play the animation
           if stick then
             playTone(200, 50, 100, PLAY_NOW)
-            animate = TapAnimation(touchState.tapCount)
+            TapAnimation(touchState.tapCount)
           end
           
         elseif event == EVT_TOUCH_SLIDE then -- Sliding the finger gives a SLIDE instead of BREAK or TAP
           -- A fast vertical or horizontal slide gives a true swipe* value in touchState (only once per 500ms)
           if touchState.swipeRight then
-            animate = SwipeAnimation(20, 0)
+            SwipeAnimation(20, 0)
             playTone(10000, 200, 100, PLAY_NOW, -60)
             
           elseif touchState.swipeLeft then
-            animate = SwipeAnimation(-20, 0)
+            SwipeAnimation(-20, 0)
             playTone(10000, 200, 100, PLAY_NOW, -60)
             
           elseif touchState.swipeUp then
-            animate = SwipeAnimation(0, -20)
+            SwipeAnimation(0, -20)
             playTone(10000, 200, 100, PLAY_NOW, -60)
             
           elseif touchState.swipeDown then
-            animate = SwipeAnimation(0, 20)
+            SwipeAnimation(0, 20)
             playTone(10000, 200, 100, PLAY_NOW, -60)
           
           elseif stick then
