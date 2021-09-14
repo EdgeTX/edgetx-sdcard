@@ -48,14 +48,13 @@ lib.match = match
 --> flags = lcd flags; will be used as defaults for drawing text and numbers
 --> widgetRefresh = function drawing screen in non-fullscreen mode
 --> fullScreenRefresh = function drawing screen in fullscreen mode
---> handle[EVT_*] = function - trap event (when not editing)
 --> element.noFocus = true prevents element from taking focus
 --> element.title can be set for button, toggleButton and label
 --> element.value can be set for toggleButton and number
 
 function lib.newGUI()
   local gui = { }
-  local handle = { }
+  local handles = { }
   local elements = { }
   local focus = 1
   local editing = false
@@ -119,7 +118,12 @@ function lib.newGUI()
     return flags
   end
   
--- Run an event cycle
+  -- Set an event handler
+  function gui.SetEventHandler(event, f)
+    handles[event] = f
+  end
+  
+  -- Run an event cycle
   function gui.run(event, touchState)
     if not event then -- widget mode; event == nil
       if gui.widgetRefresh then
@@ -183,8 +187,8 @@ function lib.newGUI()
           if match(event,EVT_VIRTUAL_ENTER, EVT_VIRTUAL_EXIT) then
             editing = false
           end
-        elseif handle[event] then -- Is the event being "handled"?
-          handle[event](event, touchState)
+        elseif handles[event] then -- Is the event being "handled"?
+          handles[event](event, touchState)
         elseif event == EVT_VIRTUAL_ENTER and elements[focus].editable then -- Start editing
           editing = true
         elseif event == EVT_VIRTUAL_NEXT then -- Move focus
