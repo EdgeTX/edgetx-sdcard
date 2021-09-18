@@ -369,7 +369,7 @@ function lib.newGUI()
     local startFirst = 1
     local idx0 = #elements
     local idxN = idx0 + #items
-    y = y - H / 2
+    y = y + H / 2
     
     -- Add line items as GUI elements
     for i, item in ipairs(items) do
