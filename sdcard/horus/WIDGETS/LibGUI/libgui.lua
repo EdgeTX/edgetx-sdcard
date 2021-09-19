@@ -2,7 +2,7 @@
 -- The dynamically loadable part of the shared Lua GUI library.          --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Date:    2021-XX-XX                                                   --
+-- Date:    2021-09-18                                                   --
 -- Version: 0.9                                                          --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
@@ -26,9 +26,10 @@ lib.flags = 0
 lib.colors = {
   text = COLOR_THEME_PRIMARY3,
   focusText = COLOR_THEME_PRIMARY2,
-  focusBackground = COLOR_THEME_FOCUS,
-  active = COLOR_THEME_ACTIVE
-  -- background - if set, then LCD is cleared with that color
+  buttonBackground = COLOR_THEME_FOCUS,
+  editBackground = COLOR_THEME_EDIT,
+  active = COLOR_THEME_ACTIVE,
+--screenBackground - if set, then LCD is cleared with that color
 }
 
 -- Return true if the first arg matches any of the following args
@@ -133,8 +134,8 @@ function lib.newGUI()
         lcd.drawText(1, 25, "function was loaded.")
       end
     else -- full screen mode; event is a value
-      if lib.colors.background then
-        lcd.clear(lib.colors.background)
+      if lib.colors.screenBackground then
+        lcd.clear(lib.colors.screenBackground)
       end
       if elements[focus].noFocus then
         moveFocus(1)
@@ -215,7 +216,7 @@ function lib.newGUI()
         flags = bit32.bor(flags, BOLD)
         drawRectangle(x - 1, y - 1, w + 2, h + 2, DOTTED, lib.colors.active)
       end
-      lcd.drawFilledRectangle(x, y, w, h, lib.colors.focusBackground)
+      lcd.drawFilledRectangle(x, y, w, h, lib.colors.buttonBackground)
       lcd.drawText(x + w / 2, y + h / 2, self.title, bit32.bor(lib.colors.focusText, flags))
     end
     
@@ -237,7 +238,7 @@ function lib.newGUI()
     function self.draw(idx)
       local flags = tempFlags(self, flags)
       local fg = lib.colors.focusText
-      local bg = lib.colors.focusBackground
+      local bg = lib.colors.buttonBackground
 
       if self.value then
         fg = lib.colors.text
@@ -277,7 +278,7 @@ function lib.newGUI()
         flags = bit32.bor(flags, BOLD)
         if editing then
           fg = lib.colors.focusText
-          lcd.drawFilledRectangle(x, y, w, h, lib.colors.focusBackground)
+          lcd.drawFilledRectangle(x, y, w, h, lib.colors.editBackground)
         end
       end
       if type(self.value) == "string" then
@@ -338,7 +339,7 @@ function lib.newGUI()
         flags = bit32.bor(flags, BOLD)
         if editing then
           fg = lib.colors.focusText
-          lcd.drawFilledRectangle(x, y, w, h, lib.colors.focusBackground)
+          lcd.drawFilledRectangle(x, y, w, h, lib.colors.editBackground)
         end
       end
       if type(value) == "string" then
@@ -368,7 +369,7 @@ function lib.newGUI()
     local startFirst = 1
     local idx0 = #elements
     local idxN = idx0 + #items
-    y = y - H / 2
+    y = y + H / 2
     
     -- Add line items as GUI elements
     for i, item in ipairs(items) do
