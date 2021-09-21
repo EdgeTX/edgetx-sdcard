@@ -65,14 +65,6 @@ function lib.newGUI()
   local function doNothing()
   end
   
-  -- Draw a rectangle with pattern lines
-  local function drawRectangle(x, y, w, h, pat, flags)
-    lcd.drawLine(x, y, x + w, y, pat, flags)
-    lcd.drawLine(x + w, y, x + w, y + h, pat, flags)
-    lcd.drawLine(x + w, y + h, x, y + h, pat, flags)
-    lcd.drawLine(x, y + h, x, y, pat, flags)
-  end
-  
   -- Adjust text according to horizontal alignment
   local function align(x, w, flags)
     if bit32.band(flags, RIGHT) == RIGHT then
@@ -214,7 +206,7 @@ function lib.newGUI()
       
       if focus == idx then
         flags = bit32.bor(flags, BOLD)
-        drawRectangle(x - 1, y - 1, w + 2, h + 2, DOTTED, lib.colors.active)
+        lcd.drawRectangle(x - 1, y - 1, w + 2, h + 2, lib.colors.active)
       end
       lcd.drawFilledRectangle(x, y, w, h, lib.colors.buttonBackground)
       lcd.drawText(x + w / 2, y + h / 2, self.title, bit32.bor(lib.colors.focusText, flags))
@@ -246,7 +238,7 @@ function lib.newGUI()
       end
       
       if focus == idx then
-        drawRectangle(x - 1, y - 1, w + 2, h + 2, DOTTED, lib.colors.active)
+        lcd.drawRectangle(x - 1, y - 1, w + 2, h + 2, lib.colors.active)
         flags = bit32.bor(flags, BOLD)
       end
       lcd.drawFilledRectangle(x, y, w, h, bg)
@@ -274,7 +266,7 @@ function lib.newGUI()
       local fg = lib.colors.text
       
       if focus == idx then
-        drawRectangle(x - 1, y - 1, w + 2, h + 2, DOTTED, lib.colors.active)
+        lcd.drawRectangle(x - 1, y - 1, w + 2, h + 2, lib.colors.active)
         flags = bit32.bor(flags, BOLD)
         if editing then
           fg = lib.colors.focusText
@@ -335,7 +327,7 @@ function lib.newGUI()
       local value = self.value or model.getTimer(tmr).value
       
       if focus == idx then
-        drawRectangle(x - 1, y - 1, w + 2, h + 2, DOTTED, lib.colors.active)
+        lcd.drawRectangle(x - 1, y - 1, w + 2, h + 2, lib.colors.active)
         flags = bit32.bor(flags, BOLD)
         if editing then
           fg = lib.colors.focusText
@@ -374,9 +366,8 @@ function lib.newGUI()
     -- Add line items as GUI elements
     for i, item in ipairs(items) do
       local self = { idx = i }
-      local txt = i .. ". " .. item
-      local w = lcd.sizeText(txt, flags) + 4
-      local W = lcd.sizeText(txt, bit32.bor(flags, BOLD)) + 4
+      local w = lcd.sizeText(item, flags) + 4
+      local W = lcd.sizeText(item, bit32.bor(flags, BOLD)) + 4
       
       function self.draw(idx)
         local flags = tempFlags(self, flags)
@@ -403,7 +394,7 @@ function lib.newGUI()
           lcd.drawRectangle(x - 2, yy - H / 2, W, H, lib.colors.active)
         end
         
-        lcd.drawText(x, yy, txt, flags)
+        lcd.drawText(x, yy, item, flags)
       end -- draw(...)
       
       function self.run(event, touchState)
