@@ -169,7 +169,7 @@ function lib.newGUI()
           if elements[focus].covers(touchState.x, touchState.y) then
             -- Convert to ENTER
             event = EVT_VIRTUAL_ENTER
-          else
+          elseif editing then
             -- Convert a tap off the focused element to EXIT
             event = EVT_VIRTUAL_EXIT
           end
@@ -180,15 +180,21 @@ function lib.newGUI()
           if match(event,EVT_VIRTUAL_ENTER, EVT_VIRTUAL_EXIT) then
             editing = false
           end
-        elseif handles[event] then -- Is the event being "handled"?
-          handles[event](event, touchState)
         elseif event == EVT_VIRTUAL_ENTER and elements[focus].editable then -- Start editing
           editing = true
         elseif event == EVT_VIRTUAL_NEXT then -- Move focus
           moveFocus(1)
         elseif event == EVT_VIRTUAL_PREV then
           moveFocus(-1)
-        else -- Send event to the element in focus
+        else
+          if handles[event] then
+            -- Is it being handled? Handler can modify event
+            event = handles[event](event, touchState)
+            -- If handler returned false or nil, then we are done
+            if not event then
+             return
+            end
+          end
           elements[focus].run(event, touchState)
         end
       end
@@ -231,14 +237,16 @@ function lib.newGUI()
       local flags = tempFlags(self, flags)
       local fg = lib.colors.focusText
       local bg = lib.colors.buttonBackground
+      local border = lib.colors.active
 
       if self.value then
         fg = lib.colors.text
-        bg = lib.colors.active 
+        bg = lib.colors.active
+        border = lib.colors.buttonBackground
       end
       
       if focus == idx then
-        lcd.drawRectangle(x - 1, y - 1, w + 2, h + 2, lib.colors.active)
+        lcd.drawRectangle(x - 1, y - 1, w + 2, h + 2, border)
         flags = bit32.bor(flags, BOLD)
       end
       lcd.drawFilledRectangle(x, y, w, h, bg)
@@ -421,7 +429,7 @@ function lib.newGUI()
             ww, hh = w, h
           end
 
-          return (x <= p and p <= x + ww and yy <= q and q <= yy + hh)
+          return (x <= p and p <= x + ww and yy - hh / 2 <= q and q <= yy + hh / 2)
         end
       end
       
