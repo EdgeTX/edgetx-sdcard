@@ -1,9 +1,10 @@
 ---------------------------------------------------------------------------
--- Lua widget to demonstrate handling of key and touch events in full    --
--- screen mode.                                                          --
+-- Shared Lua utilities library, and a widget showing how to use it.     --
+-- NOTE: It is not necessary to load the widget to use the library;      --
+-- as long as the files are present on the SD card it works.             --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Date:    2021-XX-XX                                                   --
+-- Date:    2021-09-18                                                   --
 -- Version: 0.9                                                          --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
@@ -19,8 +20,25 @@
 -- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         --
 -- GNU General Public License for more details.                          --
 ---------------------------------------------------------------------------
+local name = "LibGUI"
+local libGUI
 
-local name = "EventDemo"
+-- Return GUI library table
+function loadGUI()
+  if not libGUI then
+  -- Loadable code chunk is called immediately and returns libGUI
+  	libGUI = loadScript("/WIDGETS/" .. name .. "/libgui.lua")
+  end
+  
+  return libGUI()
+end
+
+---------------------------------------------------------------------------
+-- The following widget implementation demonstrates how to use the       --
+-- library and how to create a dynamically loadable widget to minimize   --
+-- the amount of memory consumed when the widget is not being used.      --
+-- You do not need to run the widget to use the library.                 --
+---------------------------------------------------------------------------
 
 local function create(zone, options)
   -- Loadable code chunk is called immediately and returns a widget table
@@ -31,22 +49,20 @@ local function refresh(widget, event, touchState)
   widget.refresh(event, touchState)
 end
 
-local options = {
-  { "size", VALUE, 30, 5, 100 }
-}
-
-local function update(widget, options)
-  widget.update(options)
-end
-
 local function background(widget)
 end
 
+local options = { 
+}
+
+local function update(widget, options)
+end
+
 return {
-  name = name, 
-  create = create, 
-  refresh = refresh, 
-  options = options, 
-  update = update, 
-  background = background
+  name = name,
+  create = create,
+  refresh = refresh,
+  background = background,
+  options = options,
+  update = update
 }
