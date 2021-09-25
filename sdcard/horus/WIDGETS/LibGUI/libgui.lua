@@ -2,7 +2,7 @@
 -- The dynamically loadable part of the shared Lua GUI library.          --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Date:    2021-09-18                                                   --
+-- Date:    2021-09-24                                                   --
 -- Version: 0.9                                                          --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
@@ -143,7 +143,7 @@ function lib.newGUI()
         return
       end
       if gui.prompt then
-        return prompt.run(event, touchState)
+        return gui.prompt.run(event, touchState)
       end
       if event ~= 0 then -- non-zero event; process it
         -- If we put a finger down on a menu item and immediately slide, then we can scroll
@@ -206,9 +206,11 @@ function lib.newGUI()
 
 -- Create a button to trigger a function
   function gui.button (x, y, w, h, title, callBack, flags)
-    callBack = callBack or doNothing
-    local self = { title = title }
-    self.flags = bit32.bor(flags or lib.flags, CENTER, VCENTER)
+    local self = {
+      title = title,
+      callBack = callBack or doNothing,
+      flags = bit32.bor(flags or lib.flags, CENTER, VCENTER)
+    }
     
     function self.draw(idx)
       local flags = getFlags(self)
@@ -226,7 +228,7 @@ function lib.newGUI()
     
     function self.run(event, touchState)
       if event == EVT_VIRTUAL_ENTER then
-        return callBack(self)
+        return self.callBack(self)
       end
     end
     
@@ -235,9 +237,12 @@ function lib.newGUI()
   
 -- Create a toggle button that turns on/off. callBack gets true/false
   function gui.toggleButton(x, y, w, h, title, value, callBack, flags)
-    callBack = callBack or doNothing
-    local self = { title = title, value = value }
-    self.flags = bit32.bor(flags or lib.flags, CENTER, VCENTER)
+    local self = {
+      title = title, 
+      value = value,
+      callBack = callBack or doNothing,
+      flags = bit32.bor(flags or lib.flags, CENTER, VCENTER)
+    }
 
     function self.draw(idx)
       local flags = getFlags(self)
@@ -265,7 +270,7 @@ function lib.newGUI()
     function self.run(event, touchState)
       if event == EVT_VIRTUAL_ENTER then
         self.value = not self.value
-        return callBack(self)
+        return self.callBack(self)
       end
     end
     
@@ -274,9 +279,12 @@ function lib.newGUI()
   
 -- Create a number that can be edited
   function gui.number(x, y, w, h, value, callBack, flags)
-    callBack = callBack or doNothing
-    local self = { value = value, editable = true }
-    self.flags = bit32.bor(flags or lib.flags, VCENTER)
+    local self = {
+      value = value,
+      callBack = callBack or doNothing,
+      flags = bit32.bor(flags or lib.flags, VCENTER),
+      editable = true
+    }
     
     function self.draw(idx)
       local flags = getFlags(self)
@@ -300,7 +308,7 @@ function lib.newGUI()
     function self.run(event, touchState)
       -- There are so many possibilities that we leave it up to the call back to decide what to do.
       if editing then
-        return callBack(self, event, touchState)
+        return self.callBack(self, event, touchState)
       end
     end
     
@@ -309,8 +317,11 @@ function lib.newGUI()
   
 -- Create a text label
   function gui.label(x, y, w, h, title, flags)
-    local self = { title = title, disabled = true }
-    self.flags = bit32.bor(flags or lib.flags, VCENTER, lib.colors.text)
+    local self = {
+      title = title,
+      flags = bit32.bor(flags or lib.flags, VCENTER, lib.colors.text),
+      disabled = true
+    }
     
     function self.draw(idx)
       local flags = getFlags(self)
@@ -333,9 +344,11 @@ function lib.newGUI()
 -- Create a display of current time on timer[tmr]
 -- Set timer.value to show a different value
   function gui.timer(x, y, w, h, tmr, callBack, flags)
-    callBack = callBack or doNothing
-    local self = { editable = true }
-    self.flags = bit32.bor(flags or lib.flags, VCENTER)
+    local self = {
+      callBack = callBack or doNothing,
+      flags = bit32.bor(flags or lib.flags, VCENTER),
+      editable = true
+    }
 
     function self.draw(idx)
       local flags = getFlags(self)
@@ -361,7 +374,7 @@ function lib.newGUI()
     function self.run(event, touchState)
       -- There are so many possibilities that we leave it up to the call back to decide what to do.
       if editing then
-        return callBack(self, event, touchState)
+        return self.callBack(self, event, touchState)
       end
     end
     
@@ -382,8 +395,12 @@ function lib.newGUI()
     
     -- Add line items as GUI elements
     for i, item in ipairs(items) do
-      local self = { idx = i }
-      self.flags = flags
+      local self = {
+        idx = i,
+        callBack = callBack,
+        flags = flags
+      }
+      
       local w = lcd.sizeText(item, flags) + 4
       local W = lcd.sizeText(item, bit32.bor(flags, BOLD)) + 4
       
@@ -417,7 +434,7 @@ function lib.newGUI()
       
       function self.run(event, touchState)
         if event == EVT_VIRTUAL_ENTER then
-          return callBack(self)
+          return self.callBack(self)
         elseif scrolling then
           -- Finger scrolling
           firstVisible = math.floor(self.idx - (touchState.y - y) / H + 0.5)
