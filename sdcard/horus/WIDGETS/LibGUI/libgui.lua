@@ -106,7 +106,7 @@ function lib.newGUI()
   
   -- Add temporary BLINK or INVERS flags
   local function getFlags(element)
-    flags = element.flags
+    local flags = element.flags
     if element.blink then flags = bit32.bor(flags or 0, BLINK) end
     if element.invers then flags = bit32.bor(flags or 0, INVERS) end
     return flags
