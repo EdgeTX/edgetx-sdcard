@@ -2,7 +2,7 @@
 -- The dynamically loadable part of the shared Lua GUI library.          --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Date:    2021-09-24                                                   --
+-- Date:    2021-09-27                                                   --
 -- Version: 0.9                                                          --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
@@ -74,7 +74,13 @@ function lib.newGUI()
     else
       return x + 2
     end
-  end
+  end -- align(...)
+  
+  -- Draw border around focused elements
+  local function drawFocus(x, y, w, h, color)
+    color = color or lib.colors.active
+    lcd.drawRectangle(x - 2, y - 2, w + 4, h + 4, color, 2)
+  end -- drawFocus(...)
   
   -- Move focus to another element
   local function moveFocus(delta)
@@ -213,14 +219,13 @@ function lib.newGUI()
     }
     
     function self.draw(idx)
-      local flags = getFlags(self)
-      
       if focus == idx then
-        flags = bit32.bor(flags, BOLD)
-        lcd.drawRectangle(x - 1, y - 1, w + 2, h + 2, lib.colors.active)
+        drawFocus(x, y, w, h)
       end
+      
       lcd.drawFilledRectangle(x, y, w, h, lib.colors.buttonBackground)
-      lcd.drawText(x + w / 2, y + h / 2, self.title, bit32.bor(lib.colors.focusText, flags))
+      lcd.drawText(x + w / 2, y + h / 2, self.title, bit32.bor(lib.colors.focusText, self.flags))
+      
       if self.disabled then
         lcd.drawFilledRectangle(x, y, w, h, GREY, 7)
       end
@@ -245,7 +250,6 @@ function lib.newGUI()
     }
 
     function self.draw(idx)
-      local flags = getFlags(self)
       local fg = lib.colors.focusText
       local bg = lib.colors.buttonBackground
       local border = lib.colors.active
@@ -257,11 +261,12 @@ function lib.newGUI()
       end
       
       if focus == idx then
-        lcd.drawRectangle(x - 1, y - 1, w + 2, h + 2, border)
-        flags = bit32.bor(flags, BOLD)
+        drawFocus(x, y, w, h, border)
       end
+      
       lcd.drawFilledRectangle(x, y, w, h, bg)
-      lcd.drawText(x + w / 2, y + h / 2, self.title, bit32.bor(fg, flags))
+      lcd.drawText(x + w / 2, y + h / 2, self.title, bit32.bor(fg, self.flags))
+      
       if self.disabled then
         lcd.drawFilledRectangle(x, y, w, h, GREY, 7)
       end
@@ -291,8 +296,8 @@ function lib.newGUI()
       local fg = lib.colors.text
       
       if focus == idx then
-        lcd.drawRectangle(x - 1, y - 1, w + 2, h + 2, lib.colors.active)
-        flags = bit32.bor(flags, BOLD)
+        drawFocus(x, y, w, h)
+
         if editing then
           fg = lib.colors.focusText
           lcd.drawFilledRectangle(x, y, w, h, lib.colors.editBackground)
@@ -357,8 +362,8 @@ function lib.newGUI()
       local value = self.value or model.getTimer(tmr).value
       
       if focus == idx then
-        lcd.drawRectangle(x - 1, y - 1, w + 2, h + 2, lib.colors.active)
-        flags = bit32.bor(flags, BOLD)
+        drawFocus(x, y, w, h)
+
         if editing then
           fg = lib.colors.focusText
           lcd.drawFilledRectangle(x, y, w, h, lib.colors.editBackground)
@@ -385,13 +390,12 @@ function lib.newGUI()
     items = items or { "No items!" }
     callBack = callBack or doNothing
     flags = bit32.bor(flags or lib.flags, lib.colors.text, VCENTER)
-    local h = select(2, lcd.sizeText("X", flags))
-    local H = select(2, lcd.sizeText("X", bit32.bor(flags, BOLD)))
     local firstVisible = 1
     local startFirst = 1
     local idx0 = #elements
     local idxN = idx0 + #items
-    y = y + H / 2
+    local h = select(2, lcd.sizeText("X", flags))
+    y = y + h / 2
     
     -- Add line items as GUI elements
     for i, item in ipairs(items) do
@@ -402,10 +406,10 @@ function lib.newGUI()
       }
       
       local w = lcd.sizeText(item, flags) + 4
-      local W = lcd.sizeText(item, bit32.bor(flags, BOLD)) + 4
       
       function self.draw(idx)
         local flags = getFlags(self)
+        local yy = y + h * (self.idx - firstVisible)
         
         -- Do we need to adjust scroll?
         if self.idx == 1 and focus > idx0 and focus <= idxN then
@@ -422,11 +426,8 @@ function lib.newGUI()
           return
         end
         
-        -- OK, time to draw the line item
-        local yy = y + H * (self.idx - firstVisible)
         if focus == idx then
-          flags = bit32.bor(flags, BOLD)
-          lcd.drawRectangle(x - 2, yy - H / 2, W, H, lib.colors.active)
+          drawFocus(x - 2, yy - h / 2, w, h)
         end
         
         lcd.drawText(x, yy, item, flags)
@@ -437,7 +438,7 @@ function lib.newGUI()
           return self.callBack(self)
         elseif scrolling then
           -- Finger scrolling
-          firstVisible = math.floor(self.idx - (touchState.y - y) / H + 0.5)
+          firstVisible = math.floor(self.idx - (touchState.y - y) / h + 0.5)
           firstVisible = math.min(firstVisible, idxN - idx0 - visibleCount + 1, self.idx)
           firstVisible = math.max(firstVisible, 1, self.idx - visibleCount + 1)
         end
@@ -447,16 +448,9 @@ function lib.newGUI()
         if self.idx < firstVisible or self.idx >= firstVisible + visibleCount then
           return false
         else
-          local ww, hh
-          local yy = y + H * (self.idx - firstVisible)
+          local yy = y + h * (self.idx - firstVisible)
 
-          if focus == idx0 + self.idx then
-            ww, hh = W, H
-          else
-            ww, hh = w, h
-          end
-
-          return (x <= p and p <= x + ww and yy - hh / 2 <= q and q <= yy + hh / 2)
+          return (x <= p and p <= x + w and yy - h / 2 <= q and q <= yy + h / 2)
         end
       end
       
