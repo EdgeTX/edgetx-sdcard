@@ -2,7 +2,7 @@
 -- The dynamically loadable part of the shared Lua GUI library.          --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Date:    2021-09-18                                                   --
+-- Date:    2021-09-27                                                   --
 -- Version: 0.9                                                          --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
@@ -49,7 +49,7 @@ lib.match = match
 --> flags = lcd flags; will be used as defaults for drawing text and numbers
 --> widgetRefresh = function drawing screen in non-fullscreen mode
 --> fullScreenRefresh = function drawing screen in fullscreen mode
---> element.noFocus = true prevents element from taking focus
+--> element.disabled = true prevents element from taking focus
 --> element.title can be set for button, toggleButton and label
 --> element.value can be set for toggleButton and number
 
@@ -65,14 +65,6 @@ function lib.newGUI()
   local function doNothing()
   end
   
-  -- Draw a rectangle with pattern lines
-  local function drawRectangle(x, y, w, h, pat, flags)
-    lcd.drawLine(x, y, x + w, y, pat, flags)
-    lcd.drawLine(x + w, y, x + w, y + h, pat, flags)
-    lcd.drawLine(x + w, y + h, x, y + h, pat, flags)
-    lcd.drawLine(x, y + h, x, y, pat, flags)
-  end
-  
   -- Adjust text according to horizontal alignment
   local function align(x, w, flags)
     if bit32.band(flags, RIGHT) == RIGHT then
@@ -82,7 +74,13 @@ function lib.newGUI()
     else
       return x + 2
     end
-  end
+  end -- align(...)
+  
+  -- Draw border around focused elements
+  local function drawFocus(x, y, w, h, color)
+    color = color or lib.colors.active
+    lcd.drawRectangle(x - 2, y - 2, w + 4, h + 4, color, 2)
+  end -- drawFocus(...)
   
   -- Move focus to another element
   local function moveFocus(delta)
@@ -95,7 +93,7 @@ function lib.newGUI()
         focus = #elements
       end
       count = count + 1
-    until not elements[focus].noFocus or count > #elements
+    until not (elements[focus].disabled or elements[focus].hidden) or count > #elements
   end -- moveFocus(...)
   
   -- Add an element and return it to the client
@@ -113,9 +111,10 @@ function lib.newGUI()
   end -- addElement(...)
   
   -- Add temporary BLINK or INVERS flags
-  local function tempFlags(self, flags)
-    if self.blink then flags = bit32.bor(flags or 0, BLINK) end
-    if self.invers then flags = bit32.bor(flags or 0, INVERS) end
+  local function getFlags(element)
+    local flags = element.flags
+    if element.blink then flags = bit32.bor(flags or 0, BLINK) end
+    if element.invers then flags = bit32.bor(flags or 0, INVERS) end
     return flags
   end
   
@@ -137,18 +136,20 @@ function lib.newGUI()
       if lib.colors.screenBackground then
         lcd.clear(lib.colors.screenBackground)
       end
-      if elements[focus].noFocus then
-        moveFocus(1)
-        return
-      end
       if gui.fullScreenRefresh then
         gui.fullScreenRefresh(event, touchState)
       end
       for idx, element in ipairs(elements) do
-        element.draw(idx)
+        if not element.hidden then
+          element.draw(idx)
+        end
+      end
+      if (elements[focus].disabled or elements[focus].hidden) then
+        moveFocus(1)
+        return
       end
       if gui.prompt then
-        return prompt.run(event, touchState)
+        return gui.prompt.run(event, touchState)
       end
       if event ~= 0 then -- non-zero event; process it
         -- If we put a finger down on a menu item and immediately slide, then we can scroll
@@ -161,7 +162,7 @@ function lib.newGUI()
           else
             -- Did we touch another element?
             for idx, element in ipairs(elements) do
-              if element.covers(touchState.x, touchState.y) and not element.noFocus then
+              if not (element.disabled or element.hidden) and element.covers(touchState.x, touchState.y) then
                 if editing then
                   -- A goodbye EXIT before we take away focus
                   elements[focus].run(EVT_VIRTUAL_EXIT, touchState)
@@ -177,7 +178,7 @@ function lib.newGUI()
           if elements[focus].covers(touchState.x, touchState.y) then
             -- Convert to ENTER
             event = EVT_VIRTUAL_ENTER
-          else
+          elseif editing then
             -- Convert a tap off the focused element to EXIT
             event = EVT_VIRTUAL_EXIT
           end
@@ -185,18 +186,24 @@ function lib.newGUI()
         
         if editing then -- Send the event to the element being edited
           elements[focus].run(event, touchState)
-          if match(event,EVT_VIRTUAL_ENTER, EVT_VIRTUAL_EXIT) then
+          if match(event, EVT_VIRTUAL_ENTER, EVT_VIRTUAL_EXIT) then
             editing = false
           end
-        elseif handles[event] then -- Is the event being "handled"?
-          handles[event](event, touchState)
         elseif event == EVT_VIRTUAL_ENTER and elements[focus].editable then -- Start editing
           editing = true
         elseif event == EVT_VIRTUAL_NEXT then -- Move focus
           moveFocus(1)
         elseif event == EVT_VIRTUAL_PREV then
           moveFocus(-1)
-        else -- Send event to the element in focus
+        else
+          if handles[event] then
+            -- Is it being handled? Handler can modify event
+            event = handles[event](event, touchState)
+            -- If handler returned false or nil, then we are done
+            if not event then
+             return
+            end
+          end
           elements[focus].run(event, touchState)
         end
       end
@@ -205,24 +212,28 @@ function lib.newGUI()
 
 -- Create a button to trigger a function
   function gui.button (x, y, w, h, title, callBack, flags)
-    callBack = callBack or doNothing
-    flags = bit32.bor(flags or lib.flags, CENTER, VCENTER)
-    local self = { title = title }
+    local self = {
+      title = title,
+      callBack = callBack or doNothing,
+      flags = bit32.bor(flags or lib.flags, CENTER, VCENTER)
+    }
     
     function self.draw(idx)
-      local flags = tempFlags(self, flags)
-      
       if focus == idx then
-        flags = bit32.bor(flags, BOLD)
-        drawRectangle(x - 1, y - 1, w + 2, h + 2, DOTTED, lib.colors.active)
+        drawFocus(x, y, w, h)
       end
+      
       lcd.drawFilledRectangle(x, y, w, h, lib.colors.buttonBackground)
-      lcd.drawText(x + w / 2, y + h / 2, self.title, bit32.bor(lib.colors.focusText, flags))
+      lcd.drawText(x + w / 2, y + h / 2, self.title, bit32.bor(lib.colors.focusText, self.flags))
+      
+      if self.disabled then
+        lcd.drawFilledRectangle(x, y, w, h, GREY, 7)
+      end
     end
     
     function self.run(event, touchState)
       if event == EVT_VIRTUAL_ENTER then
-        return callBack(self, event, touchState)
+        return self.callBack(self)
       end
     end
     
@@ -231,32 +242,40 @@ function lib.newGUI()
   
 -- Create a toggle button that turns on/off. callBack gets true/false
   function gui.toggleButton(x, y, w, h, title, value, callBack, flags)
-    callBack = callBack or doNothing
-    flags = bit32.bor(flags or lib.flags, CENTER, VCENTER)
-    local self = { title = title, value = value }
+    local self = {
+      title = title, 
+      value = value,
+      callBack = callBack or doNothing,
+      flags = bit32.bor(flags or lib.flags, CENTER, VCENTER)
+    }
 
     function self.draw(idx)
-      local flags = tempFlags(self, flags)
       local fg = lib.colors.focusText
       local bg = lib.colors.buttonBackground
+      local border = lib.colors.active
 
       if self.value then
         fg = lib.colors.text
-        bg = lib.colors.active 
+        bg = lib.colors.active
+        border = lib.colors.buttonBackground
       end
       
       if focus == idx then
-        drawRectangle(x - 1, y - 1, w + 2, h + 2, DOTTED, lib.colors.active)
-        flags = bit32.bor(flags, BOLD)
+        drawFocus(x, y, w, h, border)
       end
+      
       lcd.drawFilledRectangle(x, y, w, h, bg)
-      lcd.drawText(x + w / 2, y + h / 2, self.title, bit32.bor(fg, flags))
+      lcd.drawText(x + w / 2, y + h / 2, self.title, bit32.bor(fg, self.flags))
+      
+      if self.disabled then
+        lcd.drawFilledRectangle(x, y, w, h, GREY, 7)
+      end
     end
     
     function self.run(event, touchState)
       if event == EVT_VIRTUAL_ENTER then
         self.value = not self.value
-        return callBack(self, event, touchState)
+        return self.callBack(self)
       end
     end
     
@@ -265,17 +284,20 @@ function lib.newGUI()
   
 -- Create a number that can be edited
   function gui.number(x, y, w, h, value, callBack, flags)
-    callBack = callBack or doNothing
-    flags = bit32.bor(flags or lib.flags, VCENTER)
-    local self = { value = value, editable = true }
+    local self = {
+      value = value,
+      callBack = callBack or doNothing,
+      flags = bit32.bor(flags or lib.flags, VCENTER),
+      editable = true
+    }
     
     function self.draw(idx)
-      local flags = tempFlags(self, flags)
+      local flags = getFlags(self)
       local fg = lib.colors.text
       
       if focus == idx then
-        drawRectangle(x - 1, y - 1, w + 2, h + 2, DOTTED, lib.colors.active)
-        flags = bit32.bor(flags, BOLD)
+        drawFocus(x, y, w, h)
+
         if editing then
           fg = lib.colors.focusText
           lcd.drawFilledRectangle(x, y, w, h, lib.colors.editBackground)
@@ -291,7 +313,7 @@ function lib.newGUI()
     function self.run(event, touchState)
       -- There are so many possibilities that we leave it up to the call back to decide what to do.
       if editing then
-        return callBack(self, event, touchState)
+        return self.callBack(self, event, touchState)
       end
     end
     
@@ -300,17 +322,20 @@ function lib.newGUI()
   
 -- Create a text label
   function gui.label(x, y, w, h, title, flags)
-    flags = bit32.bor(flags or lib.flags, VCENTER, lib.colors.text)
-    local self = { title = title, noFocus = true }
+    local self = {
+      title = title,
+      flags = bit32.bor(flags or lib.flags, VCENTER, lib.colors.text),
+      disabled = true
+    }
     
     function self.draw(idx)
-      local flags = tempFlags(self, flags)
+      local flags = getFlags(self)
       lcd.drawText(align(x, w, flags), y + h / 2, self.title, flags)
     end
 
     -- We should not ever run, but just in case...
     function self.run(event, touchState)
-      self.noFocus = true
+      self.disabled = true
       moveFocus(1)
     end
     
@@ -324,19 +349,21 @@ function lib.newGUI()
 -- Create a display of current time on timer[tmr]
 -- Set timer.value to show a different value
   function gui.timer(x, y, w, h, tmr, callBack, flags)
-    callBack = callBack or doNothing
-    flags = bit32.bor(flags or lib.flags, VCENTER)
-    local self = { editable = true }
+    local self = {
+      callBack = callBack or doNothing,
+      flags = bit32.bor(flags or lib.flags, VCENTER),
+      editable = true
+    }
 
     function self.draw(idx)
-      local flags = tempFlags(self, flags)
+      local flags = getFlags(self)
       local fg = lib.colors.text
       -- self.value overrides the timer value
       local value = self.value or model.getTimer(tmr).value
       
       if focus == idx then
-        drawRectangle(x - 1, y - 1, w + 2, h + 2, DOTTED, lib.colors.active)
-        flags = bit32.bor(flags, BOLD)
+        drawFocus(x, y, w, h)
+
         if editing then
           fg = lib.colors.focusText
           lcd.drawFilledRectangle(x, y, w, h, lib.colors.editBackground)
@@ -352,7 +379,7 @@ function lib.newGUI()
     function self.run(event, touchState)
       -- There are so many possibilities that we leave it up to the call back to decide what to do.
       if editing then
-        return callBack(self, event, touchState)
+        return self.callBack(self, event, touchState)
       end
     end
     
@@ -363,23 +390,26 @@ function lib.newGUI()
     items = items or { "No items!" }
     callBack = callBack or doNothing
     flags = bit32.bor(flags or lib.flags, lib.colors.text, VCENTER)
-    local h = select(2, lcd.sizeText("X", flags))
-    local H = select(2, lcd.sizeText("X", bit32.bor(flags, BOLD)))
     local firstVisible = 1
     local startFirst = 1
     local idx0 = #elements
     local idxN = idx0 + #items
-    y = y + H / 2
+    local h = select(2, lcd.sizeText("X", flags))
+    y = y + h / 2
     
     -- Add line items as GUI elements
     for i, item in ipairs(items) do
-      local self = { idx = i }
-      local txt = i .. ". " .. item
-      local w = lcd.sizeText(txt, flags) + 4
-      local W = lcd.sizeText(txt, bit32.bor(flags, BOLD)) + 4
+      local self = {
+        idx = i,
+        callBack = callBack,
+        flags = flags
+      }
+      
+      local w = lcd.sizeText(item, flags) + 4
       
       function self.draw(idx)
-        local flags = tempFlags(self, flags)
+        local flags = getFlags(self)
+        local yy = y + h * (self.idx - firstVisible)
         
         -- Do we need to adjust scroll?
         if self.idx == 1 and focus > idx0 and focus <= idxN then
@@ -396,22 +426,19 @@ function lib.newGUI()
           return
         end
         
-        -- OK, time to draw the line item
-        local yy = y + H * (self.idx - firstVisible)
         if focus == idx then
-          flags = bit32.bor(flags, BOLD)
-          lcd.drawRectangle(x - 2, yy - H / 2, W, H, lib.colors.active)
+          drawFocus(x - 2, yy - h / 2, w, h)
         end
         
-        lcd.drawText(x, yy, txt, flags)
+        lcd.drawText(x, yy, item, flags)
       end -- draw(...)
       
       function self.run(event, touchState)
         if event == EVT_VIRTUAL_ENTER then
-          return callBack(self, event, touchState)
+          return self.callBack(self)
         elseif scrolling then
           -- Finger scrolling
-          firstVisible = math.floor(self.idx - (touchState.y - y) / H + 0.5)
+          firstVisible = math.floor(self.idx - (touchState.y - y) / h + 0.5)
           firstVisible = math.min(firstVisible, idxN - idx0 - visibleCount + 1, self.idx)
           firstVisible = math.max(firstVisible, 1, self.idx - visibleCount + 1)
         end
@@ -421,16 +448,9 @@ function lib.newGUI()
         if self.idx < firstVisible or self.idx >= firstVisible + visibleCount then
           return false
         else
-          local ww, hh
-          local yy = y + H * (self.idx - firstVisible)
+          local yy = y + h * (self.idx - firstVisible)
 
-          if focus == idx0 + self.idx then
-            ww, hh = W, H
-          else
-            ww, hh = w, h
-          end
-
-          return (x <= p and p <= x + ww and yy <= q and q <= yy + hh)
+          return (x <= p and p <= x + w and yy - h / 2 <= q and q <= yy + h / 2)
         end
       end
       
