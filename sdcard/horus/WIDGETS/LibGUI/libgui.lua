@@ -2,7 +2,7 @@
 -- The dynamically loadable part of the shared Lua GUI library.          --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Date:    2021-09-27                                                   --
+-- Date:    2021-09-28                                                   --
 -- Version: 0.9                                                          --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
@@ -390,6 +390,7 @@ function lib.newGUI()
     items = items or { "No items!" }
     callBack = callBack or doNothing
     flags = bit32.bor(flags or lib.flags, lib.colors.text, VCENTER)
+    local es = { }
     local firstVisible = 1
     local startFirst = 1
     local idx0 = #elements
@@ -454,8 +455,9 @@ function lib.newGUI()
         end
       end
       
-      addElement(self)
+      es[#es + 1] = addElement(self)
     end -- Loop adding menu items
+    return es
   end -- menu(...)
   
   return gui
