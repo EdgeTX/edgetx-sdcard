@@ -2,8 +2,8 @@
 -- The dynamically loadable part of the shared Lua GUI library.          --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Date:    2021-09-28                                                   --
--- Version: 0.9                                                          --
+-- Date:    2021-10-03                                                   --
+-- Version: 0.99                                                         --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
 --                                                                       --
@@ -29,7 +29,6 @@ lib.colors = {
   buttonBackground = COLOR_THEME_FOCUS,
   editBackground = COLOR_THEME_EDIT,
   active = COLOR_THEME_ACTIVE,
---screenBackground - if set, then LCD is cleared with that color
 }
 
 -- Return true if the first arg matches any of the following args
@@ -133,9 +132,6 @@ function lib.newGUI()
         lcd.drawText(1, 25, "function was loaded.")
       end
     else -- full screen mode; event is a value
-      if lib.colors.screenBackground then
-        lcd.clear(lib.colors.screenBackground)
-      end
       if gui.fullScreenRefresh then
         gui.fullScreenRefresh(event, touchState)
       end
