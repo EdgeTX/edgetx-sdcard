@@ -1,0 +1,17 @@
+---
+summary:
+  name: FM2M Greenfields
+  author: JimB40
+  info: Green grass, yellow sun and blue sky. This is summer time.
+colors:
+  PRIMARY1:   0x000000
+  PRIMARY2:   0xFFFFC0
+  PRIMARY3:   0x003000
+  SECONDARY1: 0x005000
+  SECONDARY2: 0x009900
+  SECONDARY3: 0x00C800
+  FOCUS:      0xFF8C00
+  EDIT:       0x6074FF
+  ACTIVE:     0xF7E400
+  WARNING:    0xE00000
+  DISABLED:   0x808080
