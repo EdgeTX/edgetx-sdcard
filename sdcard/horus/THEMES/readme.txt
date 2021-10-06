@@ -32,11 +32,11 @@ language to define data structure. It can be edited using any text editor.
 File name has to have .yml extension.
 Example: custom_theme.yml
 
-Additionaly you can include graphic file (in PNG format) to display in EdgeTX
+Additionally you can include graphic file (in PNG format) to display in EdgeTX
 User Interface Tab theme preview. To display preview file name must be the same
 as YAML file.
 Example:
-If theme color defintition is name new_theme.yml graphic preview file must be
+If theme color definition is name new_theme.yml graphic preview file must be
 named new_theme.png
 
 
@@ -127,7 +127,7 @@ DISABLED
   Disabled elements
 
 
-Creating EdgeTX 2.5 theme color defintition
+Creating EdgeTX 2.5 theme color definition
 -------------------------------------------
 1. Create *.yml file with theme definition
 2. Create *.png file with theme preview
