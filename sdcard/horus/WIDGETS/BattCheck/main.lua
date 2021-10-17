@@ -617,14 +617,10 @@ local function refresh(wgt, event, touchState)
   local t4 = getUsage();
   if (event ~= nil) then
     refreshFullScreen(wgt, event, touchState)
-  elseif wgt.zone.w > 380 and wgt.zone.h > 165 then
-    refreshZoneXLarge(wgt)
-  elseif wgt.zone.w > 180 and wgt.zone.h > 145 then
-    refreshZoneLarge(wgt)
-  elseif wgt.zone.w > 170 and wgt.zone.h > 65 then
-    refreshZoneMedium(wgt)
-  elseif wgt.zone.w > 150 and wgt.zone.h > 28 then
-    refreshZoneSmall(wgt)
+  elseif wgt.zone.w > 380 and wgt.zone.h > 165 then   refreshZoneXLarge(wgt)
+  elseif wgt.zone.w > 180 and wgt.zone.h > 145 then   refreshZoneLarge(wgt)
+  elseif wgt.zone.w > 170 and wgt.zone.h > 65 then    refreshZoneMedium(wgt)
+  elseif wgt.zone.w > 150 and wgt.zone.h > 28 then    refreshZoneSmall(wgt)
   elseif wgt.zone.w > 65 and wgt.zone.h > 35 then
     refreshZoneTiny(wgt)
   end
