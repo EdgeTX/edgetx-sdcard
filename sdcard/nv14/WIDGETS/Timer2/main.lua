@@ -22,9 +22,7 @@ local function create(zone, options)
 end
 
 local function update(wgt, options)
-  if (wgt == nil) then
-    return
-  end
+  if (wgt == nil) then return end
   wgt.options = options
   --print("TimerNumB:" .. options.Timer)
 end
