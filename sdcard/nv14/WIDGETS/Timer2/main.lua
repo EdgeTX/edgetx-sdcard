@@ -1,7 +1,7 @@
 -- A Timer version that fill better the widget area
 -- Offer Shmuely
--- Date: 2018
--- ver: 0.3
+-- Date: 2021
+-- ver: 0.4
 
 local options = {
   { "TextColor", COLOR, YELLOW },
@@ -93,8 +93,8 @@ local function refreshZoneSmall(wgt)
   return
 end
 
---- Zone size: 180x70 1/4th  (with sliders/trim)
---- Zone size: 225x98 1/4th  (no sliders/trim)
+--- Zone size: 133x189 1/4th  (with sliders/trim)
+--- Zone size: 160x217 1/4th  (no sliders/trim)
 local function refreshZoneMedium(wgt)
   local t1 = model.getTimer(wgt.options.Timer-1)
 
@@ -102,34 +102,54 @@ local function refreshZoneMedium(wgt)
   lcd.drawText (wgt.zone.x, wgt.zone.y, timerInfo, SMLSIZE + CUSTOM_COLOR)
 
   local time_str = formatTime(wgt, t1)
-  local font_size = XXLSIZE
+  local font_size = DBLSIZE
   if (string.len(time_str) > 9) then
     font_size = MIDSIZE
   elseif string.len(time_str) > 5 then
-    font_size = DBLSIZE
+    font_size = MIDSIZE
   end
   lcd.drawText(wgt.zone.x, wgt.zone.y+15, time_str, font_size + CUSTOM_COLOR)
 end
 
---- Zone size: 192x152 1/2
+--- Zone size: 133x378 1/2
 local function refreshZoneLarge(wgt)
   refreshZoneMedium(wgt)
 end
 
---- Zone size: 390x172 1/1
---- Zone size: 460x252 1/1 (no sliders/trim/topbar)
+--- Zone size: 266x378 1/1
+--- Zone size: 266x378 1/1 (no sliders/trim/topbar)
 local function refreshZoneXLarge(wgt)
-  local t1 = model.getTimer(wgt.options.Timer-1)
+  local x = wgt.zone.x
+  local w = wgt.zone.w
+  local y = wgt.zone.y
+  local h = wgt.zone.h
 
+  local t1 = model.getTimer(wgt.options.Timer-1)
+  --print(t1.value)
   local timerInfo = getTimerHeader(wgt, t1)
-  lcd.drawText(wgt.zone.x, wgt.zone.y, timerInfo, SMLSIZE + CUSTOM_COLOR)
+  lcd.drawText(x, y, timerInfo, SMLSIZE + CUSTOM_COLOR)
 
   local time_str = formatTime(wgt, t1)
-  lcd.drawText(wgt.zone.x, wgt.zone.y+15, time_str, XXLSIZE + CUSTOM_COLOR)
+  lcd.drawText(x, y+15, time_str, XXLSIZE + CUSTOM_COLOR)
 end
 
 
-function refresh(wgt)
+--- Zone size: 320x480 (full screen app mode)
+local function refreshFullScreen(wgt, event, touchState)
+  local x = 0
+  local w = 320
+  local y = 0
+  local h = 480
+  
+  local t1 = model.getTimer(wgt.options.Timer-1)
+  --print(t1.value)
+  local timerInfo = getTimerHeader(wgt, t1)
+  lcd.drawText(10, 10, timerInfo, XXLSIZE + CUSTOM_COLOR)
+  local time_str = formatTime(wgt, t1)
+  lcd.drawText(0, 100, time_str, XXLSIZE + CUSTOM_COLOR)
+end
+
+local function refresh(wgt, event, touchState)
 
   if (wgt==nil) then
     print("refresh(nil)")
@@ -148,12 +168,16 @@ function refresh(wgt)
 
   lcd.setColor(CUSTOM_COLOR, wgt.options.TextColor)
 
-  if     wgt.zone.w  > 380 and wgt.zone.h > 165 then refreshZoneXLarge(wgt)
-  elseif wgt.zone.w  > 180 and wgt.zone.h > 145 then refreshZoneLarge(wgt)
-  elseif wgt.zone.w  > 170 and wgt.zone.h >  65 then refreshZoneMedium(wgt)
-  elseif wgt.zone.w  > 150 and wgt.zone.h >  28 then refreshZoneSmall(wgt)
-  elseif wgt.zone.w  >  65 and wgt.zone.h >  35 then refreshZoneTiny(wgt)
+  --print("app: " .. string.format("x=%d, y=%d, w=%d, h=%d", wgt.zone.x, wgt.zone.y, wgt.zone.w, wgt.zone.h))
+
+  if (event ~= nil) then                              refreshFullScreen(wgt, event, touchState)
+  elseif wgt.zone.w > 260 and wgt.zone.h > 370 then   refreshZoneXLarge(wgt)
+  elseif wgt.zone.w > 130 and wgt.zone.h > 370 then   refreshZoneLarge(wgt)
+  elseif wgt.zone.w > 130 and wgt.zone.h > 180 then   refreshZoneMedium(wgt)
+  elseif wgt.zone.w > 150 and wgt.zone.h > 28  then   refreshZoneSmall(wgt)
+  elseif wgt.zone.w > 65 and wgt.zone.h > 35   then   refreshZoneTiny(wgt)
   end
+
 end
 
 return { name="Timer2", options=options, create=create, update=update, background=background, refresh=refresh }
