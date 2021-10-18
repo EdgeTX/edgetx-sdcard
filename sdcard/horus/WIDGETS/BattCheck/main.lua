@@ -1,6 +1,6 @@
 ---- #########################################################################
 ---- #                                                                       #
----- # Telemetry Widget script for FrSky Horus                               #
+---- # Telemetry Widget script for FrSky Horus/Radio Master TX16s            #
 ---- # Copyright (C) OpenTX                                                  #
 -----#                                                                       #
 ---- # License GPLv2: http://www.gnu.org/licenses/gpl-2.0.html               #
@@ -18,9 +18,9 @@
 
 -- Horus Widget to display the levels of lipo battery with per cell indication
 -- 3djc & Offer Shmuely
--- Date: 2020
--- ver: 0.5
-local version = "v0.5"
+-- Date: 2021
+-- ver: 0.6
+local version = "v0.6"
 
 local _options = {
   { "Sensor", SOURCE, 0 }, -- default to 'Cels'
@@ -42,6 +42,13 @@ local _lipoPercentListSplit = {
   { { 4.105, 89 }, { 4.111, 90 }, { 4.116, 91 }, { 4.12, 92 }, { 4.125, 93 }, { 4.129, 94 }, { 4.135, 95 }, { 4.145, 96 }, { 4.176, 97 }, { 4.179, 98 }, { 4.193, 99 }, { 4.2, 100 } },
 }
 
+--------------------------------------------------------------
+local function log(s)
+  return;
+  --print("app: " .. s)
+end
+--------------------------------------------------------------
+--periodic1 = {startTime = -1, durationMili = -1},
 local function periodicInit(t, durationMili)
   t.startTime = getTime();
   t.durationMili = durationMili;
@@ -59,9 +66,39 @@ local function periodicHasPassed(t)
 end
 local function periodicGetElapsedTime(t)
   local elapsed = getTime() - t.startTime;
+  --log(string.format("elapsed: %d",elapsed));
   local elapsedMili = elapsed * 10;
+  --log(string.format("elapsedMili: %d",elapsedMili));
   return elapsedMili;
 end
+--------------------------------------------------------------
+local function cpuProfilerAdd(wgt, name, u1)
+  --return;
+  local timeSpan = getUsage() - u1
+  local oldValues = wgt.profTimes[name];
+  if oldValues == nil then
+    oldValues = {0,0,0,0} -- count, total-time, last-time, max-time
+  end
+
+  local max = oldValues[4]
+  if (timeSpan > oldValues[4]) then
+    max = timeSpan
+  end
+
+  wgt.profTimes[name] = {oldValues[1]+1, oldValues[2] + timeSpan, timeSpan, max}; -- count, total-time, last-time, max-time
+end
+local function cpuProfilerShow(wgt)
+  --return;
+  if (periodicHasPassed(wgt.periodicProfiler)) then
+    local s = "profiler: \n"
+    for name, valArr in pairs(wgt.profTimes) do
+      s = s .. string.format("  /%-15s - avg:%02.1f, max:%2d%%, last:%2d%% (count:%5s, tot:%5s)\n", name, valArr[2]/valArr[1], valArr[4], valArr[3], valArr[1], valArr[2])
+    end
+    log(s);
+    periodicReset(wgt.periodicProfiler)
+  end
+end
+-----------------------------------------------------------------
 
 -- This function is run once at the creation of the widget
 local function create(zone, options)
@@ -76,7 +113,9 @@ local function create(zone, options)
     no_telem_blink = 0,
     isDataAvailable = 0,
     cellDataLive = { 0, 0, 0, 0, 0, 0 },
+    cellDataLivePercent = {0,0,0,0,0,0},
     cellDataHistoryLowest = { 5, 5, 5, 5, 5, 5 },
+    cellDataHistoryLowestPercent = {5,5,5,5,5,5},
     cellDataHistoryCellLowest = 5,
     cellMax = 0,
     cellMin = 0,
@@ -124,7 +163,9 @@ local function onTelemetryResetEvent(wgt)
   wgt.telemResetCount = wgt.telemResetCount + 1
 
   wgt.cellDataLive = { 0, 0, 0, 0, 0, 0 }
+  wgt.cellDataLivePercent = {0,0,0,0,0,0}
   wgt.cellDataHistoryLowest = { 5, 5, 5, 5, 5, 5 }
+  wgt.cellDataHistoryLowestPercent = {5,5,5,5,5,5}
   wgt.cellDataHistoryCellLowest = 5
 end
 
@@ -168,14 +209,20 @@ local function getCellPercent(wgt, cellValue)
     return 0
   end
   local result = 0;
+  local t4 = getUsage();
 
   for i1, v1 in ipairs(_lipoPercentListSplit) do
+    --log(string.format("sub-list#: %s, head:%f, length: %d, last: %.3f", i1,v1[1][1], #v1, v1[#v1][1]))
     --is the cellVal < last-value-on-sub-list? (first-val:v1[1], last-val:v1[#v1])
     if (cellValue <= v1[#v1][1]) then
       -- cellVal is in this sub-list, find the exact value
+      --log("this is the list")
       for i2, v2 in ipairs(v1) do
+        --log(string.format("cell#: %s, %.3f--> %d%%", i2,v2[1], v2[2]))
         if v2[1] >= cellValue then
           result = v2[2]
+          --log(string.format("result: %d%%", result))
+          --cpuProfilerAdd(wgt, 'cell-perc', t4);
           return result
         end
       end
@@ -200,8 +247,7 @@ local function calculateBatteryData(wgt)
   local cellSum = 0
   for k, v in pairs(newCellData) do
     -- stores the lowest cell values in historical table
-    if v > 1 and v < wgt.cellDataHistoryLowest[k] then
-      -- min 1v to consider a valid reading
+    if v > 1 and v < wgt.cellDataHistoryLowest[k] then -- min 1v to consider a valid reading
       wgt.cellDataHistoryLowest[k] = v
 
       --- calc history lowest of all cells
@@ -217,8 +263,7 @@ local function calculateBatteryData(wgt)
     end
 
     --- calc lowest of all cells
-    if v < cellMin and v > 1 then
-      -- min 1v to consider a valid reading
+    if v < cellMin and v > 1 then -- min 1v to consider a valid reading
       cellMin = v
     end
     --- sum of all cells
@@ -259,11 +304,21 @@ local function calculateBatteryData(wgt)
 
   -- calculate intensive CPU data
   if (periodicHasPassed(wgt.periodic1) or wgt.cellPercent == 0) then
+    local t5 = getUsage();
 
-    --wgt.cellPercent = getCellPercent(wgt, wgt.cellMin) -- use batt percentage by lowest cell voltage
-    wgt.cellPercent = getCellPercent(wgt, wgt.cellAvg) -- use batt percentage by average cell voltage
+    wgt.cellPercent = getCellPercent(wgt, wgt.cellMin) -- use batt percentage by lowest cell voltage
+    --wgt.cellPercent = getCellPercent(wgt, wgt.cellAvg) -- use batt percentage by average cell voltage
+
+    for i = 1, wgt.cellCount, 1 do
+      wgt.cellDataLivePercent[i] = getCellPercent(wgt, wgt.cellDataLive[i])
+      wgt.cellDataHistoryLowestPercent[i] = getCellPercent(wgt, wgt.cellDataHistoryLowest[i])
+--      wgt.cellDataLivePercent[i] = 100
+--      wgt.cellDataHistoryLowestPercent[i] = 0
+    end
+
 
     periodicReset(wgt.periodic1)
+    --cpuProfilerAdd(wgt, 'calc-batt-perc', t5);
   end
 
 end
@@ -361,7 +416,7 @@ local function refreshZoneMedium(wgt)
   end
 
   -- draw values
-  lcd.drawText(wgt.zone.x + wgt.zone.w, wgt.zone.y, string.format("%2.1fV", wgt.mainValue), DBLSIZE + CUSTOM_COLOR + RIGHT + wgt.shadowed + wgt.no_telem_blink)
+  lcd.drawText(wgt.zone.x, wgt.zone.y + 35, string.format("%2.1fV", wgt.mainValue), DBLSIZE + CUSTOM_COLOR + wgt.shadowed + wgt.no_telem_blink)
 
   -- more info if 1/4 is high enough (without trim & slider)
   if wgt.zone.h > 80 then
@@ -375,21 +430,26 @@ local function refreshZoneMedium(wgt)
   lcd.drawGauge(wgt.zone.x + myBatt.x, wgt.zone.y + myBatt.y, myBatt.w, myBatt.h, wgt.cellPercent, 100, CUSTOM_COLOR)
 
   -- draw cells
-  local cellH = 19
+  local cellH = wgt.zone.h / wgt.cellCount
+  if cellH > 20 then cellH =20 end
   local cellX = 118
-  local cellW = wgt.zone.w / 3
-
-  local pos = { { x = 0, y = 38 }, { x = cellW, y = 38 }, { x = 2 * cellW, y = 38 }, { x = 0, y = 57 }, { x = cellW, y = 57 }, { x = 2 * cellW, y = 57 } }
+  local cellW = 58
   for i = 1, wgt.cellCount, 1 do
     local cellY = wgt.zone.y + (i - 1) * (cellH - 1)
 
     -- fill current cell
     --lcd.drawFilledRectangle(wgt.zone.x + cellX     , cellY, 58, cellH, CUSTOM_COLOR)
     lcd.setColor(CUSTOM_COLOR, getRangeColor(wgt.cellDataLive[i], wgt.cellMax, wgt.cellMax - 0.2))
-    lcd.drawFilledRectangle(wgt.zone.x + pos[i].x, wgt.zone.y + pos[i].y, cellW - 1, 20, CUSTOM_COLOR)
+    lcd.drawFilledRectangle(wgt.zone.x + cellX     , cellY, cellW * wgt.cellDataLivePercent[i] / 100, cellH, CUSTOM_COLOR)
+
+    -- fill cell history min
+    --lcd.setColor(CUSTOM_COLOR, getRangeColor(wgt.cellDataHistoryLowest[i], wgt.cellMax, wgt.cellMax - 0.2))
+    lcd.setColor(CUSTOM_COLOR, lcd.RGB(0x00, 0, 0))
+    lcd.drawFilledRectangle(wgt.zone.x + cellX + (cellW * wgt.cellDataHistoryLowestPercent[i])/100 -2, cellY, 2 , cellH, CUSTOM_COLOR)
+
     lcd.setColor(CUSTOM_COLOR, WHITE)
-    lcd.drawText(wgt.zone.x + pos[i].x + 10, wgt.zone.y + pos[i].y, string.format("%.2f", wgt.cellDataLive[i]), CUSTOM_COLOR + wgt.shadowed)
-    lcd.drawRectangle(wgt.zone.x + pos[i].x, wgt.zone.y + pos[i].y, cellW, 20, CUSTOM_COLOR, 1)
+    lcd.drawText           (wgt.zone.x + cellX + 10, cellY, string.format("%.2f", wgt.cellDataLive[i]), SMLSIZE + CUSTOM_COLOR + wgt.shadowed + wgt.no_telem_blink)
+    lcd.drawRectangle      (wgt.zone.x + cellX     , cellY, 59, cellH, CUSTOM_COLOR , 1)
   end
 
   -- draws bat
@@ -436,16 +496,15 @@ local function refreshZoneLarge(wgt)
 
 end
 
---- Zone size: 390x172 1/1
---- Zone size: 460x252 1/1 (no sliders/trim/topbar)
-local function refreshZoneXLarge(wgt)
+local function refreshFullScreenImpl(wgt, x, w, y, h)
+
   local myBatt = { ["x"] = 10, ["y"] = 20, ["w"] = 80, ["h"] = 121, ["segments_h"] = 30, ["color"] = WHITE, ["cath_w"] = 30, ["cath_h"] = 10 }
 
   lcd.setColor(CUSTOM_COLOR, wgt.options.Color)
 
   -- fill batt
   lcd.setColor(CUSTOM_COLOR, getPercentColor(wgt.cellPercent))
-  lcd.drawFilledRectangle(wgt.zone.x + myBatt.x, wgt.zone.y + myBatt.y + myBatt.h + myBatt.cath_h - math.floor(wgt.cellPercent / 100 * myBatt.h), myBatt.w, math.floor(wgt.cellPercent / 100 * myBatt.h), CUSTOM_COLOR)
+  lcd.drawFilledRectangle(x + myBatt.x, y + myBatt.y + myBatt.h + myBatt.cath_h - math.floor(wgt.cellPercent / 100 * myBatt.h), myBatt.w, math.floor(wgt.cellPercent / 100 * myBatt.h), CUSTOM_COLOR)
 
   -- draw right text section
   if wgt.isDataAvailable then
@@ -453,73 +512,89 @@ local function refreshZoneXLarge(wgt)
   else
     lcd.setColor(CUSTOM_COLOR, GREY)
   end
-  lcd.drawText(wgt.zone.x + wgt.zone.w, wgt.zone.y + myBatt.y, wgt.cellPercent .. "%", RIGHT + DBLSIZE + CUSTOM_COLOR + wgt.shadowed + wgt.no_telem_blink)
+  lcd.drawText(x + w, y + myBatt.y, wgt.cellPercent .. "%", RIGHT + DBLSIZE + CUSTOM_COLOR + wgt.shadowed + wgt.no_telem_blink)
 
-  lcd.drawText(wgt.zone.x + wgt.zone.w, wgt.zone.y + myBatt.y + 30, string.format("%2.1fV", wgt.mainValue), RIGHT + DBLSIZE + CUSTOM_COLOR + wgt.shadowed + wgt.no_telem_blink)
-  lcd.drawText(wgt.zone.x + wgt.zone.w, wgt.zone.y + myBatt.y + 105, string.format("%2.1fV %dS", wgt.secondaryValue, wgt.cellCount), RIGHT + SMLSIZE + CUSTOM_COLOR + wgt.shadowed + wgt.no_telem_blink)
+  lcd.drawText(x + w, y + myBatt.y + 30, string.format("%2.1fV", wgt.mainValue), RIGHT + DBLSIZE + CUSTOM_COLOR + wgt.shadowed + wgt.no_telem_blink)
+  lcd.drawText(x + w, y + myBatt.y + 105, string.format("%2.1fV %dS", wgt.secondaryValue, wgt.cellCount), RIGHT + SMLSIZE + CUSTOM_COLOR + wgt.shadowed + wgt.no_telem_blink)
 
   -- draw cells
   local pos = { { x = 111, y = 38 }, { x = 164, y = 38 }, { x = 217, y = 38 }, { x = 111, y = 57 }, { x = 164, y = 57 }, { x = 217, y = 57 } }
   for i = 1, wgt.cellCount, 1 do
     lcd.setColor(CUSTOM_COLOR, getRangeColor(wgt.cellDataLive[i], wgt.cellMax, wgt.cellMax - 0.2))
-    lcd.drawFilledRectangle(wgt.zone.x + pos[i].x, wgt.zone.y + pos[i].y, 53, 20, CUSTOM_COLOR)
+    lcd.drawFilledRectangle(x + pos[i].x, y + pos[i].y, 53, 20, CUSTOM_COLOR)
     lcd.setColor(CUSTOM_COLOR, WHITE)
-    lcd.drawText(wgt.zone.x + pos[i].x + 10, wgt.zone.y + pos[i].y, string.format("%.2f", wgt.cellDataLive[i]), CUSTOM_COLOR + wgt.shadowed + wgt.no_telem_blink)
-    lcd.drawRectangle(wgt.zone.x + pos[i].x, wgt.zone.y + pos[i].y, 54, 20, CUSTOM_COLOR, 1)
+    lcd.drawText(x + pos[i].x + 10, y + pos[i].y, string.format("%.2f", wgt.cellDataLive[i]), CUSTOM_COLOR + wgt.shadowed + wgt.no_telem_blink)
+    lcd.drawRectangle(x + pos[i].x, y + pos[i].y, 54, 20, CUSTOM_COLOR, 1)
   end
   -- draw cells for lowest cells
   local pos = { { x = 111, y = 110 }, { x = 164, y = 110 }, { x = 217, y = 110 }, { x = 111, y = 129 }, { x = 164, y = 129 }, { x = 217, y = 129 } }
   for i = 1, wgt.cellCount, 1 do
     lcd.setColor(CUSTOM_COLOR, getRangeColor(wgt.cellDataHistoryLowest[i], wgt.cellDataLive[i], wgt.cellDataLive[i] - 0.3))
-    lcd.drawFilledRectangle(wgt.zone.x + pos[i].x, wgt.zone.y + pos[i].y, 53, 20, CUSTOM_COLOR)
+    lcd.drawFilledRectangle(x + pos[i].x, y + pos[i].y, 53, 20, CUSTOM_COLOR)
     lcd.setColor(CUSTOM_COLOR, WHITE)
-    lcd.drawRectangle(wgt.zone.x + pos[i].x, wgt.zone.y + pos[i].y, 54, 20, CUSTOM_COLOR, 1)
-    lcd.drawText(wgt.zone.x + pos[i].x + 10, wgt.zone.y + pos[i].y, string.format("%.2f", wgt.cellDataHistoryLowest[i]), CUSTOM_COLOR + wgt.shadowed + wgt.no_telem_blink)
+    lcd.drawRectangle(x + pos[i].x, y + pos[i].y, 54, 20, CUSTOM_COLOR, 1)
+    lcd.drawText(x + pos[i].x + 10, y + pos[i].y, string.format("%.2f", wgt.cellDataHistoryLowest[i]), CUSTOM_COLOR + wgt.shadowed + wgt.no_telem_blink)
   end
 
   -- draws bat
   lcd.setColor(CUSTOM_COLOR, WHITE)
-  lcd.drawRectangle(wgt.zone.x + myBatt.x, wgt.zone.y + myBatt.y + myBatt.cath_h, myBatt.w, myBatt.h, CUSTOM_COLOR, 2)
-  lcd.drawFilledRectangle(wgt.zone.x + myBatt.x + myBatt.w / 2 - myBatt.cath_w / 2, wgt.zone.y + myBatt.y, myBatt.cath_w, myBatt.cath_h, CUSTOM_COLOR)
+  lcd.drawRectangle(x + myBatt.x, y + myBatt.y + myBatt.cath_h, myBatt.w, myBatt.h, CUSTOM_COLOR, 2)
+  lcd.drawFilledRectangle(x + myBatt.x + myBatt.w / 2 - myBatt.cath_w / 2, y + myBatt.y, myBatt.cath_w, myBatt.cath_h, CUSTOM_COLOR)
   for i = 1, myBatt.h - myBatt.segments_h, myBatt.segments_h do
-    lcd.drawRectangle(wgt.zone.x + myBatt.x, wgt.zone.y + myBatt.y + myBatt.cath_h + i, myBatt.w, myBatt.segments_h, CUSTOM_COLOR, 1)
+    lcd.drawRectangle(x + myBatt.x, y + myBatt.y + myBatt.cath_h + i, myBatt.w, myBatt.segments_h, CUSTOM_COLOR, 1)
   end
   -- draw middle rectangles
-  lcd.drawRectangle(wgt.zone.x + 110, wgt.zone.y + 38, 161, 40, CUSTOM_COLOR, 1)
-  lcd.drawText(wgt.zone.x + 220, wgt.zone.y + 21, "Live data", RIGHT + SMLSIZE + INVERS + CUSTOM_COLOR + wgt.shadowed)
-  lcd.drawRectangle(wgt.zone.x + 110, wgt.zone.y + 110, 161, 40, CUSTOM_COLOR, 1)
-  lcd.drawText(wgt.zone.x + 230, wgt.zone.y + 93, "Lowest data", RIGHT + SMLSIZE + INVERS + CUSTOM_COLOR + wgt.shadowed)
+  lcd.drawRectangle(x + 110, y + 38, 161, 40, CUSTOM_COLOR, 1)
+  lcd.drawText(x + 220, y + 21, "Live data", RIGHT + SMLSIZE + INVERS + CUSTOM_COLOR + wgt.shadowed)
+  lcd.drawRectangle(x + 110, y + 110, 161, 40, CUSTOM_COLOR, 1)
+  lcd.drawText(x + 230, y + 93, "Lowest data", RIGHT + SMLSIZE + INVERS + CUSTOM_COLOR + wgt.shadowed)
   return
 end
+
+--- Zone size: 390x172 1/1
+--- Zone size: 460x252 1/1 (no sliders/trim/topbar)
+local function refreshZoneXLarge(wgt)
+  local x = wgt.zone.x
+  local w = wgt.zone.w
+  local y = wgt.zone.y
+  local h = wgt.zone.h
+
+  refreshFullScreenImpl(wgt, x, w, y, h)
+end
+
+
+--- Zone size: 460x252 (full screen app mode)
+local function refreshFullScreen(wgt, event, touchState)
+  local x = 0
+  local w = 460
+  local y = 0
+  local h = 252
+  refreshFullScreenImpl(wgt, x, w, y, h)
+end
+
 
 -- This function allow recording of lowest cells when widget is in background
 local function background(wgt)
   if (wgt == nil) then
     return
   end
+  local t1 = getUsage();
 
   detectResetEvent(wgt)
 
   calculateBatteryData(wgt)
 
+  --cpuProfilerAdd(wgt, 'background-loop', t1);
+  --cpuProfilerShow(wgt);
 end
 
-local function refresh(wgt)
-  if (wgt == nil) then
-    return
-  end
-  if type(wgt) ~= "table" then
-    return
-  end
-  if (wgt.options == nil) then
-    return
-  end
-  if (wgt.zone == nil) then
-    return
-  end
-  if (wgt.options.LowestCell == nil) then
-    return
-  end
+local function refresh(wgt, event, touchState)
+  local t1 = getUsage();
+  if (wgt         == nil) then return end
+  if type(wgt) ~= "table" then return end
+  if (wgt.options == nil) then return end
+  if (wgt.zone    == nil) then return end
+  if (wgt.options.LowestCell == nil) then return end
 
   if wgt.options.Shadow == 1 then
     wgt.shadowed = SHADOWED
@@ -529,7 +604,9 @@ local function refresh(wgt)
 
   detectResetEvent(wgt)
 
+  local t3 = getUsage();
   calculateBatteryData(wgt)
+  --cpuProfilerAdd(wgt, 'main-loop-3', t3);
 
   if wgt.isDataAvailable then
     wgt.no_telem_blink = 0
@@ -537,17 +614,22 @@ local function refresh(wgt)
     wgt.no_telem_blink = INVERS + BLINK
   end
 
-  if wgt.zone.w > 380 and wgt.zone.h > 165 then
-    refreshZoneXLarge(wgt)
-  elseif wgt.zone.w > 180 and wgt.zone.h > 145 then
-    refreshZoneLarge(wgt)
-  elseif wgt.zone.w > 170 and wgt.zone.h > 65 then
-    refreshZoneMedium(wgt)
-  elseif wgt.zone.w > 150 and wgt.zone.h > 28 then
-    refreshZoneSmall(wgt)
+  local t4 = getUsage();
+  if (event ~= nil) then
+    refreshFullScreen(wgt, event, touchState)
+  elseif wgt.zone.w > 380 and wgt.zone.h > 165 then   refreshZoneXLarge(wgt)
+  elseif wgt.zone.w > 180 and wgt.zone.h > 145 then   refreshZoneLarge(wgt)
+  elseif wgt.zone.w > 170 and wgt.zone.h > 65 then    refreshZoneMedium(wgt)
+  elseif wgt.zone.w > 150 and wgt.zone.h > 28 then    refreshZoneSmall(wgt)
   elseif wgt.zone.w > 65 and wgt.zone.h > 35 then
     refreshZoneTiny(wgt)
   end
+  --cpuProfilerAdd(wgt, 'main-loop-4', t4);
+
+  --cpuProfilerAdd(wgt, 'main-loop', t1);
+  --cpuProfilerShow(wgt);
+  --lcd.drawText(wgt.zone.x, wgt.zone.y, string.format("r:%d", wgt.telemResetCount), SMLSIZE + CUSTOM_COLOR) -- ???
+  --lcd.drawText(wgt.zone.x+100, wgt.zone.y, string.format("%d%%", getUsage()), SMLSIZE + CUSTOM_COLOR) -- ???
 end
 
 return { name = "BattCheck", options = _options, create = create, update = update, background = background, refresh = refresh }
