@@ -75,19 +75,23 @@ local function getTimerHeader(wgt, t1)
 end
 
 local function getFontSize(wgt, txt)
-  local w,h = lcd.sizeText(txt, XXLSIZE)
+  wide_txt = string.gsub(txt, "[1-9]", "0")
+  --log(string.gsub("******* 12:34:56", "[1-9]", "0"))
+  log("wide_txt: " .. wide_txt)
+
+  local w,h = lcd.sizeText(wide_txt, XXLSIZE)
   log(string.format("XXLSIZE w: %d, h: %d, %s", w,h, time_str))
   if w < wgt.zone.w and h <= wgt.zone.h then
     return XXLSIZE
   end
 
-  w,h = lcd.sizeText(txt, DBLSIZE)
+  w,h = lcd.sizeText(wide_txt, DBLSIZE)
   log(string.format("DBLSIZE w: %d, h: %d, %s", w,h, time_str))
   if w < wgt.zone.w and h <= wgt.zone.h then
     return DBLSIZE
   end
 
-  w,h = lcd.sizeText(txt, MIDSIZE)
+  w,h = lcd.sizeText(wide_txt, MIDSIZE)
   log(string.format("MIDSIZE w: %d, h: %d, %s", w,h, time_str))
   if w < wgt.zone.w and h <= wgt.zone.h then
     return MIDSIZE
@@ -123,7 +127,8 @@ local function refresh(wgt, event, touchState)
     zone_h = 480
   end
 
-  local ts_w,ts_h = lcd.sizeText(time_str, font_size)
+  wide_time_str = string.gsub(time_str, "[1-9]", "0")
+  local ts_w,ts_h = lcd.sizeText(wide_time_str, font_size)
   local dx = (zone_w - ts_w) /2
   local dy = timer_info_h -1
   local need_timer_info = true
@@ -133,10 +138,9 @@ local function refresh(wgt, event, touchState)
     dy = 0
   end
 
-  log(string.format("timer_info: timer_info_x:%d, timer_info_h: %d", timer_info_w, timer_info_h))
-  log(string.format("x=%d, y=%d, w=%d, h=%d", wgt.zone.x, wgt.zone.y, zone_w, zone_h))
-  log(string.format("dx: %d, dy: %d, zone_w: %d, zone_h: %d, ts_w: %d, ts_h: %d)", dx, dy, zone_w ,zone_h , ts_w, ts_h))
-
+  --log(string.format("timer_info: timer_info_x:%d, timer_info_h: %d", timer_info_w, timer_info_h))
+  --log(string.format("x=%d, y=%d, w=%d, h=%d", wgt.zone.x, wgt.zone.y, zone_w, zone_h))
+  --log(string.format("dx: %d, dy: %d, zone_w: %d, zone_h: %d, ts_w: %d, ts_h: %d)", dx, dy, zone_w ,zone_h , ts_w, ts_h))
 
   -- draw timer info
   if (need_timer_info) then
