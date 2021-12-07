@@ -146,7 +146,7 @@ local ThrottleBackground
 local function runThrottleConfig(event)
   lcd.clear()
   if ThrottleBackground == nil then
-    ThrottleBackground = Bitmap.open("img/throttle.png")
+    ThrottleBackground = Bitmap.open("img/multirotor/throttle.png")
   end
   lcd.drawBitmap(ThrottleBackground, 0, 0)
   lcd.drawBitmap(ImgPageDn, 455, 95)
@@ -167,7 +167,7 @@ local RollBackground
 local function runRollConfig(event)
   lcd.clear()
   if RollBackground == nil then
-    RollBackground = Bitmap.open("img/roll.png")
+    RollBackground = Bitmap.open("img/multirotor/roll.png")
   end
   lcd.drawBitmap(RollBackground, 0, 0)
   lcd.drawBitmap(ImgPageUp, 0, 95)
@@ -189,7 +189,7 @@ local PitchBackground
 local function runPitchConfig(event)
   lcd.clear()
   if PitchBackground == nil then
-    PitchBackground = Bitmap.open("img/pitch.png")
+    PitchBackground = Bitmap.open("img/multirotor/pitch.png")
   end
   lcd.drawBitmap(PitchBackground, 0, 0)
   lcd.drawBitmap(ImgPageUp, 0, 95)
@@ -211,7 +211,7 @@ local YawBackground
 local function runYawConfig(event)
   lcd.clear()
   if YawBackground == nil then
-    YawBackground = Bitmap.open("img/yaw.png")
+    YawBackground = Bitmap.open("img/multirotor/yaw.png")
   end
   lcd.drawBitmap(YawBackground, 0, 0)
   lcd.drawBitmap(ImgPageUp, 0, 95)
@@ -233,7 +233,7 @@ local ArmBackground
 local function runArmConfig(event)
   lcd.clear()
   if ArmBackground == nil then
-    ArmBackground = Bitmap.open("img/arm.png")
+    ArmBackground = Bitmap.open("img/multirotor/arm.png")
   end
   lcd.drawBitmap(ArmBackground, 0, 0)
   lcd.drawBitmap(ImgPageUp, 0, 95)
@@ -255,7 +255,7 @@ local BeeperBackground
 local function runBeeperConfig(event)
   lcd.clear()
   if BeeperBackground == nil then
-    BeeperBackground = Bitmap.open("img/beeper.png")
+    BeeperBackground = Bitmap.open("img/multirotor/beeper.png")
   end
   lcd.drawBitmap(BeeperBackground, 0, 0)
   lcd.drawBitmap(ImgPageUp, 0, 95)
@@ -277,7 +277,7 @@ local ModeBackground
 local function runModeConfig(event)
   lcd.clear()
   if ModeBackground == nil then
-    ModeBackground = Bitmap.open("img/mode.png")
+    ModeBackground = Bitmap.open("img/multirotor/mode.png")
   end
   lcd.drawBitmap(ModeBackground, 0, 0)
   lcd.drawBitmap(ImgPageUp, 0, 95)
