@@ -572,4 +572,4 @@ local function refresh(wgt, event, touchState)
 
 end
 
-return { name = "Batt_A1", options = _options, create = create, update = update, background = background, refresh = refresh }
+return { name = "BattCheck (Analog)", options = _options, create = create, update = update, background = background, refresh = refresh }
