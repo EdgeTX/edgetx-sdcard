@@ -481,10 +481,7 @@ function lib.newGUI()
         end
       end
 
-      for i = -2, 2 do
-        lcd.drawLine(x, y + i, x + w, y + i, SOLID, colorBar)
-      end
-      
+      lcd.drawFilledRectangle(x, y - 2, w, 5, colorBar)
       lcd.drawFilledCircle(xdot, y, SLIDER_DOT_RADIUS, colorDot)
       for i = -1, 1 do
         lcd.drawCircle(xdot, y, SLIDER_DOT_RADIUS + i, colorDotBorder)
@@ -548,10 +545,7 @@ function lib.newGUI()
         end
       end
 
-      for i = -2, 2 do
-        lcd.drawLine(x + i, y, x + i, y + h, SOLID, colorBar)
-      end
-      
+      lcd.drawFilledRectangle(x - 2, y, 5, h, colorBar)
       lcd.drawFilledCircle(x, ydot, SLIDER_DOT_RADIUS, colorDot)
       for i = -1, 1 do
         lcd.drawCircle(x, ydot, SLIDER_DOT_RADIUS + i, colorDotBorder)
