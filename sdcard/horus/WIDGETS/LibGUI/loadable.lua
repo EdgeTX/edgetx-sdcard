@@ -2,8 +2,8 @@
 -- The dynamically loadable part of the demonstration Lua widget.        --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Date:    2021-09-18                                                   --
--- Version: 0.9                                                          --
+-- Date:    2021-12-11                                                   --
+-- Version: 0.99                                                         --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
 --                                                                       --
@@ -32,6 +32,8 @@ local libGUI = loadGUI()
 libGUI.flags = MIDSIZE -- Default flags that are used unless other flags are passed.
 local gui = libGUI.newGUI() -- Instantiate a new GUI object.
 local menuLabel
+local hsLabel
+local vsLabel
 
 -- Local constants and variables:
 local LEFT = 20
@@ -159,6 +161,16 @@ local function exitFS()
   lcd.exitFullScreen()
 end
 
+-- Call back for horizontal slider
+local function hsCallBack(slider)
+  hsLabel.title = slider.value
+end
+
+-- Call back for vertical slider
+local function vsCallBack(slider)
+  vsLabel.title = slider.value
+end
+
 do -- Initialization happens here
   local x = LEFT
   local y = TOP
@@ -197,8 +209,13 @@ do -- Initialization happens here
   nextCol()
   y = TOP
   menuLabel = gui.label(x, y, WIDTH, HEIGHT, "Menu", bit32.bor(BOLD, DBLSIZE))
-  y = y + 1.5 * ROW
+  y = y + ROW
   gui.menu(x, y, 5, menuItems, menuSelect)
+  
+  hsLabel = gui.label(LCD_W - 210, LCD_H - 30, 20, 20, 50, CENTER)
+  gui.horizontalSlider(LCD_W - 180, LCD_H - 20, 150, 50, 0, 100, 2, hsCallBack)
+  vsLabel = gui.label(LCD_W - 30, LCD_H - 210, 20, 20, 50, CENTER)
+  gui.verticalSlider(LCD_W - 20, LCD_H - 180, 150, 50, 0, 100, 2, vsCallBack)
 end
 
 -- This function is called from the refresh(...) function in the main script

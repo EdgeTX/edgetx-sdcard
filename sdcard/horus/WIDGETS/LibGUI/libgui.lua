@@ -2,7 +2,7 @@
 -- The dynamically loadable part of the shared Lua GUI library.          --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Date:    2021-10-03                                                   --
+-- Date:    2021-12-11                                                   --
 -- Version: 0.99                                                         --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
@@ -20,6 +20,9 @@
 ---------------------------------------------------------------------------
 
 local lib = { }
+
+-- Radius of slider dot
+local SLIDER_DOT_RADIUS = 10
 
 -- Default flags and colors, can be changed by client
 lib.flags = 0
@@ -456,6 +459,140 @@ function lib.newGUI()
     return es
   end -- menu(...)
   
+  function gui.horizontalSlider(x, y, w, value, min, max, delta, callBack)
+    local self = {
+      value = value,
+      callBack = callBack or doNothing,
+      editable = true
+    }
+
+    function self.draw(idx)
+      local xdot = x + w * (self.value - min) / (max - min)
+      
+      local colorBar = lib.colors.text
+      local colorDot = lib.colors.focusText
+      local colorDotBorder = lib.colors.text
+      
+      if focus == idx then
+        colorDotBorder = lib.colors.active
+        if editing or scrolling then
+          colorBar = lib.colors.buttonBackground
+          colorDot = lib.colors.editBackground
+        end
+      end
+
+      for i = -2, 2 do
+        lcd.drawLine(x, y + i, x + w, y + i, SOLID, colorBar)
+      end
+      
+      lcd.drawFilledCircle(xdot, y, SLIDER_DOT_RADIUS, colorDot)
+      for i = -1, 1 do
+        lcd.drawCircle(xdot, y, SLIDER_DOT_RADIUS + i, colorDotBorder)
+      end
+    end
+    
+    function self.run(event, touchState)
+      local v0 = self.value
+      
+      if editing then
+        if event == EVT_VIRTUAL_INC then
+          self.value = self.value + delta
+        elseif event == EVT_VIRTUAL_DEC then
+          self.value = self.value - delta
+        end
+      end
+      
+      if scrolling and touchState.slideX then
+        local slideX = touchState.slideX
+        slideX = math.min(slideX, touchState.x - x)
+        slideX = math.max(slideX, touchState.x - (x + w))
+        self.value = self.value + (max - min) * slideX / w
+      end
+      
+      self.value = min + delta * math.floor((self.value - min) / delta + 0.5)
+      self.value = math.min(max, self.value)
+      self.value = math.max(min, self.value)
+      
+      if v0 ~= self.value then
+        self.callBack(self)
+      end
+    end
+    
+    function self.covers(p, q)
+      local xdot = x + w * (self.value - min) / (max - min)
+      return ((p - xdot)^2 + (q - y)^2 <= SLIDER_DOT_RADIUS^2)
+    end
+    
+    return addElement(self)
+  end -- horizontalSlider(...)
+
+  function gui.verticalSlider(x, y, h, value, min, max, delta, callBack)
+    local self = {
+      value = value,
+      callBack = callBack or doNothing,
+      editable = true
+    }
+
+    function self.draw(idx)
+      local ydot = y + h * (1 - (self.value - min) / (max - min))
+      
+      local colorBar = lib.colors.text
+      local colorDot = lib.colors.focusText
+      local colorDotBorder = lib.colors.text
+      
+      if focus == idx then
+        colorDotBorder = lib.colors.active
+        if editing or scrolling then
+          colorBar = lib.colors.buttonBackground
+          colorDot = lib.colors.editBackground
+        end
+      end
+
+      for i = -2, 2 do
+        lcd.drawLine(x + i, y, x + i, y + h, SOLID, colorBar)
+      end
+      
+      lcd.drawFilledCircle(x, ydot, SLIDER_DOT_RADIUS, colorDot)
+      for i = -1, 1 do
+        lcd.drawCircle(x, ydot, SLIDER_DOT_RADIUS + i, colorDotBorder)
+      end
+    end
+    
+    function self.run(event, touchState)
+      local v0 = self.value
+      
+      if editing then
+        if event == EVT_VIRTUAL_INC then
+          self.value = self.value + delta
+        elseif event == EVT_VIRTUAL_DEC then
+          self.value = self.value - delta
+        end
+      end
+      
+      if scrolling and touchState.slideY then
+        local slideY = touchState.slideY
+        slideY = math.min(slideY, touchState.y - y)
+        slideY = math.max(slideY, touchState.y - (y + h))
+        self.value = self.value - (max - min) * slideY / h
+      end
+      
+      self.value = min + delta * math.floor((self.value - min) / delta + 0.5)
+      self.value = math.min(max, self.value)
+      self.value = math.max(min, self.value)
+      
+      if v0 ~= self.value then
+        self.callBack(self)
+      end
+    end
+    
+    function self.covers(p, q)
+      local ydot = y + h * (1 - (self.value - min) / (max - min))
+      return ((p - x)^2 + (q - ydot)^2 <= SLIDER_DOT_RADIUS^2)
+    end
+    
+    return addElement(self)
+  end -- verticalSlider(...)
+
   return gui
 end -- gui(...)
 
