@@ -36,7 +36,7 @@ end
 
 local function launchWizard()
     -- print(selWizard)
-    chdir("/SCRIPTS/WIZARD/")
+    chdir("/SCRIPTS/WIZARD")
     if (selWizard == 1) then
         return "/SCRIPTS/WIZARD/plane.lua"
     elseif (selWizard == 2) then
