@@ -20,8 +20,8 @@
 -- GNU General Public License for more details.                          --
 ---------------------------------------------------------------------------
 
--- This code chunk is loaded on demand by the LibGUI widget's main script
--- when the create(...) function is run. Hence, the body of this file is
+-- This code chunk is loaded on demand by the widget's main script when 
+-- the create(...) function is run. Hence, the body of this file is
 -- executed by the widget's create(...) function.
 
 local zone, options = ... -- zone and options were passed as arguments to chunk(...).

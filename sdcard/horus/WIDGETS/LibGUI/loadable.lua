@@ -2,8 +2,8 @@
 -- The dynamically loadable part of the demonstration Lua widget.        --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Date:    2021-09-18                                                   --
--- Version: 0.9                                                          --
+-- Date:    2021-12-13                                                   --
+-- Version: 0.99                                                         --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
 --                                                                       --
@@ -32,14 +32,16 @@ local libGUI = loadGUI()
 libGUI.flags = MIDSIZE -- Default flags that are used unless other flags are passed.
 local gui = libGUI.newGUI() -- Instantiate a new GUI object.
 local menuLabel
+local hsLabel
+local vsLabel
 
 -- Local constants and variables:
 local LEFT = 20
 local TOP = 10
 local COL = 160
-local ROW = 50
+local ROW = 40
 local WIDTH = 120
-local HEIGHT = 40
+local HEIGHT = 32
 local TMR = 0
 local border = false
 local labelToggle
@@ -159,6 +161,16 @@ local function exitFS()
   lcd.exitFullScreen()
 end
 
+-- Call back for horizontal slider
+local function hsCallBack(slider)
+  hsLabel.title = slider.value
+end
+
+-- Call back for vertical slider
+local function vsCallBack(slider)
+  vsLabel.title = slider.value
+end
+
 do -- Initialization happens here
   local x = LEFT
   local y = TOP
@@ -178,27 +190,46 @@ do -- Initialization happens here
   gui.button(x, y, WIDTH, HEIGHT, "ON", borderON)
   nextCol()
   gui.button(x, y, WIDTH, HEIGHT, "OFF", borderOFF)
+
   nextRow()
   gui.toggleButton(x, y, WIDTH, HEIGHT, "Toggle", true, doToggle)
   nextCol()
   labelToggle = gui.label(x, y, WIDTH, HEIGHT, "")
+
   nextRow()
   gui.label(x, y, WIDTH, HEIGHT, "Number =")
   nextCol()
   gui.number(x, y, WIDTH, HEIGHT, "--", numberChange, bit32.bor(libGUI.flags, RIGHT))
+
   nextRow()
   gui.label(x, y, WIDTH, HEIGHT, "Timer =")
   nextCol()
   local timer = gui.timer(x, y, WIDTH, HEIGHT, TMR, timerChange, bit32.bor(libGUI.flags, RIGHT))
   timer.value = "- - -"
+
+  nextRow()
+  gui.label(x, y, WIDTH, HEIGHT, "Drop down =")
+  nextCol()
+  local ddItems = { }
+  for i, s in ipairs(getPhysicalSwitches()) do
+    ddItems[i] = s[1]
+  end
+  gui.dropDown(x, y, WIDTH, HEIGHT, ddItems, math.floor(#ddItems / 2), nil, 0)
+
   nextRow()
   gui.button(x, y, WIDTH, HEIGHT, "EXIT", exitFS)
+
   nextCol()
   nextCol()
   y = TOP
   menuLabel = gui.label(x, y, WIDTH, HEIGHT, "Menu", bit32.bor(BOLD, DBLSIZE))
-  y = y + 1.5 * ROW
+  y = y + ROW
   gui.menu(x, y, 5, menuItems, menuSelect)
+  
+  hsLabel = gui.label(LCD_W - 210, LCD_H - 30, 20, 20, 50, CENTER)
+  gui.horizontalSlider(LCD_W - 180, LCD_H - 20, 150, 50, 0, 100, 2, hsCallBack)
+  vsLabel = gui.label(LCD_W - 30, LCD_H - 210, 20, 20, 50, CENTER)
+  gui.verticalSlider(LCD_W - 20, LCD_H - 180, 150, 50, 0, 100, 2, vsCallBack)
 end
 
 -- This function is called from the refresh(...) function in the main script
