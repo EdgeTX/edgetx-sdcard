@@ -2,7 +2,7 @@
 -- The dynamically loadable part of the demonstration Lua widget.        --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Date:    2021-12-11                                                   --
+-- Date:    2021-12-13                                                   --
 -- Version: 0.99                                                         --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
@@ -39,9 +39,9 @@ local vsLabel
 local LEFT = 20
 local TOP = 10
 local COL = 160
-local ROW = 50
+local ROW = 40
 local WIDTH = 120
-local HEIGHT = 40
+local HEIGHT = 32
 local TMR = 0
 local border = false
 local labelToggle
@@ -190,21 +190,35 @@ do -- Initialization happens here
   gui.button(x, y, WIDTH, HEIGHT, "ON", borderON)
   nextCol()
   gui.button(x, y, WIDTH, HEIGHT, "OFF", borderOFF)
+
   nextRow()
   gui.toggleButton(x, y, WIDTH, HEIGHT, "Toggle", true, doToggle)
   nextCol()
   labelToggle = gui.label(x, y, WIDTH, HEIGHT, "")
+
   nextRow()
   gui.label(x, y, WIDTH, HEIGHT, "Number =")
   nextCol()
   gui.number(x, y, WIDTH, HEIGHT, "--", numberChange, bit32.bor(libGUI.flags, RIGHT))
+
   nextRow()
   gui.label(x, y, WIDTH, HEIGHT, "Timer =")
   nextCol()
   local timer = gui.timer(x, y, WIDTH, HEIGHT, TMR, timerChange, bit32.bor(libGUI.flags, RIGHT))
   timer.value = "- - -"
+
+  nextRow()
+  gui.label(x, y, WIDTH, HEIGHT, "Drop down =")
+  nextCol()
+  local ddItems = { }
+  for i, s in ipairs(getPhysicalSwitches()) do
+    ddItems[i] = s[1]
+  end
+  gui.dropDown(x, y, WIDTH, HEIGHT, ddItems, math.floor(#ddItems / 2), nil, 0)
+
   nextRow()
   gui.button(x, y, WIDTH, HEIGHT, "EXIT", exitFS)
+
   nextCol()
   nextCol()
   y = TOP

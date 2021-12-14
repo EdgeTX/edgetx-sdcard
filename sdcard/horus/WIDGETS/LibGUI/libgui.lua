@@ -2,7 +2,7 @@
 -- The dynamically loadable part of the shared Lua GUI library.          --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Date:    2021-12-11                                                   --
+-- Date:    2021-12-13                                                   --
 -- Version: 0.99                                                         --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
@@ -27,10 +27,11 @@ local SLIDER_DOT_RADIUS = 10
 -- Default flags and colors, can be changed by client
 lib.flags = 0
 lib.colors = {
-  text = COLOR_THEME_PRIMARY3,
-  focusText = COLOR_THEME_PRIMARY2,
-  buttonBackground = COLOR_THEME_FOCUS,
-  editBackground = COLOR_THEME_EDIT,
+  primary1 = COLOR_THEME_PRIMARY1,
+  primary2 = COLOR_THEME_PRIMARY2,
+  primary3 = COLOR_THEME_PRIMARY3,
+  focus = COLOR_THEME_FOCUS,
+  edit = COLOR_THEME_EDIT,
   active = COLOR_THEME_ACTIVE,
 }
 
@@ -148,6 +149,7 @@ function lib.newGUI()
         return
       end
       if gui.prompt then
+        lcd.drawFilledRectangle(0, 0, LCD_W, LCD_H, BLACK, 8)
         return gui.prompt.run(event, touchState)
       end
       if event ~= 0 then -- non-zero event; process it
@@ -222,8 +224,8 @@ function lib.newGUI()
         drawFocus(x, y, w, h)
       end
       
-      lcd.drawFilledRectangle(x, y, w, h, lib.colors.buttonBackground)
-      lcd.drawText(x + w / 2, y + h / 2, self.title, bit32.bor(lib.colors.focusText, self.flags))
+      lcd.drawFilledRectangle(x, y, w, h, lib.colors.focus)
+      lcd.drawText(x + w / 2, y + h / 2, self.title, bit32.bor(lib.colors.primary2, self.flags))
       
       if self.disabled then
         lcd.drawFilledRectangle(x, y, w, h, GREY, 7)
@@ -249,14 +251,14 @@ function lib.newGUI()
     }
 
     function self.draw(idx)
-      local fg = lib.colors.focusText
-      local bg = lib.colors.buttonBackground
+      local fg = lib.colors.primary2
+      local bg = lib.colors.focus
       local border = lib.colors.active
 
       if self.value then
-        fg = lib.colors.text
+        fg = lib.colors.primary3
         bg = lib.colors.active
-        border = lib.colors.buttonBackground
+        border = lib.colors.focus
       end
       
       if focus == idx then
@@ -292,14 +294,14 @@ function lib.newGUI()
     
     function self.draw(idx)
       local flags = getFlags(self)
-      local fg = lib.colors.text
+      local fg = lib.colors.primary3
       
       if focus == idx then
         drawFocus(x, y, w, h)
 
         if editing then
-          fg = lib.colors.focusText
-          lcd.drawFilledRectangle(x, y, w, h, lib.colors.editBackground)
+          fg = lib.colors.primary2
+          lcd.drawFilledRectangle(x, y, w, h, lib.colors.edit)
         end
       end
       if type(self.value) == "string" then
@@ -323,7 +325,7 @@ function lib.newGUI()
   function gui.label(x, y, w, h, title, flags)
     local self = {
       title = title,
-      flags = bit32.bor(flags or lib.flags, VCENTER, lib.colors.text),
+      flags = bit32.bor(flags or lib.flags, VCENTER, lib.colors.primary3),
       disabled = true
     }
     
@@ -356,7 +358,7 @@ function lib.newGUI()
 
     function self.draw(idx)
       local flags = getFlags(self)
-      local fg = lib.colors.text
+      local fg = lib.colors.primary3
       -- self.value overrides the timer value
       local value = self.value or model.getTimer(tmr).value
       
@@ -364,8 +366,8 @@ function lib.newGUI()
         drawFocus(x, y, w, h)
 
         if editing then
-          fg = lib.colors.focusText
-          lcd.drawFilledRectangle(x, y, w, h, lib.colors.editBackground)
+          fg = lib.colors.primary2
+          lcd.drawFilledRectangle(x, y, w, h, lib.colors.edit)
         end
       end
       if type(value) == "string" then
@@ -388,10 +390,9 @@ function lib.newGUI()
   function gui.menu(x, y, visibleCount, items, callBack, flags)
     items = items or { "No items!" }
     callBack = callBack or doNothing
-    flags = bit32.bor(flags or lib.flags, lib.colors.text, VCENTER)
+    flags = bit32.bor(flags or lib.flags, lib.colors.primary3, VCENTER)
     local es = { }
     local firstVisible = 1
-    local startFirst = 1
     local idx0 = #elements
     local idxN = idx0 + #items
     local h = select(2, lcd.sizeText("X", flags))
@@ -459,6 +460,142 @@ function lib.newGUI()
     return es
   end -- menu(...)
   
+  function gui.dropDown(x, y, w, h, items, selected, callBack, flags)
+    local self = {
+      selected = selected,
+      callBack = callBack or doNothing,
+      flags = bit32.bor(flags or lib.flags, VCENTER)
+    }
+    
+    local firstVisible
+    local firstVisibleScrolling
+    local moving = 0
+    local visibleCount = math.min(7, #items)
+    local height = visibleCount * h
+    local left = (LCD_W - w) / 2
+    local top = (LCD_H - height) / 2
+    local killEvt
+
+    local function setFirstVisible(v)
+      firstVisible = v
+      firstVisible = math.max(1, firstVisible)
+      firstVisible = math.min(#items - visibleCount + 1, firstVisible)
+    end
+
+    function self.draw(idx)
+      local flags = getFlags(self)
+      
+      if focus == idx then
+        drawFocus(x, y, w, h)
+      end
+      lcd.drawText(align(x, w, flags), y + h / 2, items[self.selected], bit32.bor(lib.colors.primary3, flags))
+    end
+    
+    local dropDown = { }
+    
+    function dropDown.covers(x, y)
+      return left <= x and x <= left + w and top <= y and y <= top + height
+    end
+    
+    function dropDown.run(event, touchState)
+      local flags = getFlags(self)
+      
+      if moving ~= 0 then
+        if match(event, EVT_TOUCH_FIRST, EVT_VIRTUAL_ENTER, EVT_VIRTUAL_EXIT) then
+          moving = 0
+          event = 0
+        else
+          setFirstVisible(firstVisible + moving)
+        end
+      end
+        
+      if event ~= 0 then
+        -- This hack is needed because killEvents does not seem to work
+        if killEvt then
+          killEvt = false
+          if event == EVT_VIRTUAL_ENTER then
+            event = 0
+          end
+        end
+
+        if event == EVT_TOUCH_SLIDE then
+          if scrolling then
+            if touchState.swipeUp then
+              moving = 1
+            elseif touchState.swipeDown then
+              moving = -1
+            elseif touchState.startX then
+              setFirstVisible(firstVisibleScrolling + math.floor((touchState.startY - touchState.y) / h + 0.5))
+            end
+          end
+        else
+          scrolling = false
+
+          if event == EVT_TOUCH_FIRST then
+            if dropDown.covers(touchState.x, touchState.y) then
+              scrolling = true
+              firstVisibleScrolling = firstVisible
+            end
+          elseif event == EVT_TOUCH_TAP then
+            if dropDown.covers(touchState.x, touchState.y) then
+              selected = firstVisible + math.floor((touchState.y - top) / h)
+              event = EVT_VIRTUAL_ENTER
+            else
+              event = EVT_VIRTUAL_EXIT
+            end
+          elseif match(event, EVT_VIRTUAL_NEXT, EVT_VIRTUAL_PREV) then
+            if event == EVT_VIRTUAL_NEXT then
+              selected = math.min(#items, selected + 1)
+            elseif event == EVT_VIRTUAL_PREV then
+              selected = math.max(1, selected - 1)
+            end
+            
+            if selected >= firstVisible + visibleCount then
+              firstVisible = selected - visibleCount + 1
+            elseif selected < firstVisible then
+              firstVisible = selected
+            end
+          end
+        end
+
+        if match(event, EVT_VIRTUAL_ENTER, EVT_VIRTUAL_EXIT) then
+          gui.prompt = nil
+          if event == EVT_VIRTUAL_ENTER then
+            self.selected = selected
+            self.callBack(self)
+          end
+        end
+      end
+      
+      lcd.drawFilledRectangle(left, top, w, height, lib.colors.primary2)
+      lcd.drawRectangle(left - 2, top - 2, w + 4, height + 4, lib.colors.primary1, 2)
+      
+      for i = 0, visibleCount - 1 do
+        local j = firstVisible + i
+        local y = top + i * h
+        
+        if j == selected then
+          lcd.drawFilledRectangle(left, y, w, h, lib.colors.focus)
+          lcd.drawText(align(x, w, flags), y + h / 2, items[j], bit32.bor(lib.colors.primary2, flags))
+        else
+          lcd.drawText(align(x, w, flags), y + h / 2, items[j], bit32.bor(lib.colors.primary1, flags))
+        end
+      end
+    end
+    
+    function self.run(event, touchState)
+      -- Show drop down and let it take over while active
+      if event == EVT_VIRTUAL_ENTER then
+        selected = self.selected
+        setFirstVisible(selected - math.floor(visibleCount / 2))
+        killEvt = true
+        gui.prompt = dropDown
+      end
+    end
+    
+    return addElement(self, x, y, w, h)
+  end -- dropDown(...)
+  
   function gui.horizontalSlider(x, y, w, value, min, max, delta, callBack)
     local self = {
       value = value,
@@ -469,15 +606,15 @@ function lib.newGUI()
     function self.draw(idx)
       local xdot = x + w * (self.value - min) / (max - min)
       
-      local colorBar = lib.colors.text
-      local colorDot = lib.colors.focusText
-      local colorDotBorder = lib.colors.text
+      local colorBar = lib.colors.primary3
+      local colorDot = lib.colors.primary2
+      local colorDotBorder = lib.colors.primary3
       
       if focus == idx then
         colorDotBorder = lib.colors.active
         if editing or scrolling then
-          colorBar = lib.colors.buttonBackground
-          colorDot = lib.colors.editBackground
+          colorBar = lib.colors.focus
+          colorDot = lib.colors.edit
         end
       end
 
@@ -493,22 +630,25 @@ function lib.newGUI()
       
       if editing then
         if event == EVT_VIRTUAL_INC then
-          self.value = self.value + delta
+          self.value = math.min(max, self.value + delta)
         elseif event == EVT_VIRTUAL_DEC then
-          self.value = self.value - delta
+          self.value = math.max(min, self.value - delta)
         end
       end
       
-      if scrolling and touchState.slideX then
-        local slideX = touchState.slideX
-        slideX = math.min(slideX, touchState.x - x)
-        slideX = math.max(slideX, touchState.x - (x + w))
-        self.value = self.value + (max - min) * slideX / w
+      if scrolling then
+        if touchState.slideX then
+          local slideX = touchState.slideX
+          slideX = math.min(slideX, touchState.x - x)
+          slideX = math.max(slideX, touchState.x - (x + w))
+          value = value + (max - min) * slideX / w
+          value = math.min(max, value)
+          value = math.max(min, value)
+          self.value = min + delta * math.floor((value - min) / delta + 0.5)
+        end
+      else
+        value = self.value
       end
-      
-      self.value = min + delta * math.floor((self.value - min) / delta + 0.5)
-      self.value = math.min(max, self.value)
-      self.value = math.max(min, self.value)
       
       if v0 ~= self.value then
         self.callBack(self)
@@ -533,15 +673,15 @@ function lib.newGUI()
     function self.draw(idx)
       local ydot = y + h * (1 - (self.value - min) / (max - min))
       
-      local colorBar = lib.colors.text
-      local colorDot = lib.colors.focusText
-      local colorDotBorder = lib.colors.text
+      local colorBar = lib.colors.primary3
+      local colorDot = lib.colors.primary2
+      local colorDotBorder = lib.colors.primary3
       
       if focus == idx then
         colorDotBorder = lib.colors.active
         if editing or scrolling then
-          colorBar = lib.colors.buttonBackground
-          colorDot = lib.colors.editBackground
+          colorBar = lib.colors.focus
+          colorDot = lib.colors.edit
         end
       end
 
@@ -557,17 +697,24 @@ function lib.newGUI()
       
       if editing then
         if event == EVT_VIRTUAL_INC then
-          self.value = self.value + delta
+          self.value = math.min(max, self.value + delta)
         elseif event == EVT_VIRTUAL_DEC then
-          self.value = self.value - delta
+          self.value = math.max(min, self.value - delta)
         end
       end
       
-      if scrolling and touchState.slideY then
-        local slideY = touchState.slideY
-        slideY = math.min(slideY, touchState.y - y)
-        slideY = math.max(slideY, touchState.y - (y + h))
-        self.value = self.value - (max - min) * slideY / h
+      if scrolling then
+        if touchState.slideY then
+          local slideY = touchState.slideY
+          slideY = math.min(slideY, touchState.y - y)
+          slideY = math.max(slideY, touchState.y - (y + h))
+          value = value - (max - min) * slideY / h
+          value = math.min(max, value)
+          value = math.max(min, value)
+          self.value = min + delta * math.floor((value - min) / delta + 0.5)
+        end
+      else
+        value = self.value
       end
       
       self.value = min + delta * math.floor((self.value - min) / delta + 0.5)
