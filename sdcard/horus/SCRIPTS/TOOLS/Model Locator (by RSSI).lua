@@ -27,12 +27,12 @@
 
 -- There are two way to use it
 -- 1. The simple way:
---    walk toward the are the quad/plane crashed,
---    as you get closer to your model the, beeps will become more frequent with higher pitch (and a visual bar graph as well)
+--    walk toward the quad/plane that crashed,
+--    as you get closer to your model the beeps will become more frequent with higher pitch (and a visual bar graph as well)
 --    until you get close enough to find it visually
 
 -- 2. the more accurate way:
---    turn the antenna straight away (i.e. to point in front of you)
+--    turn the antenna straight away (i.e. to point from you, straight away)
 --    try to find the weakest signal! (not the highest), i.e. the lowest RSSI you can find, this is the direction to the model.
 --    now walk to the side (not toward the model), find again the weakest signal, this is also the direction to your model
 --    triangulate the two lines, and it will be :-)
