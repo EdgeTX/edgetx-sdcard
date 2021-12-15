@@ -131,11 +131,9 @@ local function refresh(wgt, event, touchState)
   local ts_w,ts_h = lcd.sizeText(wide_time_str, font_size)
   local dx = (zone_w - ts_w) /2
   local dy = timer_info_h -1
-  local need_timer_info = true
   if (timer_info_h + ts_h > zone_h) and (zone_h < 50) then
-    log(string.format("--- not enough height, do not display timer info"))
-    need_timer_info = false
-    dy = 0
+    log(string.format("--- not enough height, force minimal soaces "))
+    dy = 10
   end
 
   --log(string.format("timer_info: timer_info_x:%d, timer_info_h: %d", timer_info_w, timer_info_h))
@@ -143,9 +141,7 @@ local function refresh(wgt, event, touchState)
   --log(string.format("dx: %d, dy: %d, zone_w: %d, zone_h: %d, ts_w: %d, ts_h: %d)", dx, dy, zone_w ,zone_h , ts_w, ts_h))
 
   -- draw timer info
-  if (need_timer_info) then
-    lcd.drawText(wgt.zone.x, wgt.zone.y, timerInfo, SMLSIZE + CUSTOM_COLOR)
-  end
+  lcd.drawText(wgt.zone.x, wgt.zone.y, timerInfo, SMLSIZE + CUSTOM_COLOR)
 
   -- draw timer time
   lcd.drawText(wgt.zone.x + dx, wgt.zone.y + dy, time_str, font_size + CUSTOM_COLOR)
