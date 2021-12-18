@@ -556,6 +556,10 @@ local function refresh(wgt, event, touchState)
   end
 
 
+  -- debug
+  --lcd.setColor(CUSTOM_COLOR, lcd.RGB(0, 150, 0))
+  --lcd.drawRectangle(wgt.zone.x, wgt.zone.y, wgt.zone.w, wgt.zone.h, BLACK)
+
   if (event ~= nil) then
     refreshFullScreen(wgt, event, touchState)
   elseif wgt.zone.w > 380 and wgt.zone.h > 165 then
@@ -572,4 +576,5 @@ local function refresh(wgt, event, touchState)
 
 end
 
-return { name = "BattCheck (Analog)", options = _options, create = create, update = update, background = background, refresh = refresh }
+-- return { name = "BattCheck (Analog)", options = _options, create = create, update = update, background = background, refresh = refresh }
+return { name = "BattAnalog", options = _options, create = create, update = update, background = background, refresh = refresh }
