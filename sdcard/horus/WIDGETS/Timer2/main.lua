@@ -132,7 +132,7 @@ local function refresh(wgt, event, touchState)
   local dx = (zone_w - ts_w) /2
   local dy = timer_info_h -1
   if (timer_info_h + ts_h > zone_h) and (zone_h < 50) then
-    log(string.format("--- not enough height, force minimal soaces "))
+    log(string.format("--- not enough height, force minimal spaces"))
     dy = 10
   end
 
