@@ -2,8 +2,8 @@
 -- The dynamically loadable part of the shared Lua GUI library.          --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Date:    2021-12-13                                                   --
--- Version: 0.99                                                         --
+-- Date:    2021-12-20                                                   --
+-- Version: 1.0.0 RC1                                                    --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
 --                                                                       --
@@ -48,14 +48,6 @@ end
 lib.match = match
 
 -- Create a new GUI object with interactive screen elements
--- The following variables can be set by the client:
---> flags = lcd flags; will be used as defaults for drawing text and numbers
---> widgetRefresh = function drawing screen in non-fullscreen mode
---> fullScreenRefresh = function drawing screen in fullscreen mode
---> element.disabled = true prevents element from taking focus
---> element.title can be set for button, toggleButton and label
---> element.value can be set for toggleButton and number
-
 function lib.newGUI()
   local gui = { }
   local handles = { }
@@ -129,8 +121,8 @@ function lib.newGUI()
   -- Run an event cycle
   function gui.run(event, touchState)
     if not event then -- widget mode; event == nil
-      if gui.widgetRefresh then
-        gui.widgetRefresh()
+      if lib.widgetRefresh then
+        lib.widgetRefresh()
       else
         lcd.drawText(1, 1, "No widget refresh")
         lcd.drawText(1, 25, "function was loaded.")

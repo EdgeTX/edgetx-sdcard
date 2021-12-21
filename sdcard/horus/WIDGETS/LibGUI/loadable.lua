@@ -2,8 +2,8 @@
 -- The dynamically loadable part of the demonstration Lua widget.        --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Date:    2021-12-13                                                   --
--- Version: 0.99                                                         --
+-- Date:    2021-12-20                                                   --
+-- Version: 1.0.0 RC1                                                    --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
 --                                                                       --
@@ -29,7 +29,7 @@ local widget = { } -- The widget table will be returned to the main script.
 -- Load the GUI library by calling the global function declared in the main script.
 -- As long as LibGUI is on the SD card, any widget can call loadGUI() because it is global.
 local libGUI = loadGUI()
-libGUI.flags = MIDSIZE -- Default flags that are used unless other flags are passed.
+libGUI.flags = MIDSIZE      -- Default flags that are used unless other flags are passed.
 local gui = libGUI.newGUI() -- Instantiate a new GUI object.
 local menuLabel
 local hsLabel
@@ -69,7 +69,7 @@ local function drawFull()
 end
 
 -- Called by gui in widget zone mode
-local function drawZone()
+function libGUI.widgetRefresh()
   lcd.drawRectangle(0, 0, zone.w, zone.h, COLOR_THEME_EDIT)
   lcd.drawText(5, 5, "LibGUI")
 end
@@ -184,7 +184,6 @@ do -- Initialization happens here
     y = y + ROW
   end
   
-  gui.widgetRefresh = drawZone
   gui.fullScreenRefresh = drawFull
   
   gui.button(x, y, WIDTH, HEIGHT, "ON", borderON)

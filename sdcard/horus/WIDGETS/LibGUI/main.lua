@@ -4,8 +4,8 @@
 -- as long as the files are present on the SD card it works.             --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Date:    2021-09-18                                                   --
--- Version: 0.9                                                          --
+-- Date:    2021-12-20                                                   --
+-- Version: 1.0.0 RC1                                                    --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
 --                                                                       --
