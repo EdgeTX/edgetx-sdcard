@@ -3,7 +3,7 @@
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
 -- Date:    2021-12-20                                                   --
--- Version: 1.0.0 RC1                                                    --
+-- Version: 1.0.0 RC2                                                    --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
 --                                                                       --
@@ -46,6 +46,7 @@ local TMR = 0
 local border = false
 local labelToggle
 local startValue = 0
+local numberValue = "--"
 local menuItems = {
   "First",
   "Second",
@@ -103,7 +104,11 @@ local function numberChange(number, event, touchState)
     number.value = 0
   end
 
-  if event == EVT_VIRTUAL_INC then
+  if event == EVT_VIRTUAL_ENTER then
+    numberValue = number.value
+  elseif event == EVT_VIRTUAL_EXIT then
+    number.value = numberValue
+  elseif event == EVT_VIRTUAL_INC then
     number.value = number.value + 1
   elseif event == EVT_VIRTUAL_DEC then
     number.value = number.value - 1
@@ -198,7 +203,7 @@ do -- Initialization happens here
   nextRow()
   gui.label(x, y, WIDTH, HEIGHT, "Number =")
   nextCol()
-  gui.number(x, y, WIDTH, HEIGHT, "--", numberChange, bit32.bor(libGUI.flags, RIGHT))
+  gui.number(x, y, WIDTH, HEIGHT, numberValue, numberChange, bit32.bor(libGUI.flags, RIGHT))
 
   nextRow()
   gui.label(x, y, WIDTH, HEIGHT, "Timer =")

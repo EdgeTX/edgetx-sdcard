@@ -2,8 +2,8 @@
 -- The dynamically loadable part of the shared Lua GUI library.          --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Date:    2021-12-20                                                   --
--- Version: 1.0.0 RC1                                                    --
+-- Date:    2021-12-21                                                   --
+-- Version: 1.0.0 RC2                                                    --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
 --                                                                       --
@@ -49,13 +49,54 @@ lib.match = match
 
 -- Create a new GUI object with interactive screen elements
 function lib.newGUI()
-  local gui = { }
+  local gui = { 
+    offsetX = 0,
+    offsetY = 0
+  }
+  
   local handles = { }
   local elements = { }
   local focus = 1
   local editing = false
   local scrolling = false
   
+  -- Replace lcd functions to translate by gui offset values
+  function gui.drawCircle(x, y, r, flags)
+    lcd.drawCircle(x + gui.offsetX, y + gui.offsetY, r, flags)
+  end
+
+  function gui.drawFilledCircle(x, y, r, flags)
+    lcd.drawFilledCircle(x + gui.offsetX, y + gui.offsetY, r, flags)
+  end
+
+  function gui.drawLine(x1, y1, x2, y2, pattern, flags)
+    lcd.drawLine(x1 + gui.offsetX, y1 + gui.offsetY, x2 + gui.offsetX, y2 + gui.offsetY, pattern, flags)
+  end
+
+  function gui.drawRectangle(x, y, w, h, flags, t)
+    lcd.drawRectangle(x + gui.offsetX, y + gui.offsetY, w, h, flags, t)
+  end
+
+  function gui.drawFilledRectangle(x, y, w, h, flags, opacity)
+    lcd.drawFilledRectangle(x + gui.offsetX, y + gui.offsetY, w, h, flags, opacity)
+  end
+
+  function gui.drawText(x, y, text, flags, inversColor)
+    lcd.drawText(x + gui.offsetX, y + gui.offsetY, text, flags, inversColor)
+  end
+
+  function gui.drawTextLines(x, y, w, h, text, flags)
+    lcd.drawTextLines(x + gui.offsetX, y + gui.offsetY, w, h, text, flags)
+  end
+
+  function gui.drawNumber(x, y, value, flags, inversColor)
+    lcd.drawNumber(x + gui.offsetX, y + gui.offsetY, value, flags, inversColor)
+  end
+
+  function gui.drawTimer(x, y, value, flags, inversColor)
+    lcd.drawTimer(x + gui.offsetX, y + gui.offsetY, value, flags, inversColor)
+  end
+
   -- The default callBack
   local function doNothing()
   end
@@ -74,7 +115,7 @@ function lib.newGUI()
   -- Draw border around focused elements
   local function drawFocus(x, y, w, h, color)
     color = color or lib.colors.active
-    lcd.drawRectangle(x - 2, y - 2, w + 4, h + 4, color, 2)
+    gui.drawRectangle(x - 2, y - 2, w + 4, h + 4, color, 2)
   end -- drawFocus(...)
   
   -- Move focus to another element
@@ -124,84 +165,101 @@ function lib.newGUI()
       if lib.widgetRefresh then
         lib.widgetRefresh()
       else
-        lcd.drawText(1, 1, "No widget refresh")
-        lcd.drawText(1, 25, "function was loaded.")
+        gui.drawText(1, 1, "No widget refresh")
+        gui.drawText(1, 25, "function was loaded.")
       end
     else -- full screen mode; event is a value
-      if gui.fullScreenRefresh then
-        gui.fullScreenRefresh(event, touchState)
-      end
-      for idx, element in ipairs(elements) do
-        if not element.hidden then
-          element.draw(idx)
-        end
-      end
-      if (elements[focus].disabled or elements[focus].hidden) then
-        moveFocus(1)
-        return
-      end
-      if gui.prompt then
-        lcd.drawFilledRectangle(0, 0, LCD_W, LCD_H, BLACK, 8)
-        return gui.prompt.run(event, touchState)
-      end
-      if event ~= 0 then -- non-zero event; process it
-        -- If we put a finger down on a menu item and immediately slide, then we can scroll
-        if event ~= EVT_TOUCH_SLIDE then
-          scrolling = false
-        end
-        if event == EVT_TOUCH_FIRST then
-          if elements[focus].covers(touchState.x, touchState.y) then
-            scrolling = true
-          else
-            -- Did we touch another element?
-            for idx, element in ipairs(elements) do
-              if not (element.disabled or element.hidden) and element.covers(touchState.x, touchState.y) then
-                if editing then
-                  -- A goodbye EXIT before we take away focus
-                  elements[focus].run(EVT_VIRTUAL_EXIT, touchState)
-                  editing = false
-                end
-                focus = idx
-                scrolling = true
-                return -- Do not continue this cycle
-              end
-            end
-          end
-        elseif event == EVT_TOUCH_TAP then
-          if elements[focus].covers(touchState.x, touchState.y) then
-            -- Convert to ENTER
-            event = EVT_VIRTUAL_ENTER
-          elseif editing then
-            -- Convert a tap off the focused element to EXIT
-            event = EVT_VIRTUAL_EXIT
-          end
-        end
-        
-        if editing then -- Send the event to the element being edited
-          elements[focus].run(event, touchState)
-          if match(event, EVT_VIRTUAL_ENTER, EVT_VIRTUAL_EXIT) then
-            editing = false
-          end
-        elseif event == EVT_VIRTUAL_ENTER and elements[focus].editable then -- Start editing
-          editing = true
-        elseif event == EVT_VIRTUAL_NEXT then -- Move focus
-          moveFocus(1)
-        elseif event == EVT_VIRTUAL_PREV then
-          moveFocus(-1)
-        else
-          if handles[event] then
-            -- Is it being handled? Handler can modify event
-            event = handles[event](event, touchState)
-            -- If handler returned false or nil, then we are done
-            if not event then
-             return
-            end
-          end
-          elements[focus].run(event, touchState)
-        end
-      end
+      gui.draw()
+      gui.onEvent(event, touchState)
     end
   end -- run(...)
+
+  function gui.draw()
+    if gui.fullScreenRefresh then
+      gui.fullScreenRefresh()
+    end
+    for idx, element in ipairs(elements) do
+      if not element.hidden then
+        element.draw(idx)
+      end
+    end
+  end -- draw()
+  
+  function gui.onEvent(event, touchState)
+    if (elements[focus].disabled or elements[focus].hidden) then
+      moveFocus(1)
+      return
+    end
+    if gui.prompt then
+      lcd.drawFilledRectangle(0, 0, LCD_W, LCD_H, BLACK, 8)
+      return gui.prompt.run(event, touchState)
+    end
+    -- Translate touch coordinates if offset
+    if touchState and (gui.offsetX ~= 0 or gui.offsetY ~= 0) then
+      touchState.x = touchState.x - gui.offsetX
+      touchState.y = touchState.y - gui.offsetY
+      if touchState.startX then
+        touchState.startX = touchState.startX - gui.offsetX
+        touchState.startY = touchState.startY - gui.offsetY
+      end
+    end
+    if event ~= 0 then -- non-zero event; process it
+      -- If we put a finger down on a menu item and immediately slide, then we can scroll
+      if event ~= EVT_TOUCH_SLIDE then
+        scrolling = false
+      end
+      if event == EVT_TOUCH_FIRST then
+        if elements[focus].covers(touchState.x, touchState.y) then
+          scrolling = true
+        else
+          -- Did we touch another element?
+          for idx, element in ipairs(elements) do
+            if not (element.disabled or element.hidden) and element.covers(touchState.x, touchState.y) then
+              if editing then
+                -- A goodbye EXIT before we take away focus
+                elements[focus].onEvent(EVT_VIRTUAL_EXIT, touchState)
+                editing = false
+              end
+              focus = idx
+              scrolling = true
+              return -- Do not continue this cycle
+            end
+          end
+        end
+      elseif event == EVT_TOUCH_TAP then
+        if elements[focus].covers(touchState.x, touchState.y) then
+          -- Convert to ENTER
+          event = EVT_VIRTUAL_ENTER
+        elseif editing then
+          -- Convert a tap off the focused element to EXIT
+          event = EVT_VIRTUAL_EXIT
+        end
+      end
+      
+      if editing then -- Send the event to the element being edited
+        elements[focus].onEvent(event, touchState)
+        if match(event, EVT_VIRTUAL_ENTER, EVT_VIRTUAL_EXIT) then
+          editing = false
+        end
+      elseif event == EVT_VIRTUAL_ENTER and elements[focus].editable then -- Start editing
+        editing = true
+      elseif event == EVT_VIRTUAL_NEXT then -- Move focus
+        moveFocus(1)
+      elseif event == EVT_VIRTUAL_PREV then
+        moveFocus(-1)
+      else
+        if handles[event] then
+          -- Is it being handled? Handler can modify event
+          event = handles[event](event, touchState)
+          -- If handler returned false or nil, then we are done
+          if not event then
+           return
+          end
+        end
+        elements[focus].onEvent(event, touchState)
+      end
+    end
+  end -- onEvent(...)
 
 -- Create a button to trigger a function
   function gui.button (x, y, w, h, title, callBack, flags)
@@ -216,15 +274,15 @@ function lib.newGUI()
         drawFocus(x, y, w, h)
       end
       
-      lcd.drawFilledRectangle(x, y, w, h, lib.colors.focus)
-      lcd.drawText(x + w / 2, y + h / 2, self.title, bit32.bor(lib.colors.primary2, self.flags))
+      gui.drawFilledRectangle(x, y, w, h, lib.colors.focus)
+      gui.drawText(x + w / 2, y + h / 2, self.title, bit32.bor(lib.colors.primary2, self.flags))
       
       if self.disabled then
-        lcd.drawFilledRectangle(x, y, w, h, GREY, 7)
+        gui.drawFilledRectangle(x, y, w, h, GREY, 7)
       end
     end
     
-    function self.run(event, touchState)
+    function self.onEvent(event, touchState)
       if event == EVT_VIRTUAL_ENTER then
         return self.callBack(self)
       end
@@ -257,15 +315,15 @@ function lib.newGUI()
         drawFocus(x, y, w, h, border)
       end
       
-      lcd.drawFilledRectangle(x, y, w, h, bg)
-      lcd.drawText(x + w / 2, y + h / 2, self.title, bit32.bor(fg, self.flags))
+      gui.drawFilledRectangle(x, y, w, h, bg)
+      gui.drawText(x + w / 2, y + h / 2, self.title, bit32.bor(fg, self.flags))
       
       if self.disabled then
-        lcd.drawFilledRectangle(x, y, w, h, GREY, 7)
+        gui.drawFilledRectangle(x, y, w, h, GREY, 7)
       end
     end
     
-    function self.run(event, touchState)
+    function self.onEvent(event, touchState)
       if event == EVT_VIRTUAL_ENTER then
         self.value = not self.value
         return self.callBack(self)
@@ -293,17 +351,17 @@ function lib.newGUI()
 
         if editing then
           fg = lib.colors.primary2
-          lcd.drawFilledRectangle(x, y, w, h, lib.colors.edit)
+          gui.drawFilledRectangle(x, y, w, h, lib.colors.edit)
         end
       end
       if type(self.value) == "string" then
-        lcd.drawText(align(x, w, flags), y + h / 2, self.value, bit32.bor(fg, flags))
+        gui.drawText(align(x, w, flags), y + h / 2, self.value, bit32.bor(fg, flags))
       else
-        lcd.drawNumber(align(x, w, flags), y + h / 2, self.value, bit32.bor(fg, flags))
+        gui.drawNumber(align(x, w, flags), y + h / 2, self.value, bit32.bor(fg, flags))
       end
     end
     
-    function self.run(event, touchState)
+    function self.onEvent(event, touchState)
       -- There are so many possibilities that we leave it up to the call back to decide what to do.
       if editing then
         return self.callBack(self, event, touchState)
@@ -323,11 +381,11 @@ function lib.newGUI()
     
     function self.draw(idx)
       local flags = getFlags(self)
-      lcd.drawText(align(x, w, flags), y + h / 2, self.title, flags)
+      gui.drawText(align(x, w, flags), y + h / 2, self.title, flags)
     end
 
-    -- We should not ever run, but just in case...
-    function self.run(event, touchState)
+    -- We should not ever onEvent, but just in case...
+    function self.onEvent(event, touchState)
       self.disabled = true
       moveFocus(1)
     end
@@ -359,17 +417,17 @@ function lib.newGUI()
 
         if editing then
           fg = lib.colors.primary2
-          lcd.drawFilledRectangle(x, y, w, h, lib.colors.edit)
+          gui.drawFilledRectangle(x, y, w, h, lib.colors.edit)
         end
       end
       if type(value) == "string" then
-        lcd.drawText(align(x, w, flags), y + h / 2, value, bit32.bor(fg, flags))
+        gui.drawText(align(x, w, flags), y + h / 2, value, bit32.bor(fg, flags))
       else
-        lcd.drawTimer(align(x, w, flags), y + h / 2, value, bit32.bor(fg, flags))
+        gui.drawTimer(align(x, w, flags), y + h / 2, value, bit32.bor(fg, flags))
       end
     end
     
-    function self.run(event, touchState)
+    function self.onEvent(event, touchState)
       -- There are so many possibilities that we leave it up to the call back to decide what to do.
       if editing then
         return self.callBack(self, event, touchState)
@@ -423,10 +481,10 @@ function lib.newGUI()
           drawFocus(x - 2, yy - h / 2, w, h)
         end
         
-        lcd.drawText(x, yy, item, flags)
+        gui.drawText(x, yy, item, flags)
       end -- draw(...)
       
-      function self.run(event, touchState)
+      function self.onEvent(event, touchState)
         if event == EVT_VIRTUAL_ENTER then
           return self.callBack(self)
         elseif scrolling then
@@ -480,7 +538,7 @@ function lib.newGUI()
       if focus == idx then
         drawFocus(x, y, w, h)
       end
-      lcd.drawText(align(x, w, flags), y + h / 2, items[self.selected], bit32.bor(lib.colors.primary3, flags))
+      gui.drawText(align(x, w, flags), y + h / 2, items[self.selected], bit32.bor(lib.colors.primary3, flags))
     end
     
     local dropDown = { }
@@ -575,7 +633,7 @@ function lib.newGUI()
       end
     end
     
-    function self.run(event, touchState)
+    function self.onEvent(event, touchState)
       -- Show drop down and let it take over while active
       if event == EVT_VIRTUAL_ENTER then
         selected = self.selected
@@ -610,14 +668,14 @@ function lib.newGUI()
         end
       end
 
-      lcd.drawFilledRectangle(x, y - 2, w, 5, colorBar)
-      lcd.drawFilledCircle(xdot, y, SLIDER_DOT_RADIUS, colorDot)
+      gui.drawFilledRectangle(x, y - 2, w, 5, colorBar)
+      gui.drawFilledCircle(xdot, y, SLIDER_DOT_RADIUS, colorDot)
       for i = -1, 1 do
-        lcd.drawCircle(xdot, y, SLIDER_DOT_RADIUS + i, colorDotBorder)
+        gui.drawCircle(xdot, y, SLIDER_DOT_RADIUS + i, colorDotBorder)
       end
     end
     
-    function self.run(event, touchState)
+    function self.onEvent(event, touchState)
       local v0 = self.value
       
       if editing then
@@ -677,14 +735,14 @@ function lib.newGUI()
         end
       end
 
-      lcd.drawFilledRectangle(x - 2, y, 5, h, colorBar)
-      lcd.drawFilledCircle(x, ydot, SLIDER_DOT_RADIUS, colorDot)
+      gui.drawFilledRectangle(x - 2, y, 5, h, colorBar)
+      gui.drawFilledCircle(x, ydot, SLIDER_DOT_RADIUS, colorDot)
       for i = -1, 1 do
-        lcd.drawCircle(x, ydot, SLIDER_DOT_RADIUS + i, colorDotBorder)
+        gui.drawCircle(x, ydot, SLIDER_DOT_RADIUS + i, colorDotBorder)
       end
     end
     
-    function self.run(event, touchState)
+    function self.onEvent(event, touchState)
       local v0 = self.value
       
       if editing then
