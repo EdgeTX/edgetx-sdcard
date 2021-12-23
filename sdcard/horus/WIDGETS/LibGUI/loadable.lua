@@ -99,60 +99,30 @@ local function doToggle(toggleButton)
 end
 
 -- Call back for number
-local function numberChange(number, event, touchState)
-  if number.value == "--" then
-    number.value = 0
+local function numberChange(steps, number)
+  local value
+  
+  if type(number.value) == "string" then
+    value = 0
+  else
+    value = number.value
   end
-
-  if event == EVT_VIRTUAL_ENTER then
-    numberValue = number.value
-  elseif event == EVT_VIRTUAL_EXIT then
-    number.value = numberValue
-  elseif event == EVT_VIRTUAL_INC then
-    number.value = number.value + 1
-  elseif event == EVT_VIRTUAL_DEC then
-    number.value = number.value - 1
-  elseif event == EVT_TOUCH_FIRST then
-    startValue = number.value
-  elseif event == EVT_TOUCH_SLIDE then
-    number.value = math.floor((touchState.startY - touchState.y) / 20 + 0.5) + startValue
+  
+  value = value + steps
+  
+  if value == 0 then
+    value = "--"
   end
-
-  if number.value == 0 then
-    number.value = "--"
-  end
+  
+  return value
 end
 
 -- Call back for timer
-local function timerChange(timer, event, touchState)
-  local d = 0
-
-  if timer.value == "- - -" then
-    timer.value = 0
-  end
-  
-  if not timer.value then  -- Initialize at first call
-    timer.value = model.getTimer(TMR).value
-  end
-  if libGUI.match(event, EVT_VIRTUAL_ENTER, EVT_VIRTUAL_EXIT) then
-    if event == EVT_VIRTUAL_ENTER then
-      local tmr = model.getTimer(TMR)
-      tmr.value = timer.value
-      model.setTimer(TMR, tmr)
-    end
-    timer.value = nil -- Nil here means that the model timer's value is displayed
-    return
-  elseif event == EVT_VIRTUAL_INC then
-    d = 1
-  elseif event == EVT_VIRTUAL_DEC then
-    d = -1
-  elseif event == EVT_TOUCH_FIRST then
-    startValue = timer.value
-  end
-  if event == EVT_TOUCH_SLIDE then
-    timer.value = 60 * math.floor(startValue / 60 + (touchState.startY - touchState.y) / 20 + 0.5)
+local function timerChange(steps, timer)
+  if steps < 0 then
+    return (math.ceil(timer.value / 60) + steps) * 60
   else
-    timer.value = 60 * math.floor(timer.value / 60 + d + 0.5)
+    return (math.floor(timer.value / 60) + steps) * 60
   end
 end
 
@@ -209,7 +179,6 @@ do -- Initialization happens here
   gui.label(x, y, WIDTH, HEIGHT, "Timer =")
   nextCol()
   local timer = gui.timer(x, y, WIDTH, HEIGHT, TMR, timerChange, bit32.bor(libGUI.flags, RIGHT))
-  timer.value = "- - -"
 
   nextRow()
   gui.label(x, y, WIDTH, HEIGHT, "Drop down =")

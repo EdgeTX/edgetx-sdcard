@@ -101,6 +101,11 @@ function lib.newGUI()
   local function doNothing()
   end
   
+  -- The default changeValue
+  local function changeNothing(value)
+    return value
+  end
+  
   -- Adjust text according to horizontal alignment
   local function align(x, w, flags)
     if bit32.band(flags, RIGHT) == RIGHT then
@@ -243,6 +248,8 @@ function lib.newGUI()
         end
       elseif event == EVT_VIRTUAL_ENTER and elements[focus].editable then -- Start editing
         editing = true
+        -- Send zero event as heads up, we are editing now!
+        elements[focus].onEvent(0)
       elseif event == EVT_VIRTUAL_NEXT then -- Move focus
         moveFocus(1)
       elseif event == EVT_VIRTUAL_PREV then
@@ -334,13 +341,14 @@ function lib.newGUI()
   end -- toggleButton(...)
   
 -- Create a number that can be edited
-  function gui.number(x, y, w, h, value, callBack, flags)
+  function gui.number(x, y, w, h, value, changeValue, flags)
     local self = {
       value = value,
-      callBack = callBack or doNothing,
+      changeValue = changeValue or changeNothing,
       flags = bit32.bor(flags or lib.flags, VCENTER),
       editable = true
     }
+    local d0
     
     function self.draw(idx)
       local flags = getFlags(self)
@@ -362,11 +370,24 @@ function lib.newGUI()
     end
     
     function self.onEvent(event, touchState)
-      -- There are so many possibilities that we leave it up to the call back to decide what to do.
-      if editing then
-        return self.callBack(self, event, touchState)
+      if event == 0 then
+        value = self.value
+      elseif event == EVT_VIRTUAL_EXIT then
+        self.value = value
+      elseif event == EVT_VIRTUAL_INC then
+        self.value = self.changeValue(1, self)
+      elseif event == EVT_VIRTUAL_DEC then
+        self.value = self.changeValue(-1, self)
+      elseif event == EVT_TOUCH_FIRST then
+        d0 = 0
+      elseif event == EVT_TOUCH_SLIDE then
+        local d = math.floor((touchState.startY - touchState.y) / 20 + 0.5)
+        if d ~= d0 then
+          self.value = self.changeValue(d - d0, self)
+          d0 = d
+        end
       end
-    end
+    end -- onEvent(...)
     
     return addElement(self, x, y, w, h)
   end -- number(...)
@@ -399,12 +420,13 @@ function lib.newGUI()
   
 -- Create a display of current time on timer[tmr]
 -- Set timer.value to show a different value
-  function gui.timer(x, y, w, h, tmr, callBack, flags)
+  function gui.timer(x, y, w, h, tmr, changeValue, flags)
     local self = {
-      callBack = callBack or doNothing,
+      changeValue = changeValue or changeNothing,
       flags = bit32.bor(flags or lib.flags, VCENTER),
       editable = true
     }
+    local value
 
     function self.draw(idx)
       local flags = getFlags(self)
@@ -428,9 +450,34 @@ function lib.newGUI()
     end
     
     function self.onEvent(event, touchState)
-      -- There are so many possibilities that we leave it up to the call back to decide what to do.
-      if editing then
-        return self.callBack(self, event, touchState)
+      if event == 0 then
+        if self.value then
+          value = self.value
+        elseif tmr then
+          self.value = model.getTimer(tmr).value
+          value = nil
+        end
+      elseif event == EVT_VIRTUAL_ENTER then
+        if not value and tmr then
+          local tblTmr = model.getTimer(tmr)
+          tblTmr.value = self.value
+          model.setTimer(tmr, tblTmr)
+          self.value = nil
+        end
+      elseif event == EVT_VIRTUAL_EXIT then
+        self.value = value
+      elseif event == EVT_VIRTUAL_INC then
+        self.value = self.changeValue(1, self)
+      elseif event == EVT_VIRTUAL_DEC then
+        self.value = self.changeValue(-1, self)
+      elseif event == EVT_TOUCH_FIRST then
+        d0 = 0
+      elseif event == EVT_TOUCH_SLIDE then
+        local d = math.floor((touchState.startY - touchState.y) / 20 + 0.5)
+        if d ~= d0 then
+          self.value = self.changeValue(d - d0, self)
+          d0 = d
+        end
       end
     end
     
