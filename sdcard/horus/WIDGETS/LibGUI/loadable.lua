@@ -2,7 +2,7 @@
 -- The dynamically loadable part of the demonstration Lua widget.        --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Date:    2021-12-20                                                   --
+-- Date:    2022-01-01                                                   --
 -- Version: 1.0.0 RC1                                                    --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
@@ -23,29 +23,99 @@
 -- when the create(...) function is run. Hence, the body of this file is
 -- executed by the widget's create(...) function.
 
-local zone, options = ... --zone and options were passed as arguments to chunk(...).
-local widget = { } -- The widget table will be returned to the main script.
+-- zone and options were passed as arguments to chunk(...)
+local zone, options = ...
+
+-- Miscellaneous constants
+local HEADER = 40
+local WIDTH  = 100
+local COL1   = 10
+local COL2   = 130
+local COL3   = 250
+local COL4   = 370
+local COL2s  = 120
+local TOP    = 44
+local ROW    = 28
+local HEIGHT = 24
+
+-- The widget table will be returned to the main script
+local widget = { }
 
 -- Load the GUI library by calling the global function declared in the main script.
 -- As long as LibGUI is on the SD card, any widget can call loadGUI() because it is global.
 local libGUI = loadGUI()
-libGUI.flags = MIDSIZE      -- Default flags that are used unless other flags are passed.
-local gui = libGUI.newGUI() -- Instantiate a new GUI object.
-local menuLabel
-local hsLabel
-local vsLabel
 
--- Local constants and variables:
-local LEFT = 20
-local TOP = 10
-local COL = 160
-local ROW = 40
-local WIDTH = 120
-local HEIGHT = 32
-local TMR = 0
-local border = false
-local labelToggle
-local startValue = 0
+-- Instantiate a new GUI object
+local gui = libGUI.newGUI()
+
+-- Make a minimize button from a custom element
+local custom = { }
+
+function custom.draw(focused)
+  lcd.drawRectangle(LCD_W - 34, 6, 28, 28, libGUI.colors.primary2)
+  lcd.drawFilledRectangle(LCD_W - 30, 19, 20, 3, libGUI.colors.primary2)
+  if focused then
+    custom.drawFocus(LCD_W - 34, 6, 28, 28)
+  end
+end
+
+function custom.onEvent(event, touchState)
+  if event == EVT_VIRTUAL_ENTER then
+    lcd.exitFullScreen()
+  end
+end
+
+gui.custom(custom, LCD_W - HEADER, 0, HEADER, HEADER)
+
+-- A timer
+gui.label(COL1, TOP, WIDTH, HEIGHT, "Timer", BOLD)
+
+local function timerChange(steps, timer)
+  if steps < 0 then
+    return (math.ceil(timer.value / 60) + steps) * 60
+  else
+    return (math.floor(timer.value / 60) + steps) * 60
+  end
+end
+
+gui.timer(COL1, TOP + ROW, WIDTH, 1.4 * HEIGHT, 0, timerChange, DBLSIZE + RIGHT)
+
+
+-- A sub-gui
+gui.label(COL2, TOP, WIDTH, HEIGHT, "Group of elements", BOLD)
+local subGUI = gui.gui(COL2, TOP + ROW, COL4 + WIDTH - COL3, 2 * ROW + HEIGHT)
+
+-- A number that can be edited
+subGUI.label(0, 0, WIDTH, HEIGHT, "Number:")
+subGUI.number(COL2s, 0, WIDTH, HEIGHT, 0)
+
+-- A drop-down with physical switches
+subGUI.label(0, ROW, WIDTH, HEIGHT, "Drop-down:")
+labelDropDown = subGUI.label(0, 2 * ROW, 2 * WIDTH, HEIGHT, "")
+
+local dropDownIndices = { }
+local dropDownItems = { }
+local lastSwitch = getSwitchIndex(CHAR_TRIM .. "Rl") - 1
+
+for i, s in switches(-lastSwitch, lastSwitch) do
+  if i ~= 0 then 
+    local j = #dropDownIndices + 1
+    dropDownIndices[j] = i
+    dropDownItems[j] = s
+  end
+end
+
+local function dropDownChange(dropDown)
+  local i = dropDown.selected
+  labelDropDown.title = "Selected switch: " .. dropDownItems[i] .. " [" .. dropDownIndices[i] .. "]"
+end
+
+local dropDown = subGUI.dropDown(COL2s, ROW, WIDTH, HEIGHT, dropDownItems, #dropDownItems / 2 + 1, dropDownChange)
+dropDownChange(dropDown)
+
+-- Menu that does nothing
+gui.label(COL4, TOP, WIDTH, HEIGHT, "Menu", BOLD)
+
 local menuItems = {
   "First",
   "Second",
@@ -59,176 +129,94 @@ local menuItems = {
   "Tenth"
 }
 
--- Called by gui in full screen mode
-local function drawFull()
-  if border then
-    for i = 0, 5 do
-      lcd.drawRectangle(i, i, LCD_W - 2 * i, LCD_H - 2 * i, COLOR_THEME_EDIT)
-    end
+gui.menu(COL4, TOP + ROW, 5, menuItems, function(item) playNumber(item.idx, 0) end)
+
+-- Horizontal slider
+gui.label(COL1, TOP + 6 * ROW, WIDTH, HEIGHT, "Horizontal slider:", BOLD)
+local horizontalSliderLabel = gui.label(COL1 + 2 * WIDTH, TOP + 7 * ROW, 30, HEIGHT, "", RIGHT)
+
+local function horizontalSliderCallBack(slider)
+  horizontalSliderLabel.title = slider.value
+end
+
+local horizontalSlider = gui.horizontalSlider(COL1, TOP + 7 * ROW + HEIGHT / 2, 2 * WIDTH, 0, -20, 20, 1, horizontalSliderCallBack)
+horizontalSliderCallBack(horizontalSlider)
+
+-- Toggle button
+local toggleButton = gui.toggleButton(COL3, TOP + 7 * ROW, WIDTH, HEIGHT, "Border", false, nil)
+
+-- Prompt showing About text
+local aboutPage = 1
+local aboutText = {
+  "LibGUI is a Lua library for creating graphical user interfaces for Lua widgets on EdgeTX transmitters with color screens. " ..
+  "It is a code library embedded in a widget. Since all Lua widgets are always loaded into memory, whether they are used or not, " ..
+  "the global function named 'loadGUI()', defined in the 'main.lua' file of this widget, is always available to be used by other widgets.",
+  "The library code is implemented in the 'libgui.lua' file of this widget. This code is loaded on demand, i.e. it is only loaded if " ..
+  "loadGUI() is called by a client widget to create a new libGUI Lua table object. That way, the library is not using much of " ..
+  "the radio's memory unless it is being used. And since it is all Lua code, you can inspect the file yourself, if you are curious " ..
+  "or you have found a problem.",
+  "When you add the widget to your radio's screen, then this demo is loaded. It is implemented in the 'loadable.lua' file of this " ..
+  "widget. Hence, like the LibGUI library itself, it does not waste your radio's memory, unless it is being used. And you can view " ..
+  "the 'loadable.lua' file in the widget folder to see for yourself how this demo is loading LibGUI and using it, so you can start " ..
+  "creating your own awesome widgets!",
+   "Copyright (C) EdgeTX\n\nLicensed under GNU Public License V2:\nwww.gnu.org/licenses/gpl-2.0.html\n\nAuthored by Jesper Frickmann."
+}
+
+local aboutPrompt = libGUI.newGUI()
+
+function aboutPrompt.fullScreenRefresh()
+  lcd.drawFilledRectangle(40, 30, LCD_W - 80, 30, COLOR_THEME_SECONDARY1)
+  lcd.drawText(50, 45, "About LibGUI  " .. aboutPage .. "/" .. #aboutText, VCENTER + MIDSIZE + libGUI.colors.primary2)
+  lcd.drawFilledRectangle(40, 60, LCD_W - 80, LCD_H - 90, libGUI.colors.primary2)
+  lcd.drawRectangle(40, 30, LCD_W - 80, LCD_H - 60, libGUI.colors.primary1, 2)
+  lcd.drawTextLines(50, 70, LCD_W - 120, LCD_H - 110, aboutText[aboutPage])
+end
+
+-- Button showing About prompt
+gui.button(COL4, TOP + 7 * ROW, WIDTH, HEIGHT, "About", function() gui.showPrompt(aboutPrompt) end)
+
+-- Make a dismiss button from a custom element
+custom = { }
+
+function custom.draw(focused)
+  lcd.drawRectangle(LCD_W - 65, 36, 20, 20, libGUI.colors.primary2)
+  lcd.drawText(LCD_W - 55, 45, "X", MIDSIZE + CENTER + VCENTER + libGUI.colors.primary2)
+  if focused then
+    custom.drawFocus(LCD_W - 65, 36, 20, 20)
   end
 end
 
--- Called by gui in widget zone mode
-function libGUI.widgetRefresh()
-  lcd.drawRectangle(0, 0, zone.w, zone.h, COLOR_THEME_EDIT)
-  lcd.drawText(5, 5, "LibGUI")
+function custom.onEvent(event, touchState)
+  if event == EVT_VIRTUAL_ENTER then
+    gui.dismissPrompt()
+  end
 end
 
--- Call back for button "ON"
-local function borderON()
-  border = true
+aboutPrompt.custom(custom, LCD_W - 70, 30, 30, 30)
+
+-- Add a vertical slider to scroll pages
+local function verticalSliderCallBack(slider)
+  aboutPage = #aboutText + 1 - slider.value
 end
 
--- Call back for button "OFF"
-local function borderOFF()
-  border = false
-end
+local verticalSlider = aboutPrompt.verticalSlider(LCD_W - 60, 80, LCD_H - 130, #aboutText, 1, #aboutText, 1, verticalSliderCallBack)
 
--- Call back for toggle button
-local function doToggle(toggleButton)
+-- Draw on the screen before adding gui elements
+function gui.fullScreenRefresh()
+  -- Draw header
+  lcd.drawFilledRectangle(0, 0, LCD_W, HEADER, COLOR_THEME_SECONDARY1)
+  lcd.drawText(COL1, HEADER / 2, "LibGUI   Demo", VCENTER + DBLSIZE + libGUI.colors.primary2)
+  
+  -- Border
   if toggleButton.value then
-    labelToggle.title = "Toggle = ON"
-    menuLabel.invers = true
-    menuLabel.blink = true
-  else
-    labelToggle.title = "Toggle = OFF"
-    menuLabel.invers = false
-    menuLabel.blink = false
+    lcd.drawRectangle(0, HEADER, LCD_W, LCD_H - HEADER, libGUI.colors.edit, 5)
   end
 end
 
--- Call back for number
-local function numberChange(number, event, touchState)
-  if number.value == "--" then
-    number.value = 0
-  end
-
-  if event == EVT_VIRTUAL_INC then
-    number.value = number.value + 1
-  elseif event == EVT_VIRTUAL_DEC then
-    number.value = number.value - 1
-  elseif event == EVT_TOUCH_FIRST then
-    startValue = number.value
-  elseif event == EVT_TOUCH_SLIDE then
-    number.value = math.floor((touchState.startY - touchState.y) / 20 + 0.5) + startValue
-  end
-
-  if number.value == 0 then
-    number.value = "--"
-  end
-end
-
--- Call back for timer
-local function timerChange(timer, event, touchState)
-  local d = 0
-
-  if timer.value == "- - -" then
-    timer.value = 0
-  end
-  
-  if not timer.value then  -- Initialize at first call
-    timer.value = model.getTimer(TMR).value
-  end
-  if libGUI.match(event, EVT_VIRTUAL_ENTER, EVT_VIRTUAL_EXIT) then
-    if event == EVT_VIRTUAL_ENTER then
-      local tmr = model.getTimer(TMR)
-      tmr.value = timer.value
-      model.setTimer(TMR, tmr)
-    end
-    timer.value = nil -- Nil here means that the model timer's value is displayed
-    return
-  elseif event == EVT_VIRTUAL_INC then
-    d = 1
-  elseif event == EVT_VIRTUAL_DEC then
-    d = -1
-  elseif event == EVT_TOUCH_FIRST then
-    startValue = timer.value
-  end
-  if event == EVT_TOUCH_SLIDE then
-    timer.value = 60 * math.floor(startValue / 60 + (touchState.startY - touchState.y) / 20 + 0.5)
-  else
-    timer.value = 60 * math.floor(timer.value / 60 + d + 0.5)
-  end
-end
-
--- Call back for menu
-local function menuSelect(item, event, touchState)
-  playNumber(item.idx, 0)
-end
-
--- Call back for EXIT button
-local function exitFS()
-  lcd.exitFullScreen()
-end
-
--- Call back for horizontal slider
-local function hsCallBack(slider)
-  hsLabel.title = slider.value
-end
-
--- Call back for vertical slider
-local function vsCallBack(slider)
-  vsLabel.title = slider.value
-end
-
-do -- Initialization happens here
-  local x = LEFT
-  local y = TOP
-  
-  local function nextCol()
-    x = x + COL
-  end
-  
-  local function nextRow()
-    x = LEFT
-    y = y + ROW
-  end
-  
-  gui.fullScreenRefresh = drawFull
-  
-  gui.button(x, y, WIDTH, HEIGHT, "ON", borderON)
-  nextCol()
-  gui.button(x, y, WIDTH, HEIGHT, "OFF", borderOFF)
-
-  nextRow()
-  gui.toggleButton(x, y, WIDTH, HEIGHT, "Toggle", true, doToggle)
-  nextCol()
-  labelToggle = gui.label(x, y, WIDTH, HEIGHT, "")
-
-  nextRow()
-  gui.label(x, y, WIDTH, HEIGHT, "Number =")
-  nextCol()
-  gui.number(x, y, WIDTH, HEIGHT, "--", numberChange, bit32.bor(libGUI.flags, RIGHT))
-
-  nextRow()
-  gui.label(x, y, WIDTH, HEIGHT, "Timer =")
-  nextCol()
-  local timer = gui.timer(x, y, WIDTH, HEIGHT, TMR, timerChange, bit32.bor(libGUI.flags, RIGHT))
-  timer.value = "- - -"
-
-  nextRow()
-  gui.label(x, y, WIDTH, HEIGHT, "Drop down =")
-  nextCol()
-  local ddItems = { }
-  for i, s in ipairs(getPhysicalSwitches()) do
-    ddItems[i] = s[1]
-  end
-  gui.dropDown(x, y, WIDTH, HEIGHT, ddItems, math.floor(#ddItems / 2), nil, 0)
-
-  nextRow()
-  gui.button(x, y, WIDTH, HEIGHT, "EXIT", exitFS)
-
-  nextCol()
-  nextCol()
-  y = TOP
-  menuLabel = gui.label(x, y, WIDTH, HEIGHT, "Menu", bit32.bor(BOLD, DBLSIZE))
-  y = y + ROW
-  gui.menu(x, y, 5, menuItems, menuSelect)
-  
-  hsLabel = gui.label(LCD_W - 210, LCD_H - 30, 20, 20, 50, CENTER)
-  gui.horizontalSlider(LCD_W - 180, LCD_H - 20, 150, 50, 0, 100, 2, hsCallBack)
-  vsLabel = gui.label(LCD_W - 30, LCD_H - 210, 20, 20, 50, CENTER)
-  gui.verticalSlider(LCD_W - 20, LCD_H - 180, 150, 50, 0, 100, 2, vsCallBack)
+-- Draw in widget mode
+function libGUI.widgetRefresh()
+  lcd.drawRectangle(0, 0, zone.w, zone.h, libGUI.colors.primary3)
+  lcd.drawText(zone.w / 2, zone.h / 2, "LibGUI", DBLSIZE + CENTER + VCENTER + libGUI.colors.primary3)
 end
 
 -- This function is called from the refresh(...) function in the main script
