@@ -2,7 +2,7 @@
 -- The dynamically loadable part of the shared Lua GUI library.          --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Date:    2022-01-01                                                   --
+-- Date:    2022-01-09                                                   --
 -- Version: 1.0.0 RC1                                                    --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
@@ -219,7 +219,7 @@ function lib.newGUI()
     if gui.fullScreenRefresh then
       gui.fullScreenRefresh()
     end
-    local guiFocus = not gui.parent or gui.parent.editing
+    local guiFocus = not gui.parent or (focused and gui.parent.editing)
     for idx, element in ipairs(elements) do
       if not element.hidden then
         element.draw(focus == idx and guiFocus)
@@ -229,8 +229,9 @@ function lib.newGUI()
       if gui.parent.editing then
         x1, y1 = gui.translate(-3, -3)
         x2, y2 = gui.translate(gui.w + 3, gui.h + 3)
+      else
+        drawFocus(0, 0, gui.w, gui.h)
       end
-      drawFocus(0, 0, gui.w, gui.h)
     end
   end -- draw()
   
