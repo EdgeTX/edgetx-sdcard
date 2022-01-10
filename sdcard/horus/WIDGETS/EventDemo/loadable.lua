@@ -3,8 +3,8 @@
 -- screen mode.                                                          --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Date:    2021-XX-XX                                                   --
--- Version: 0.9                                                          --
+-- Date:    2021-01-03                                                   --
+-- Version: 1.0                                                          --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
 --                                                                       --
@@ -107,13 +107,10 @@ function widget.refresh(event, touchState)
   
   if event == nil then -- Widget mode; event == nil
     -- Draw a border using zone.w and zone.h
-    for i = 0, 2 do
-      lcd.drawRectangle(zone.x + i, zone.y + i, zone.w - 2 * i, zone.h - 2 * i)
-    end
-    
-    lcd.drawText(10, 10, "Event Demo");
-    lastEvent = 0
-    
+    lcd.drawRectangle(0, 0, zone.w, zone.h, COLOR_THEME_PRIMARY3)
+    lcd.drawText(zone.w / 2, zone.h / 2, "Event Demo", DBLSIZE + CENTER + VCENTER + COLOR_THEME_PRIMARY3)
+
+    lastEvent = 0    
   else -- Full screen mode. If no event happened then event == 0
     -- Draw a border using the full screen with LCD_W and LCD_H instead of zone.w and zone.h
     for i = 0, 2 do
