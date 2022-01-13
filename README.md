@@ -15,11 +15,11 @@ All platforms here are based on screen size/color. <br>
 - nv14.zip (320x480 Vertical Color Screen)
     - FlySky Nirvana NV14
 - taranis-x7.zip (128x64 BW Screens)
-    - T-Lite
+    - T-Lite / T-Pro
+    - TX12
     - QX7
     - X9 Lite
     - X-Lite
-    - X-Lite Pro
 - taranis-x9.zip (212x64 BW Screens)
     - X9D
     - X9D Plus
