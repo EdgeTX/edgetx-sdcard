@@ -2,8 +2,8 @@
 -- The dynamically loadable part of the shared Lua GUI library.          --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Date:    2022-01-09                                                   --
--- Version: 1.0.0 RC1                                                    --
+-- Date:    2022-01-21                                                   --
+-- Version: 1.0.0 RC2                                                    --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
 --                                                                       --
@@ -80,8 +80,8 @@ function lib.newGUI()
   end
 
   function gui.drawLine(x1, y1, x2, y2, pattern, flags)
-    x, y = gui.translate(x1, y1)
-    x, y = gui.translate(x2, y2)
+    x1, y1 = gui.translate(x1, y1)
+    x2, y2 = gui.translate(x2, y2)
     lcd.drawLine(x1, y1, x2, y2, pattern, flags)
   end
 
@@ -154,6 +154,20 @@ function lib.newGUI()
       count = count + 1
     until not (elements[focus].disabled or elements[focus].hidden) or count > #elements
   end -- moveFocus(...)
+  
+  -- Moved the focused element
+  function gui.moveFocused(delta)
+    if delta > 0 then
+      delta = 1
+    elseif delta < 0 then
+      delta = -1
+    end
+    local idx = focus + delta
+    if idx >= 1 and idx <= #elements then
+      elements[focus], elements[idx] = elements[idx], elements[focus]
+      focus = idx
+    end
+  end
   
   -- Add an element and return it to the client
   local function addElement(element, x, y, w, h)
@@ -937,6 +951,11 @@ function lib.newGUI()
     self.parent = gui
     self.editing = false
     self.x, self.y, self.w, self.h = x, y, w, h
+    
+    function self.covers(p, q)
+      return (self.x <= p and p <= self.x + self.w and self.y <= q and q <= self.y + self.h)
+    end
+
     return addElement(self, x, y, w, h)
   end
   
