@@ -13,12 +13,12 @@
     ["FrSky X9 Lite S", "x9lites-", "taranis-x7"],
     ["FrSky X-Lite", "xlite-", "taranis-x7"],
     ["FrSky X-Lite S", "xlites-", "taranis-x7"],
-    ["Jumper T8", "t8-", "taranis-x7"],
     ["Jumper T12", "t12-", "taranis-x7"],
     ["Jumper T16", "t16-", "horus"],
     ["Jumper T18", "t18-", "horus"],
     ["Jumper T-Lite", "tlite-", "taranis-x7"],
     ["Jumper T-Pro", "tpro-", "taranis-x7"],
+    ["RadioMaster T8", "t8-", "taranis-x7"],
     ["RadioMaster TX12", "tx12-", "taranis-x7"],
     ["RadioMaster TX16S", "tx16s-", "horus"],
     ["RadioMaster Zorro", "zorro-", "taranis-x7"]
