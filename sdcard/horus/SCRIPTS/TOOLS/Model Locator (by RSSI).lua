@@ -137,7 +137,7 @@ local function main(event)
 
   -- beep
   if getTime() >= nextPlayTime then
-    playFile("/SCRIPTS/TOOLS/Locator (RSSI).wav")
+    playFile("/SCRIPTS/TOOLS/Model Locator (by RSSI).wav")
     nextPlayTime = getTime() + delayMillis - rssi
   end
 
