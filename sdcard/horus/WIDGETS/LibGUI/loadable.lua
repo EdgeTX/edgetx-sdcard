@@ -2,8 +2,8 @@
 -- The dynamically loadable part of the demonstration Lua widget.        --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Date:    2022-01-01                                                   --
--- Version: 1.0.0 RC1                                                    --
+-- Date:    2022-01-26                                                   --
+-- Version: 1.0.0 RC3                                                    --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
 --                                                                       --
@@ -49,13 +49,13 @@ local libGUI = loadGUI()
 local gui = libGUI.newGUI()
 
 -- Make a minimize button from a custom element
-local custom = { }
+local custom = gui.custom({ }, LCD_W - 34, 6, 28, 28)
 
 function custom.draw(focused)
   lcd.drawRectangle(LCD_W - 34, 6, 28, 28, libGUI.colors.primary2)
   lcd.drawFilledRectangle(LCD_W - 30, 19, 20, 3, libGUI.colors.primary2)
   if focused then
-    custom.drawFocus(LCD_W - 34, 6, 28, 28)
+    custom.drawFocus()
   end
 end
 
@@ -64,8 +64,6 @@ function custom.onEvent(event, touchState)
     lcd.exitFullScreen()
   end
 end
-
-gui.custom(custom, LCD_W - HEADER, 0, HEADER, HEADER)
 
 -- A timer
 gui.label(COL1, TOP, WIDTH, HEIGHT, "Timer", BOLD)
@@ -79,7 +77,6 @@ local function timerChange(steps, timer)
 end
 
 gui.timer(COL1, TOP + ROW, WIDTH, 1.4 * HEIGHT, 0, timerChange, DBLSIZE + RIGHT)
-
 
 -- A sub-gui
 gui.label(COL2, TOP, WIDTH, HEIGHT, "Group of elements", BOLD)
@@ -176,23 +173,21 @@ end
 gui.button(COL4, TOP + 7 * ROW, WIDTH, HEIGHT, "About", function() gui.showPrompt(aboutPrompt) end)
 
 -- Make a dismiss button from a custom element
-custom = { }
+local custom2 = aboutPrompt.custom({ }, LCD_W - 65, 36, 20, 20)
 
-function custom.draw(focused)
+function custom2.draw(focused)
   lcd.drawRectangle(LCD_W - 65, 36, 20, 20, libGUI.colors.primary2)
   lcd.drawText(LCD_W - 55, 45, "X", MIDSIZE + CENTER + VCENTER + libGUI.colors.primary2)
   if focused then
-    custom.drawFocus(LCD_W - 65, 36, 20, 20)
+    custom2.drawFocus()
   end
 end
 
-function custom.onEvent(event, touchState)
+function custom2.onEvent(event, touchState)
   if event == EVT_VIRTUAL_ENTER then
     gui.dismissPrompt()
   end
 end
-
-aboutPrompt.custom(custom, LCD_W - 70, 30, 30, 30)
 
 -- Add a vertical slider to scroll pages
 local function verticalSliderCallBack(slider)

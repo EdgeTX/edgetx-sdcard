@@ -2,8 +2,8 @@
 -- The dynamically loadable part of the shared Lua GUI library.          --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Date:    2022-01-21                                                   --
--- Version: 1.0.0 RC2                                                    --
+-- Date:    2022-01-26                                                   --
+-- Version: 1.0.0 RC3                                                    --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
 --                                                                       --
@@ -20,7 +20,6 @@
 ---------------------------------------------------------------------------
 
 local lib = { }
-local x1, y1, x2, y2
 
 -- Radius of slider dot
 local SLIDER_DOT_RADIUS = 10
@@ -59,6 +58,7 @@ function lib.newGUI()
   local handles = { }
   local elements = { }
   local focus = 1
+  local lastEvent = 0
   
   -- Translate coordinates for sub-GUIs
   function gui.translate(x, y)
@@ -216,17 +216,10 @@ function lib.newGUI()
         gui.drawText(1, 25, "function was loaded.")
       end
     else -- full screen mode; event is a value
-      x2, y2 = 0, 0
       gui.draw(false)
-      -- Dim non-active region
-      if x2 > 0 then
-        lcd.drawFilledRectangle(0, 0, LCD_W, y1, BLACK, 8)
-        lcd.drawFilledRectangle(0, y2, LCD_W, LCD_H - y2, BLACK, 8)
-        lcd.drawFilledRectangle(0, y1, x1, y2 - y1, BLACK, 8)
-        lcd.drawFilledRectangle(x2, y1, LCD_W - x2, y2 - y1, BLACK, 8)
-      end
       gui.onEvent(event, touchState)
     end
+    lastEvent = event
   end -- run(...)
 
   function gui.draw(focused)
@@ -241,8 +234,7 @@ function lib.newGUI()
     end
     if focused then
       if gui.parent.editing then
-        x1, y1 = gui.translate(-3, -3)
-        x2, y2 = gui.translate(gui.w + 3, gui.h + 3)
+        drawFocus(0, 0, gui.w, gui.h, lib.colors.edit)
       else
         drawFocus(0, 0, gui.w, gui.h)
       end
@@ -258,7 +250,7 @@ function lib.newGUI()
     -- Is there an active prompt?
     if lib.prompt and not lib.showingPrompt then
       lib.showingPrompt = true
-      lcd.drawFilledRectangle(0, 0, LCD_W, LCD_H, BLACK, 8)
+--      lcd.drawFilledRectangle(0, 0, LCD_W, LCD_H, BLACK, 8)
       lib.prompt.run(event, touchState)
       lib.showingPrompt = false
       return
@@ -299,7 +291,7 @@ function lib.newGUI()
               end
             end
           end
-        elseif event == EVT_TOUCH_TAP then
+        elseif event == EVT_TOUCH_TAP or (event == EVT_TOUCH_BREAK and lastEvent == EVT_TOUCH_FIRST) then
           if elements[focus].covers(touchState.x, touchState.y) then
             -- Convert TAP on focused element to ENTER
             event = EVT_VIRTUAL_ENTER
@@ -790,7 +782,7 @@ function lib.newGUI()
       if focused then
         colorDotBorder = lib.colors.active
         if gui.editing or gui.scrolling then
-          colorBar = lib.colors.focus
+          colorBar = lib.colors.primary1
           colorDot = lib.colors.edit
         end
       end
@@ -861,7 +853,7 @@ function lib.newGUI()
       if focused then
         colorDotBorder = lib.colors.active
         if gui.editing or gui.scrolling then
-          colorBar = lib.colors.focus
+          colorBar = lib.colors.primary1
           colorDot = lib.colors.edit
         end
       end
@@ -923,7 +915,10 @@ function lib.newGUI()
   function gui.custom(self, x, y, w, h)
     self.gui = gui
     self.lib = lib
-    self.drawFocus = drawFocus
+    
+    function self.drawFocus(color)
+      drawFocus(self.x or x, self.y or y, self.w or w, self.h or h, color)
+    end
     
     -- Must be implemented by the client
     if not self.draw then
