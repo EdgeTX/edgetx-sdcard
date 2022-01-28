@@ -27,4 +27,4 @@ All platforms here are based on screen size/color. <br>
 
 ### Preparing your SD Card
 
-The first step, check out the releases page on this repo and download the SD Card zip for your radio (listed above). Unzip the archive and put the contents onto a FAT32-formatted SD Card, then download your preferred voicepack language from the [Voice Generator Repo](https://github.com/EdgeTX/edgetx-sdcard-sounds/releases/tag/v2.4.0) and follow the instuctions on that page to add onto the SD Card.
+The first step, check out the releases page on this repo and download the SD Card zip for your radio (listed above). Unzip the archive and put the contents onto a FAT32-formatted SD Card, then download your preferred voicepack language from the [Voice Generator Repo](https://github.com/EdgeTX/edgetx-sdcard-sounds/releases/tag/latest) and follow the instuctions on that page to add onto the SD Card.
