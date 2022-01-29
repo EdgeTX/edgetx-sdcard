@@ -2,7 +2,7 @@
 -- The dynamically loadable part of the shared Lua GUI library.          --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Date:    2022-01-26                                                   --
+-- Date:    2022-01-28                                                   --
 -- Version: 1.0.0 RC3                                                    --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
@@ -58,6 +58,7 @@ function lib.newGUI()
   local handles = { }
   local elements = { }
   local focus = 1
+  local scrolling = false
   local lastEvent = 0
   
   -- Translate coordinates for sub-GUIs
@@ -95,6 +96,20 @@ function lib.newGUI()
     lcd.drawFilledRectangle(x, y, w, h, flags, opacity)
   end
 
+  function gui.drawTriangle(x1, y1, x2, y2, x3, y3, flags)
+    x1, y1 = gui.translate(x1, y1)
+    x2, y2 = gui.translate(x2, y2)
+    x3, y3 = gui.translate(x3, y3)
+    lcd.drawTriangle(x1, y1, x2, y2, x3, y3, flags)
+  end
+  
+  function gui.drawFilledTriangle(x1, y1, x2, y2, x3, y3, flags)
+    x1, y1 = gui.translate(x1, y1)
+    x2, y2 = gui.translate(x2, y2)
+    x3, y3 = gui.translate(x3, y3)
+    lcd.drawFilledTriangle(x1, y1, x2, y2, x3, y3, flags)
+  end
+  
   function gui.drawText(x, y, text, flags, inversColor)
     x, y = gui.translate(x, y)
     lcd.drawText(x, y, text, flags, inversColor)
@@ -226,17 +241,17 @@ function lib.newGUI()
     if gui.fullScreenRefresh then
       gui.fullScreenRefresh()
     end
-    local guiFocus = not gui.parent or (focused and gui.parent.editing)
-    for idx, element in ipairs(elements) do
-      if not element.hidden then
-        element.draw(focus == idx and guiFocus)
-      end
-    end
     if focused then
       if gui.parent.editing then
         drawFocus(0, 0, gui.w, gui.h, lib.colors.edit)
       else
         drawFocus(0, 0, gui.w, gui.h)
+      end
+    end
+    local guiFocus = not gui.parent or (focused and gui.parent.editing)
+    for idx, element in ipairs(elements) do
+      if not element.hidden then
+        element.draw(focus == idx and guiFocus)
       end
     end
   end -- draw()
@@ -271,13 +286,17 @@ function lib.newGUI()
           end
         end
         -- If we put a finger down on a menu item and immediately slide, then we can scroll
-        if event ~= EVT_TOUCH_SLIDE then
-          gui.scrolling = false
+        if event == EVT_TOUCH_SLIDE then
+          if not scrolling then
+            return
+          end
+        else
+          scrolling = false
         end
         -- "Pre-processing" of touch events to simplify subsequent handling and support scrolling etc.
         if event == EVT_TOUCH_FIRST then
           if elements[focus].covers(touchState.x, touchState.y) then
-            gui.scrolling = true
+            scrolling = true
           else
             if gui.editing then
               return
@@ -286,7 +305,7 @@ function lib.newGUI()
               for idx, element in ipairs(elements) do
                 if not (element.disabled or element.hidden) and element.covers(touchState.x, touchState.y) then
                   focus = idx
-                  gui.scrolling = true
+                  scrolling = true
                 end
               end
             end
@@ -468,7 +487,7 @@ function lib.newGUI()
           self.value = self.changeValue(-1, self)
         elseif event == EVT_TOUCH_FIRST then
           d0 = 0
-        elseif event == EVT_TOUCH_SLIDE and gui.scrolling then
+        elseif event == EVT_TOUCH_SLIDE then
           local d = math.floor((touchState.startY - touchState.y) / 20 + 0.5)
           if d ~= d0 then
             self.value = self.changeValue(d - d0, self)
@@ -535,7 +554,7 @@ function lib.newGUI()
           self.value = self.changeValue(-1, self)
         elseif event == EVT_TOUCH_FIRST then
           d0 = 0
-        elseif event == EVT_TOUCH_SLIDE and gui.scrolling then
+        elseif event == EVT_TOUCH_SLIDE then
           local d = math.floor((touchState.startY - touchState.y) / 20 + 0.5)
           if d ~= d0 then
             self.value = self.changeValue(d - d0, self)
@@ -606,8 +625,7 @@ function lib.newGUI()
       function self.onEvent(event, touchState)
         if event == EVT_VIRTUAL_ENTER then
           return self.callBack(self)
-        elseif gui.scrolling then
-          -- Finger scrolling
+        elseif event == EVT_TOUCH_SLIDE then
           firstVisible = math.floor(self.idx - (touchState.y - y) / h + 0.5)
           firstVisible = math.min(firstVisible, idxN - idx0 - visibleCount + 1, self.idx)
           firstVisible = math.max(firstVisible, 1, self.idx - visibleCount + 1)
@@ -688,7 +706,7 @@ function lib.newGUI()
         end
 
         if event == EVT_TOUCH_SLIDE then
-          if gui.scrolling then
+          if scrolling then
             if touchState.swipeUp then
               moving = 1
             elseif touchState.swipeDown then
@@ -698,11 +716,11 @@ function lib.newGUI()
             end
           end
         else
-          gui.scrolling = false
+          scrolling = false
 
           if event == EVT_TOUCH_FIRST then
             if dropDown.covers(touchState.x, touchState.y) then
-              gui.scrolling = true
+              scrolling = true
               firstVisibleScrolling = firstVisible
             end
           elseif event == EVT_TOUCH_TAP then
@@ -781,7 +799,7 @@ function lib.newGUI()
       
       if focused then
         colorDotBorder = lib.colors.active
-        if gui.editing or gui.scrolling then
+        if gui.editing or scrolling then
           colorBar = lib.colors.primary1
           colorDot = lib.colors.edit
         end
@@ -809,18 +827,11 @@ function lib.newGUI()
         gui.editing = true
       end
       
-      if gui.scrolling then
-        if touchState.slideX then
-          local slideX = touchState.slideX
-          slideX = math.min(slideX, touchState.x - x)
-          slideX = math.max(slideX, touchState.x - (x + w))
-          value = value + (max - min) * slideX / w
-          value = math.min(max, value)
-          value = math.max(min, value)
-          self.value = min + delta * math.floor((value - min) / delta + 0.5)
-        end
-      else
-        value = self.value
+      if event == EVT_TOUCH_SLIDE then
+        local value = min + (max - min) * (touchState.x - x) / w
+        value = math.min(max, value)
+        value = math.max(min, value)
+        self.value = min + delta * math.floor((value - min) / delta + 0.5)
       end
       
       if v0 ~= self.value then
@@ -852,7 +863,7 @@ function lib.newGUI()
       
       if focused then
         colorDotBorder = lib.colors.active
-        if gui.editing or gui.scrolling then
+        if gui.editing or scrolling then
           colorBar = lib.colors.primary1
           colorDot = lib.colors.edit
         end
@@ -880,24 +891,13 @@ function lib.newGUI()
         gui.editing = true
       end
       
-      if gui.scrolling then
-        if touchState.slideY then
-          local slideY = touchState.slideY
-          slideY = math.min(slideY, touchState.y - y)
-          slideY = math.max(slideY, touchState.y - (y + h))
-          value = value - (max - min) * slideY / h
-          value = math.min(max, value)
-          value = math.max(min, value)
-          self.value = min + delta * math.floor((value - min) / delta + 0.5)
-        end
-      else
-        value = self.value
+      if event == EVT_TOUCH_SLIDE then
+        local value = max - (max - min) * (touchState.y - y) / h
+        value = math.min(max, value)
+        value = math.max(min, value)
+        self.value = min + delta * math.floor((value - min) / delta + 0.5)
       end
-      
-      self.value = min + delta * math.floor((self.value - min) / delta + 0.5)
-      self.value = math.min(max, self.value)
-      self.value = math.max(min, self.value)
-      
+
       if v0 ~= self.value then
         self.callBack(self)
       end
