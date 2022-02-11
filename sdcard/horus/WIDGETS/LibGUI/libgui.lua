@@ -2,7 +2,7 @@
 -- The dynamically loadable part of the shared Lua GUI library.          --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Date:    2022-01-28                                                   --
+-- Date:    2022-02-10                                                   --
 -- Version: 1.0.0 RC3                                                    --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
@@ -507,6 +507,7 @@ function lib.newGUI()
 -- Set timer.value to show a different value
   function gui.timer(x, y, w, h, tmr, changeValue, flags)
     local self = {
+      tmr = tmr,
       changeValue = changeValue or changeDefault,
       flags = bit32.bor(flags or lib.flags, VCENTER),
       editable = true
@@ -518,7 +519,7 @@ function lib.newGUI()
       local flags = getFlags(self)
       local fg = lib.colors.primary1
       -- self.value overrides the timer value
-      local value = self.value or model.getTimer(tmr).value
+      local value = self.value or model.getTimer(self.tmr).value
       
       if focused then
         drawFocus(x, y, w, h)
@@ -538,10 +539,10 @@ function lib.newGUI()
     function self.onEvent(event, touchState)
       if gui.editing then
         if event == EVT_VIRTUAL_ENTER then
-          if not value and tmr then
-            local tblTmr = model.getTimer(tmr)
+          if not value and self.tmr then
+            local tblTmr = model.getTimer(self.tmr)
             tblTmr.value = self.value
-            model.setTimer(tmr, tblTmr)
+            model.setTimer(self.tmr, tblTmr)
             self.value = nil
           end
           gui.editing = false
@@ -564,8 +565,8 @@ function lib.newGUI()
       elseif event == EVT_VIRTUAL_ENTER then
         if self.value then
           value = self.value
-        elseif tmr then
-          self.value = model.getTimer(tmr).value
+        elseif self.tmr then
+          self.value = model.getTimer(self.tmr).value
           value = nil
         end
         gui.editing = true
@@ -786,12 +787,15 @@ function lib.newGUI()
   function gui.horizontalSlider(x, y, w, value, min, max, delta, callBack)
     local self = {
       value = value,
+      min = min,
+      max = max,
+      delta = delta,
       callBack = callBack or doNothing,
       editable = true
     }
 
     function self.draw(focused)
-      local xdot = x + w * (self.value - min) / (max - min)
+      local xdot = x + w * (self.value - self.min) / (self.max - self.min)
       
       local colorBar = lib.colors.primary3
       local colorDot = lib.colors.primary2
@@ -819,19 +823,19 @@ function lib.newGUI()
         if match(event, EVT_VIRTUAL_ENTER, EVT_VIRTUAL_EXIT) then
           gui.editing = false
         elseif event == EVT_VIRTUAL_INC then
-          self.value = math.min(max, self.value + delta)
+          self.value = math.min(self.max, self.value + self.delta)
         elseif event == EVT_VIRTUAL_DEC then
-          self.value = math.max(min, self.value - delta)
+          self.value = math.max(self.min, self.value - self.delta)
         end
       elseif event == EVT_VIRTUAL_ENTER then
         gui.editing = true
       end
       
       if event == EVT_TOUCH_SLIDE then
-        local value = min + (max - min) * (touchState.x - x) / w
-        value = math.min(max, value)
-        value = math.max(min, value)
-        self.value = min + delta * math.floor((value - min) / delta + 0.5)
+        local value = self.min + (self.max - self.min) * (touchState.x - x) / w
+        value = math.min(self.max, value)
+        value = math.max(self.min, value)
+        self.value = self.min + self.delta * math.floor((value - self.min) / self.delta + 0.5)
       end
       
       if v0 ~= self.value then
@@ -840,7 +844,7 @@ function lib.newGUI()
     end
     
     function self.covers(p, q)
-      local xdot = x + w * (self.value - min) / (max - min)
+      local xdot = x + w * (self.value - self.min) / (self.max - self.min)
       return ((p - xdot)^2 + (q - y)^2 <= SLIDER_DOT_RADIUS^2)
     end
     
@@ -850,12 +854,15 @@ function lib.newGUI()
   function gui.verticalSlider(x, y, h, value, min, max, delta, callBack)
     local self = {
       value = value,
+      min = min,
+      max = max,
+      delta = delta,
       callBack = callBack or doNothing,
       editable = true
     }
 
     function self.draw(focused)
-      local ydot = y + h * (1 - (self.value - min) / (max - min))
+      local ydot = y + h * (1 - (self.value - self.min) / (self.max - self.min))
       
       local colorBar = lib.colors.primary3
       local colorDot = lib.colors.primary2
@@ -883,19 +890,19 @@ function lib.newGUI()
         if match(event, EVT_VIRTUAL_ENTER, EVT_VIRTUAL_EXIT) then
           gui.editing = false
         elseif event == EVT_VIRTUAL_INC then
-          self.value = math.min(max, self.value + delta)
+          self.value = math.min(self.max, self.value + self.delta)
         elseif event == EVT_VIRTUAL_DEC then
-          self.value = math.max(min, self.value - delta)
+          self.value = math.max(self.min, self.value - self.delta)
         end
       elseif event == EVT_VIRTUAL_ENTER then
         gui.editing = true
       end
       
       if event == EVT_TOUCH_SLIDE then
-        local value = max - (max - min) * (touchState.y - y) / h
-        value = math.min(max, value)
-        value = math.max(min, value)
-        self.value = min + delta * math.floor((value - min) / delta + 0.5)
+        local value = self.max - (self.max - self.min) * (touchState.y - y) / h
+        value = math.min(self.max, value)
+        value = math.max(self.min, value)
+        self.value = self.min + self.delta * math.floor((value - self.min) / self.delta + 0.5)
       end
 
       if v0 ~= self.value then
@@ -904,7 +911,7 @@ function lib.newGUI()
     end
     
     function self.covers(p, q)
-      local ydot = y + h * (1 - (self.value - min) / (max - min))
+      local ydot = y + h * (1 - (self.value - self.min) / (self.max - self.min))
       return ((p - x)^2 + (q - ydot)^2 <= SLIDER_DOT_RADIUS^2)
     end
     
