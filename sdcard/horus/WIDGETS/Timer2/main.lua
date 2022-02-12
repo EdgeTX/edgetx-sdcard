@@ -1,7 +1,7 @@
 -- A Timer version that fill better the widget area
 -- Offer Shmuely
--- Date: 2021
--- ver: 0.5
+-- Date: 2022
+-- ver: 0.6
 
 local options = {
   { "TextColor", COLOR, YELLOW },
@@ -24,7 +24,7 @@ end
 local function update(wgt, options)
   if (wgt == nil) then return end
   wgt.options = options
-  --print("TimerNumB:" .. options.Timer)
+  --log("TimerNumB:" .. options.Timer)
 end
 
 local function background(wgt)
@@ -35,6 +35,12 @@ end
 
 local function formatTime(wgt, t1)
   local dd_raw = t1.value/86400 -- 24*3600
+  local isNegative = false
+  if dd_raw < 0 then
+    isNegative = true
+    dd_raw = math.abs(dd_raw)
+  end
+  log("dd_raw: " .. dd_raw)
   local dd = math.floor(dd_raw)
   local hh_raw = (dd_raw - dd) * 24
   local hh = math.floor(hh_raw)
@@ -60,8 +66,10 @@ local function formatTime(wgt, t1)
     end
 
   end
-  --print("test: " .. time_str)
-  return time_str
+  if isNegative then
+    time_str = '-' .. time_str
+  end
+  return time_str, isNegative
 end
 
 local function getTimerHeader(wgt, t1)
@@ -102,27 +110,32 @@ local function getFontSize(wgt, txt)
 end
 
 local function refresh(wgt, event, touchState)
-  if (wgt == nil)               then print("refresh(nil)")                   return end
-  if (wgt.options == nil)       then print("refresh(wgt.options=nil)")       return end
-  if (wgt.options.Timer == nil) then print("refresh(wgt.options.Timer=nil)") return  end
-
-  lcd.setColor(CUSTOM_COLOR, wgt.options.TextColor)
+  if (wgt == nil)               then log("refresh(nil)")                   return end
+  if (wgt.options == nil)       then log("refresh(wgt.options=nil)")       return end
+  if (wgt.options.Timer == nil) then log("refresh(wgt.options.Timer=nil)") return  end
 
   local t1 = model.getTimer(wgt.options.Timer-1)
 
   -- calculate timer info
   local timerInfo = getTimerHeader(wgt, t1)
   timer_info_w, timer_info_h = lcd.sizeText(timerInfo, SMLSIZE)
-  --lcd.drawText(wgt.zone.x, wgt.zone.y, timerInfo, SMLSIZE + CUSTOM_COLOR)
 
   -- calculate timer time
-  local time_str = formatTime(wgt, t1)
+  local time_str, isNegative = formatTime(wgt, t1)
   local font_size = getFontSize(wgt, time_str)
   local zone_w = wgt.zone.w
   local zone_h = wgt.zone.h
 
+  if isNegative==true then
+    textColor = RED
+  else
+    textColor = wgt.options.TextColor
+  end
+
+  font_size_header = SMLSIZE
   if (event ~= nil) then -- full screen
     font_size = XXLSIZE
+    font_size_header = DBLSIZE
     zone_w = 460
     zone_h = 252
   end
@@ -141,10 +154,10 @@ local function refresh(wgt, event, touchState)
   --log(string.format("dx: %d, dy: %d, zone_w: %d, zone_h: %d, ts_w: %d, ts_h: %d)", dx, dy, zone_w ,zone_h , ts_w, ts_h))
 
   -- draw timer info
-  lcd.drawText(wgt.zone.x, wgt.zone.y, timerInfo, SMLSIZE + CUSTOM_COLOR)
+  lcd.drawText(wgt.zone.x, wgt.zone.y, timerInfo, font_size_header + textColor)
 
   -- draw timer time
-  lcd.drawText(wgt.zone.x + dx, wgt.zone.y + dy, time_str, font_size + CUSTOM_COLOR)
+  lcd.drawText(wgt.zone.x + dx, wgt.zone.y + dy, time_str, font_size + textColor)
 
 end
 
