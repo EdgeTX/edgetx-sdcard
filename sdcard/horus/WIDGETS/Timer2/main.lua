@@ -112,7 +112,7 @@ end
 local function refresh(wgt, event, touchState)
   if (wgt == nil)               then log("refresh(nil)")                   return end
   if (wgt.options == nil)       then log("refresh(wgt.options=nil)")       return end
-  if (wgt.options.Timer == nil) then log("refresh(wgt.options.Timer=nil)") return  end
+  if (wgt.options.Timer == nil) then log("refresh(wgt.options.Timer=nil)") return end
 
   local t1 = model.getTimer(wgt.options.Timer-1)
 
