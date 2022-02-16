@@ -2,8 +2,8 @@
 -- The dynamically loadable part of the shared Lua GUI library.          --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Date:    2022-02-10                                                   --
--- Version: 1.0.0 RC3                                                    --
+-- Date:    2022-02-16                                                   --
+-- Version: 1.0.0                                                        --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
 --                                                                       --
@@ -250,6 +250,10 @@ function lib.newGUI()
     end
     local guiFocus = not gui.parent or (focused and gui.parent.editing)
     for idx, element in ipairs(elements) do
+      -- Clients may provide an update function for elements
+      if element.update then
+        element.update(element)
+      end
       if not element.hidden then
         element.draw(focus == idx and guiFocus)
       end
@@ -374,7 +378,7 @@ function lib.newGUI()
   end -- label(...)
   
   -- Create a button to trigger a function
-  function gui.button (x, y, w, h, title, callBack, flags)
+  function gui.button(x, y, w, h, title, callBack, flags)
     local self = {
       title = title,
       callBack = callBack or doNothing,
