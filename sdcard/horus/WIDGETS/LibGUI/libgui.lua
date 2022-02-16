@@ -664,7 +664,6 @@ function lib.newGUI()
     local moving = 0
     local visibleCount = math.min(7, #items)
     local height = visibleCount * h
-    local left = (LCD_W - w) / 2
     local top = (LCD_H - height) / 2
     local killEvt
 
@@ -685,8 +684,8 @@ function lib.newGUI()
     
     local dropDown = { }
     
-    function dropDown.covers(x, y)
-      return left <= x and x <= left + w and top <= y and y <= top + height
+    function dropDown.covers(p, q)
+      return x <= p and p <= x + w and top <= q and q <= top + height
     end
     
     function dropDown.run(event, touchState)
@@ -759,18 +758,18 @@ function lib.newGUI()
         end
       end
       
-      lcd.drawFilledRectangle(left, top, w, height, lib.colors.primary2)
-      lcd.drawRectangle(left - 2, top - 2, w + 4, height + 4, lib.colors.primary1, 2)
+      lcd.drawFilledRectangle(x, top, w, height, lib.colors.primary2)
+      lcd.drawRectangle(x - 2, top - 2, w + 4, height + 4, lib.colors.primary1, 2)
       
       for i = 0, visibleCount - 1 do
         local j = firstVisible + i
         local y = top + i * h
         
         if j == selected then
-          lcd.drawFilledRectangle(left, y, w, h, lib.colors.focus)
-          lcd.drawText(align(left, w, flags), y + h / 2, items[j], bit32.bor(lib.colors.primary2, flags))
+          lcd.drawFilledRectangle(x, y, w, h, lib.colors.focus)
+          lcd.drawText(align(x, w, flags), y + h / 2, items[j], bit32.bor(lib.colors.primary2, flags))
         else
-          lcd.drawText(align(left, w, flags), y + h / 2, items[j], bit32.bor(lib.colors.primary1, flags))
+          lcd.drawText(align(x, w, flags), y + h / 2, items[j], bit32.bor(lib.colors.primary1, flags))
         end
       end
     end
