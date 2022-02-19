@@ -3,7 +3,7 @@
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
 -- Date:    2022-01-26                                                   --
--- Version: 1.0.0 RC3                                                    --
+-- Version: 1.0.0                                                        --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
 --                                                                       --

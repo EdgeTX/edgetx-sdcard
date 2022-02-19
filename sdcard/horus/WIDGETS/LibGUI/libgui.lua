@@ -2,7 +2,7 @@
 -- The dynamically loadable part of the shared Lua GUI library.          --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Date:    2022-02-16                                                   --
+-- Date:    2022-02-21                                                   --
 -- Version: 1.0.0                                                        --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
@@ -330,10 +330,8 @@ function lib.newGUI()
           moveFocus(1)
         elseif event == EVT_VIRTUAL_PREV then
           moveFocus(-1)
-        elseif event == EVT_VIRTUAL_EXIT then
-          if gui.parent then
-            gui.parent.editing = false
-          end
+        elseif event == EVT_VIRTUAL_EXIT and gui.parent then
+          gui.parent.editing = false
         else
           if handles[event] then
             -- Is it being handled? Handler can modify event
@@ -848,7 +846,7 @@ function lib.newGUI()
     
     function self.covers(p, q)
       local xdot = x + w * (self.value - self.min) / (self.max - self.min)
-      return ((p - xdot)^2 + (q - y)^2 <= SLIDER_DOT_RADIUS^2)
+      return ((p - xdot)^2 + (q - y)^2 <= 2 * SLIDER_DOT_RADIUS^2)
     end
     
     return addElement(self)
@@ -915,7 +913,7 @@ function lib.newGUI()
     
     function self.covers(p, q)
       local ydot = y + h * (1 - (self.value - self.min) / (self.max - self.min))
-      return ((p - x)^2 + (q - ydot)^2 <= SLIDER_DOT_RADIUS^2)
+      return ((p - x)^2 + (q - ydot)^2 <= 2 * SLIDER_DOT_RADIUS^2)
     end
     
     return addElement(self)

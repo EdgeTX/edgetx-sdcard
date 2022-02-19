@@ -5,7 +5,7 @@
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
 -- Date:    2021-12-20                                                   --
--- Version: 1.0.0 RC1                                                    --
+-- Version: 1.0.0                                                        --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
 --                                                                       --
