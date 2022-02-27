@@ -2,7 +2,7 @@
 -- The dynamically loadable part of the demonstration Lua widget.        --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Date:    2022-01-26                                                   --
+-- Date:    2022-02-27                                                   --
 -- Version: 1.0.0                                                        --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
@@ -126,7 +126,7 @@ local menuItems = {
   "Tenth"
 }
 
-gui.menu(COL4, TOP + ROW, 5, menuItems, function(item) playNumber(item.idx, 0) end)
+gui.menu(COL4, TOP + ROW, WIDTH, 5 * ROW, menuItems, function(menu) playNumber(menu.selected, 0) end)
 
 -- Horizontal slider
 gui.label(COL1, TOP + 6 * ROW, WIDTH, HEIGHT, "Horizontal slider:", BOLD)

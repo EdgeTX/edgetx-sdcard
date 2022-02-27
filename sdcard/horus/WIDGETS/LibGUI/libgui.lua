@@ -2,7 +2,7 @@
 -- The dynamically loadable part of the shared Lua GUI library.          --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Date:    2022-02-21                                                   --
+-- Date:    2022-02-28                                                   --
 -- Version: 1.0.0                                                        --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
@@ -152,6 +152,10 @@ function lib.newGUI()
   
   -- Draw border around focused elements
   local function drawFocus(x, y, w, h, color)
+    -- Not necessary if there is only one element...
+    if #elements == 1 then
+      return
+    end
     color = color or lib.colors.active
     gui.drawRectangle(x - 2, y - 2, w + 4, h + 4, color, 2)
   end -- drawFocus(...)
@@ -207,7 +211,7 @@ function lib.newGUI()
   end
   
   -- Set an event handler
-  function gui.SetEventHandler(event, f)
+  function gui.setEventHandler(event, f)
     handles[event] = f
   end
   
@@ -578,117 +582,70 @@ function lib.newGUI()
     return addElement(self, x, y, w, h)
   end -- timer(...)
   
-  function gui.menu(x, y, visibleCount, items, callBack, flags)
-    items = items or { "No items!" }
-    callBack = callBack or doNothing
-    flags = bit32.bor(flags or lib.flags, lib.colors.primary1, VCENTER)
-    local es = { }
-    local firstVisible = 1
-    local idx0 = #elements
-    local idxN = idx0 + #items
-    local h = select(2, lcd.sizeText("X", flags))
-    y = y + h / 2
-    
-    -- Add line items as GUI elements
-    for i, item in ipairs(items) do
-      local self = {
-        idx = i,
-        callBack = callBack,
-        flags = flags
-      }
-      
-      local w = lcd.sizeText(item, flags) + 4
-      
-      function self.draw(focused)
-        local flags = getFlags(self)
-        local yy = y + h * (self.idx - firstVisible)
-        
-        -- Do we need to adjust scroll?
-        if self.idx == 1 and focus > idx0 and focus <= idxN then
-          local selected = focus - idx0
-          if selected < firstVisible then
-            firstVisible = selected
-          elseif selected - firstVisible >= visibleCount then
-            firstVisible = selected - visibleCount + 1
-          end
-        end
-        
-        -- Is this line item visible?
-        if self.idx < firstVisible or self.idx >= firstVisible + visibleCount then
-          return
-        end
-        
-        if focused then
-          drawFocus(x - 2, yy - h / 2, w, h)
-        end
-        
-        gui.drawText(x, yy, item, flags)
-      end -- draw(...)
-      
-      function self.onEvent(event, touchState)
-        if event == EVT_VIRTUAL_ENTER then
-          return self.callBack(self)
-        elseif event == EVT_TOUCH_SLIDE then
-          firstVisible = math.floor(self.idx - (touchState.y - y) / h + 0.5)
-          firstVisible = math.min(firstVisible, idxN - idx0 - visibleCount + 1, self.idx)
-          firstVisible = math.max(firstVisible, 1, self.idx - visibleCount + 1)
-        end
-      end
-      
-      function self.covers(p, q)
-        if self.idx < firstVisible or self.idx >= firstVisible + visibleCount then
-          return false
-        else
-          local yy = y + h * (self.idx - firstVisible)
-
-          return (x <= p and p <= x + w and yy - h / 2 <= q and q <= yy + h / 2)
-        end
-      end
-      
-      es[#es + 1] = addElement(self)
-    end -- Loop adding menu items
-    return es
-  end -- menu(...)
-  
-  function gui.dropDown(x, y, w, h, items, selected, callBack, flags)
+  function gui.menu(x, y, w, h, items, callBack, flags)
     local self = {
-      selected = selected,
-      callBack = callBack or doNothing,
-      flags = bit32.bor(flags or lib.flags, VCENTER)
+      items = items or { "No items!" },
+      flags = bit32.bor(flags or lib.flags, VCENTER),
+      editable = true,
+      selected = 1
     }
-    
-    local firstVisible
+    local selected = 1
+    local firstVisible = 1
     local firstVisibleScrolling
     local moving = 0
-    local visibleCount = math.min(7, #items)
-    local height = visibleCount * h
-    local top = (LCD_H - height) / 2
+    local lh = select(2, lcd.sizeText("", self.flags))
+    local visibleCount = math.floor(h / lh)
     local killEvt
+    
+    callBack = callBack or doNothing
 
     local function setFirstVisible(v)
       firstVisible = v
       firstVisible = math.max(1, firstVisible)
-      firstVisible = math.min(#items - visibleCount + 1, firstVisible)
+      firstVisible = math.min(#self.items - visibleCount + 1, firstVisible)
+    end
+    
+    local function adjustScroll()
+      if selected >= firstVisible + visibleCount then
+        firstVisible = selected - visibleCount + 1
+      elseif selected < firstVisible then
+        firstVisible = selected
+      end
     end
 
     function self.draw(focused)
       local flags = getFlags(self)
+      local visibleCount = math.min(visibleCount, #self.items)
+      local sel
+      local bgColor
       
+      if focused and gui.editing then
+        bgColor = lib.colors.edit
+      else
+        selected = self.selected
+        bgColor = lib.colors.focus
+      end
+
+      for i = 0, visibleCount - 1 do
+        local j = firstVisible + i
+        local y = y + i * lh
+        
+        if j == selected then
+          gui.drawFilledRectangle(x, y, w, lh, bgColor)
+          gui.drawText(align(x, w, flags), y + lh / 2, self.items[j], bit32.bor(lib.colors.primary2, flags))
+        else
+          gui.drawText(align(x, w, flags), y + lh / 2, self.items[j], bit32.bor(lib.colors.primary1, flags))
+        end
+      end
+
       if focused then
         drawFocus(x, y, w, h)
       end
-      gui.drawText(align(x, w, flags), y + h / 2, items[self.selected], bit32.bor(lib.colors.primary1, flags))
-    end
+    end -- draw()
     
-    local dropDown = { }
-    
-    function dropDown.covers(p, q)
-      return x <= p and p <= x + w and top <= q and q <= top + height
-    end
-    
-    function dropDown.run(event, touchState)
-      local flags = getFlags(self)
-      
+    function self.onEvent(event, touchState)
+      local visibleCount = math.min(visibleCount, #self.items)
+
       if moving ~= 0 then
         if match(event, EVT_TOUCH_FIRST, EVT_VIRTUAL_ENTER, EVT_VIRTUAL_EXIT) then
           moving = 0
@@ -714,70 +671,91 @@ function lib.newGUI()
             elseif touchState.swipeDown then
               moving = -1
             elseif touchState.startX then
-              setFirstVisible(firstVisibleScrolling + math.floor((touchState.startY - touchState.y) / h + 0.5))
+              setFirstVisible(firstVisibleScrolling + math.floor((touchState.startY - touchState.y) / lh + 0.5))
             end
           end
         else
           scrolling = false
 
           if event == EVT_TOUCH_FIRST then
-            if dropDown.covers(touchState.x, touchState.y) then
-              scrolling = true
-              firstVisibleScrolling = firstVisible
-            end
-          elseif event == EVT_TOUCH_TAP then
-            if dropDown.covers(touchState.x, touchState.y) then
-              selected = firstVisible + math.floor((touchState.y - top) / h)
-              event = EVT_VIRTUAL_ENTER
-            else
-              event = EVT_VIRTUAL_EXIT
-            end
+            scrolling = true
+            firstVisibleScrolling = firstVisible
           elseif match(event, EVT_VIRTUAL_NEXT, EVT_VIRTUAL_PREV) then
             if event == EVT_VIRTUAL_NEXT then
-              selected = math.min(#items, selected + 1)
+              selected = math.min(#self.items, selected + 1)
             elseif event == EVT_VIRTUAL_PREV then
               selected = math.max(1, selected - 1)
             end
-            
-            if selected >= firstVisible + visibleCount then
-              firstVisible = selected - visibleCount + 1
-            elseif selected < firstVisible then
-              firstVisible = selected
+            adjustScroll()
+          elseif event == EVT_VIRTUAL_ENTER then
+            if gui.editing then
+              if touchState then
+                selected = firstVisible + math.floor((touchState.y - y) / lh)
+              end
+              
+              gui.editing = false
+              self.selected = selected
+              callBack(self)
+            else
+              gui.editing = true
+              selected = self.selected
+              adjustScroll()
             end
+          elseif event == EVT_VIRTUAL_EXIT then
+            gui.editing = false
           end
         end
+      end
+    end -- onEvent(...)
 
-        if match(event, EVT_VIRTUAL_ENTER, EVT_VIRTUAL_EXIT) then
-          gui.dismissPrompt()
-          if event == EVT_VIRTUAL_ENTER then
-            self.selected = selected
-            self.callBack(self)
-          end
-        end
-      end
+    return addElement(self, x, y, w, h)
+  end -- menu(...)
+  
+  function gui.dropDown(x, y, w, h, items, selected, callBack, flags)
+    local self = {
+      selected = selected,
+      callBack = callBack or doNothing,
+      flags = bit32.bor(flags or lib.flags, VCENTER)
+    }
+    
+    local height = math.min(0.75 * LCD_H, #items * select(2, lcd.sizeText("", flags)))
+    local top = (LCD_H - height) / 2
+
+    function self.draw(focused)
+      local flags = getFlags(self)
       
-      lcd.drawFilledRectangle(x, top, w, height, lib.colors.primary2)
-      lcd.drawRectangle(x - 2, top - 2, w + 4, height + 4, lib.colors.primary1, 2)
-      
-      for i = 0, visibleCount - 1 do
-        local j = firstVisible + i
-        local y = top + i * h
-        
-        if j == selected then
-          lcd.drawFilledRectangle(x, y, w, h, lib.colors.focus)
-          lcd.drawText(align(x, w, flags), y + h / 2, items[j], bit32.bor(lib.colors.primary2, flags))
-        else
-          lcd.drawText(align(x, w, flags), y + h / 2, items[j], bit32.bor(lib.colors.primary1, flags))
-        end
+      if focused then
+        drawFocus(x, y, w, h)
       end
+      gui.drawText(align(x, w, flags), y + h / 2, items[self.selected], bit32.bor(lib.colors.primary1, flags))
     end
     
+    local dropDown = lib.newGUI()
+    dropDown.x = gui.translate(0, 0)
+    
+    function dropDown.fullScreenRefresh()
+      if not dropDown.editing then
+        gui.dismissPrompt()
+        return
+      end
+      
+      dropDown.drawFilledRectangle(x, top, w, height, lib.colors.primary2)
+      dropDown.drawRectangle(x - 2, top - 2, w + 4, height + 4, lib.colors.primary1, 2)
+    end
+    
+    local function onMenu(menu)
+      gui.dismissPrompt()
+      self.selected = menu.selected
+      callBack(self)
+    end
+    
+    local menu = dropDown.menu(x, top, w, height, items, onMenu)
+    menu.selected = self.selected
+
     function self.onEvent(event, touchState)
       -- Show drop down and let it take over while active
       if event == EVT_VIRTUAL_ENTER then
-        selected = self.selected
-        setFirstVisible(selected - math.floor(visibleCount / 2))
-        killEvt = true
+        dropDown.onEvent(event)
         gui.showPrompt(dropDown)
       end
     end
