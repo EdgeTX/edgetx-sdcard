@@ -1,0 +1,1 @@
+Create a simple sailplane with optional motor assist using the Lua Wizard to guide you.
