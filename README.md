@@ -17,6 +17,7 @@ All platforms here are based on screen size/color. <br>
 - taranis-x7.zip (128x64 BW Screens)
     - T-Lite / T-Pro
     - TX12
+    - ZORRO
     - QX7
     - X9 Lite
     - X-Lite
