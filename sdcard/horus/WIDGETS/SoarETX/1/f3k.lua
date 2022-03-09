@@ -2,7 +2,7 @@
 -- SoarETX F3K score keeper, loadable component                          --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Date:    2022-02-27                                                   --
+-- Date:    2022-03-08                                                   --
 -- Version: 1.0.0                                                        --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
@@ -475,9 +475,6 @@ function widget.background()
 		nextCall = now + 1000
 	end
 
-	-- Write the current flight mode to a telemetry sensor.
-	setTelemetryValue(0x5050, 0, 224, getFlightMode(), 0, 0, "FM")
-	
 	if state <= STATE_READY and state ~= STATE_FINISHED then
 		InitializeFlight()
 	end
