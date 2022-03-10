@@ -25,18 +25,6 @@ libGUI.flags =    0
 local colors =    libGUI.colors
 local title =     "Graph"
 
--- Variables
-local gui
-local guiFile
-local guiGraph
-local menu1
-local menu2
-local fileTree
-local data
-local lines
-local plotIdx
-local plotIdxLast
-
 -- Screen drawing constants
 local LCD_W2 =    LCD_W / 2
 local HEADER =    40
@@ -77,6 +65,16 @@ do
 	end
 end
 
+-- Variables
+local gui
+local guiFile
+local guiGraph
+local menu1
+local menu2
+local fileTree
+local data
+local lines
+
 ------------------------------- Reading data ------------------------------
 
 local function timeSerial(str)
@@ -87,6 +85,8 @@ local function timeSerial(str)
 end
 
 local function readLines(fileName)
+  local l = string.len(DEFAULT_PLOT)
+  local plotIdx = 2
   fileName = "/LOGS/" .. fileName
   local fileLen = fstat(fileName).size
   local logFile = io.open(fileName, "r")
@@ -112,24 +112,26 @@ local function readLines(fileName)
   -- data[2] = min values, data[3] = max values
   data = { { }, { FMAX }, { -FMAX } }
   
-  plotIdx = 2
-  plotIdxLast = #headers
-  local l = string.len(DEFAULT_PLOT)
   for i = 2, #headers do
     if string.sub(headers[i], 1, l) == DEFAULT_PLOT then
       plotIdx = i
     end
     if headers[i] == FIRST_EXCLUDED then
-      plotIdxLast = i - 1
       break
     end
     data[1][i - 1] = headers[i]
     data[2][i] = FMAX
     data[3][i] = -FMAX
   end
+  
+  if guiGraph.ddPlot.selected > #data[1] then
+    guiGraph.ddPlot.selected = plotIdx - 1
+  end
 end
 
 local function readData()
+  local plotIdxLast = #data[1] + 1
+  
   for i = #data - 1, #lines do
     if getUsage() > 90 then
       return
@@ -273,8 +275,12 @@ local function onMenu2(noMove)
   local name = menu2.items[menu2.selected]
   fileName = fileTree[date][name]
   readLines(fileName)
-  gui = guiGraph()
+  gui = guiGraph
   gui.title = name
+  gui.ddPlot.items = data[1]
+  if gui.ddPlot.selected > #data[1] then
+    gui.ddPlot.selected = 1
+  end
 
   if not noMove then
     guiFile.onEvent(EVT_VIRTUAL_PREV)
@@ -288,124 +294,117 @@ guiFile.onEvent(EVT_VIRTUAL_NEXT)
 guiFile.onEvent(EVT_VIRTUAL_ENTER)
   
 -- GUI for plotting the graph is re-generated every time a new file is selected
-function guiGraph()
-  local gg = setupGUI("")
+guiGraph = setupGUI("")
 
-  function gg.drawMore()
-    if lines then
-      lcd.drawText(LCD_W / 2, LCD_H / 2, "Reading   data", XXLSIZE + CENTER + VCENTER + colors.primary1)
-      readData()
-      return
-    elseif #data < 5 then
-      lcd.drawText(LCD_W / 2, LCD_H / 2, "No   data   in   this   file", DBLSIZE + CENTER + VCENTER + colors.primary1)
-      return
+function guiGraph.drawMore()
+  local plotIdx = guiGraph.ddPlot.selected + 1
+  
+  if lines then
+    lcd.drawText(LCD_W / 2, LCD_H / 2, "Reading   data", XXLSIZE + CENTER + VCENTER + colors.primary1)
+    readData()
+    return
+  elseif #data < 5 then
+    lcd.drawText(LCD_W / 2, LCD_H / 2, "No   data   in   this   file", DBLSIZE + CENTER + VCENTER + colors.primary1)
+    return
+  end
+
+  -- Time scale
+  local xMin = data[2][1]
+  local xRange = data[3][1] - xMin
+  local xScale = PLOT_W / xRange
+  -- Y-scale
+  local yRange = data[3][plotIdx] - data[2][plotIdx]
+  local mag = math.floor(math.log(yRange, 10))
+  if mag < -2 then mag = -2 end -- Don't go crazy with the scale
+  local yTick
+  if yRange / 10^mag > 6 then
+    yTick = 2 * 10^mag
+  elseif yRange / 10^mag > 3 then
+    yTick = 1 * 10^mag
+  elseif yRange / 10^mag > 2.4 then
+    yTick = 0.5 * 10^mag
+  elseif yRange / 10^mag > 1.2 then
+    yTick = 0.4 * 10^mag
+  else
+    yTick = 0.2 * 10^mag
+  end
+  local yMin = yTick * math.floor(data[2][plotIdx] / yTick)
+  local yMax = yTick * math.ceil(data[3][plotIdx] / yTick)
+  local yScale = PLOT_H / (yMax - yMin)
+  local y0 = BOTTOM + yScale * yMin
+  -- Flags for number precision
+  local flags
+  local precFac
+  if yTick < 0.1 then
+    flags = PREC2
+    precFac = 100
+  elseif yTick < 1 then
+    flags = PREC1
+    precFac = 10
+  else
+    flags = 0
+    precFac = 1
+  end
+  -- Background and lines
+  lcd.drawFilledRectangle(LFT, TOP, PLOT_W, PLOT_H, colors.primary2)
+  lcd.drawRectangle(LFT, TOP, PLOT_W, PLOT_H, COLOR_THEME_SECONDARY2)
+  for x = 0, xRange, 60 do
+    local xx = LFT + xScale * x
+    lcd.drawLine(xx, TOP, xx, BOTTOM, DOTTED, COLOR_THEME_SECONDARY2)
+    if x > 0 then
+      lcd.drawNumber(xx, BOTTOM, x / 60, CENTER + SMLSIZE + colors.primary3)
     end
-
-    -- Time scale
-    local xMin = data[2][1]
---    local xRange = 60 * math.ceil((data[3][1] - xMin) / 60)
-    local xRange = data[3][1] - xMin
-    local xScale = PLOT_W / xRange
-    -- Y-scale
-    local yRange = data[3][plotIdx] - data[2][plotIdx]
-    local mag = math.floor(math.log(yRange, 10))
-    if mag < -2 then mag = -2 end -- Don't go crazy with the scale
-    local yTick
-    if yRange / 10^mag > 6 then
-      yTick = 2 * 10^mag
-    elseif yRange / 10^mag > 3 then
-      yTick = 1 * 10^mag
-    elseif yRange / 10^mag > 2.4 then
-      yTick = 0.5 * 10^mag
-    elseif yRange / 10^mag > 1.2 then
-      yTick = 0.4 * 10^mag
+  end
+  for y = yMin, yMax, yTick do
+    local yy = y0 - yScale * y
+    if math.abs(y) < 1E-12 then
+      lcd.drawLine(LFT, yy, RGT, yy, SOLID, COLOR_THEME_SECONDARY2)
     else
-      yTick = 0.2 * 10^mag
+      lcd.drawLine(LFT, yy, RGT, yy, DOTTED, COLOR_THEME_SECONDARY2)
     end
-    local yMin = yTick * math.floor(data[2][plotIdx] / yTick)
-    local yMax = yTick * math.ceil(data[3][plotIdx] / yTick)
-    local yScale = PLOT_H / (yMax - yMin)
-    local y0 = BOTTOM + yScale * yMin
-    -- Flags for number precision
-    local flags
-    local precFac
-    if yTick < 0.1 then
-      flags = PREC2
-      precFac = 100
-    elseif yTick < 1 then
-      flags = PREC1
-      precFac = 10
-    else
-      flags = 0
-      precFac = 1
-    end
-    -- Background and lines
-    lcd.drawFilledRectangle(LFT, TOP, PLOT_W, PLOT_H, colors.primary2)
-    lcd.drawRectangle(LFT, TOP, PLOT_W, PLOT_H, COLOR_THEME_SECONDARY2)
-    for x = 0, xRange, 60 do
-      local xx = LFT + xScale * x
-      lcd.drawLine(xx, TOP, xx, BOTTOM, DOTTED, COLOR_THEME_SECONDARY2)
-      if x > 0 then
-        lcd.drawNumber(xx, BOTTOM, x / 60, CENTER + SMLSIZE + colors.primary3)
-      end
-    end
-    for y = yMin, yMax, yTick do
-      local yy = y0 - yScale * y
-      if math.abs(y) < 1E-12 then
-        lcd.drawLine(LFT, yy, RGT, yy, SOLID, COLOR_THEME_SECONDARY2)
-      else
-        lcd.drawLine(LFT, yy, RGT, yy, DOTTED, COLOR_THEME_SECONDARY2)
-      end
-      lcd.drawNumber(LFT, yy, precFac * y, flags + VCENTER + RIGHT + SMLSIZE + colors.primary3)
-    end
-    -- Graph curve
-    local x1 = LFT + xScale * (data[4][1] - xMin)
-    local y1 = y0 - yScale * data[4][plotIdx]
-    for i = 5, #data do
-      local x2 = LFT + xScale * (data[i][1] - xMin)
-      local y2 = y0 - yScale * data[i][plotIdx]
-      lcd.drawLine(x1, y1, x2, y2, SOLID, COLOR_THEME_SECONDARY1, 3)
-      x1, y1 = x2, y2
-    end
+    lcd.drawNumber(LFT, yy, precFac * y, flags + VCENTER + RIGHT + SMLSIZE + colors.primary3)
   end
-
-  local y = TOP
-
-  local function onDropDown(dd)
-    plotIdx = dd.selected + 1
+  -- Graph curve
+  local x1 = LFT + xScale * (data[4][1] - xMin)
+  local y1 = y0 - yScale * data[4][plotIdx]
+  for i = 5, #data do
+    local x2 = LFT + xScale * (data[i][1] - xMin)
+    local y2 = y0 - yScale * data[i][plotIdx]
+    lcd.drawLine(x1, y1, x2, y2, SOLID, COLOR_THEME_SECONDARY1, 3)
+    x1, y1 = x2, y2
   end
-
-  gg.ddPlot = gg.dropDown(BUTTON_X, y, BUTTON_W, HEIGHT, data[1], plotIdx - 1, onDropDown, CENTER)
-  
-  y = y + LINE
-  
-  local function onNewFile()
-    gui = guiFile
-  end
-
-  gg.button(BUTTON_X, y, BUTTON_W, HEIGHT, "New file", onNewFile)
-  
-  y = BOTTOM - HEIGHT
-  local w = (BUTTON_W - MARGIN) / 2
-  
-  local function moveFile(d)
-    local s = menu2.selected + d
-print("----> " .. s)
-    if s < 1 then
-      s = #menu2.items
-    elseif s > #menu2.items then
-      s = 1
-    end
-    menu2.selected = s
-    onMenu2(true)
-  end
-
-  gg.button(BUTTON_X, y, w, HEIGHT, CHAR_LEFT, function() moveFile(-1) end)
-  gg.button(BUTTON_X + MARGIN + w, y, w, HEIGHT, CHAR_RIGHT, function() moveFile(1) end)
-  
-  gg.onEvent(EVT_VIRTUAL_NEXT)
-  return gg
 end
+
+local y = TOP
+
+guiGraph.ddPlot = guiGraph.dropDown(BUTTON_X, y, BUTTON_W, HEIGHT, { "1", "2", "3", "4", "5", "6", "7" }, FMAX, nil, CENTER)
+
+y = y + LINE
+
+local function onNewFile()
+  gui = guiFile
+end
+
+guiGraph.button(BUTTON_X, y, BUTTON_W, HEIGHT, "New file", onNewFile)
+
+y = BOTTOM - HEIGHT
+local w = (BUTTON_W - MARGIN) / 2
+
+local function moveFile(d)
+  local s = menu2.selected + d
+  if s < 1 then
+    s = #menu2.items
+  elseif s > #menu2.items then
+    s = 1
+  end
+  menu2.selected = s
+  onMenu2(true)
+end
+
+guiGraph.button(BUTTON_X, y, w, HEIGHT, CHAR_LEFT, function() moveFile(-1) end)
+guiGraph.button(BUTTON_X + MARGIN + w, y, w, HEIGHT, CHAR_RIGHT, function() moveFile(1) end)
+
+guiGraph.onEvent(EVT_VIRTUAL_NEXT)
 
 -------------------- Background and Refresh functions ---------------------
 
