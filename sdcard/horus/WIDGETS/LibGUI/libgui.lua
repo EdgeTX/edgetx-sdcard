@@ -2,7 +2,7 @@
 -- The dynamically loadable part of the shared Lua GUI library.          --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Date:    2022-02-28                                                   --
+-- Date:    2022-03-09                                                   --
 -- Version: 1.0.0                                                        --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
@@ -273,7 +273,6 @@ function lib.newGUI()
     -- Is there an active prompt?
     if lib.prompt and not lib.showingPrompt then
       lib.showingPrompt = true
---      lcd.drawFilledRectangle(0, 0, LCD_W, LCD_H, BLACK, 8)
       lib.prompt.run(event, touchState)
       lib.showingPrompt = false
       return
@@ -712,51 +711,86 @@ function lib.newGUI()
   end -- menu(...)
   
   function gui.dropDown(x, y, w, h, items, selected, callBack, flags)
-    local self = {
-      selected = selected,
-      callBack = callBack or doNothing,
-      flags = bit32.bor(flags or lib.flags, VCENTER)
-    }
-    
-    local height = math.min(0.75 * LCD_H, #items * select(2, lcd.sizeText("", flags)))
+    callBack = callBack or doNothing
+    flags = flags or lib.flags
+
+    local self
+    local showingMenu
+    local drawingMenu
+    local dropDown = lib.newGUI()
+    local lh = select(2, lcd.sizeText("", flags))
+    local height = math.min(0.75 * LCD_H, #items * lh)
     local top = (LCD_H - height) / 2
 
-    function self.draw(focused)
-      local flags = getFlags(self)
-      
-      if focused then
-        drawFocus(x, y, w, h)
-      end
-      gui.drawText(align(x, w, flags), y + h / 2, items[self.selected], bit32.bor(lib.colors.primary1, flags))
-    end
-    
-    local dropDown = lib.newGUI()
     dropDown.x = gui.translate(0, 0)
+    top = math.min(top, y)
+    top = math.max(top, y + h - height)
+
+    local function dismissMenu()
+      gui.editing = false
+      showingMenu = false
+      gui.dismissPrompt()
+    end
     
     function dropDown.fullScreenRefresh()
       if not dropDown.editing then
-        gui.dismissPrompt()
+        dismissMenu()
         return
       end
-      
       dropDown.drawFilledRectangle(x, top, w, height, lib.colors.primary2)
       dropDown.drawRectangle(x - 2, top - 2, w + 4, height + 4, lib.colors.primary1, 2)
+      drawingMenu = true
     end
     
     local function onMenu(menu)
-      gui.dismissPrompt()
-      self.selected = menu.selected
+      dismissMenu()
       callBack(self)
     end
     
-    local menu = dropDown.menu(x, top, w, height, items, onMenu)
-    menu.selected = self.selected
+    self = dropDown.menu(x, top, w, height, items, onMenu, flags)
+    self.selected = selected
+    local drawMenu = self.draw
+    
+    function self.draw(focused)
+      if drawingMenu then
+        drawingMenu = false
+        drawMenu(focused)
+      else
+        local flags = bit32.bor(VCENTER, lib.colors.primary1, getFlags(self))
 
+        if focused then
+          drawFocus(x, y, w, h)
+        end
+        gui.drawText(align(x, w, flags), y + h / 2, self.items[self.selected], flags)
+        local dd = lh / 2
+        local yy = y + (h - dd) / 2
+        local xx = x + w - 1.15 * dd
+        gui.drawTriangle(x + w, yy, (x + w + xx) / 2, yy + dd, xx, yy, lib.colors.primary1)
+      end
+    end
+
+    local onMenu = self.onEvent
+    
     function self.onEvent(event, touchState)
-      -- Show drop down and let it take over while active
-      if event == EVT_VIRTUAL_ENTER then
+      if showingMenu then
+        onMenu(event, touchState)
+      elseif event == EVT_VIRTUAL_ENTER then
+        -- Show drop down and let it take over while active
+        gui.editing = true
+        showingMenu = true
         dropDown.onEvent(event)
         gui.showPrompt(dropDown)
+      else
+      end
+    end
+    
+    local coverMenu = self.covers
+    
+    function self.covers(p, q)
+      if showingMenu then
+        return coverMenu(p, q)
+      else
+        return (x <= p and p <= x + w and y <= q and q <= y + h)
       end
     end
     
