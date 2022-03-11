@@ -2,7 +2,7 @@
 -- The dynamically loadable part of the shared Lua GUI library.          --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Date:    2022-03-09                                                   --
+-- Date:    2022-03-10                                                   --
 -- Version: 1.0.0                                                        --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
@@ -727,7 +727,6 @@ function lib.newGUI()
     top = math.max(top, y + h - height)
 
     local function dismissMenu()
-      gui.editing = false
       showingMenu = false
       gui.dismissPrompt()
     end
@@ -776,7 +775,6 @@ function lib.newGUI()
         onMenu(event, touchState)
       elseif event == EVT_VIRTUAL_ENTER then
         -- Show drop down and let it take over while active
-        gui.editing = true
         showingMenu = true
         dropDown.onEvent(event)
         gui.showPrompt(dropDown)
