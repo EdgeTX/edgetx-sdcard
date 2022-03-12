@@ -1,5 +1,5 @@
 ---------------------------------------------------------------------------
--- SoarETX configure mixes and battery warning, loadable component       --
+-- SoarETX F3K configure mixes and battery warning, loadable component   --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
 -- Date:    2022-02-09                                                   --

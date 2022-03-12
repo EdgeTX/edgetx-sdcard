@@ -2,7 +2,7 @@
 -- SoarETX graph of log data                                             --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Date:    2022-03-08                                                   --
+-- Date:    2022-03-12                                                   --
 -- Version: 1.0.0                                                        --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
@@ -68,12 +68,15 @@ end
 -- Variables
 local gui
 local guiFile
+local guiNoFiles
 local guiGraph
 local menu1
 local menu2
 local fileTree
 local data
+local refreshDates
 local lines
+local cursor
 
 ------------------------------- Reading data ------------------------------
 
@@ -82,6 +85,35 @@ local function timeSerial(str)
 	local mn = string.sub(str, 4, 5)
 	local sc = string.sub(str, 7, 12)
 	return 3600 * hr + 60 * mn + sc
+end
+
+local function buildFileTree()
+  fileTree = { }
+  local count = 0
+  
+  for fileName in dir("/LOGS") do
+    if string.len(fileName) > 23 and string.sub(fileName, -4) == ".csv" then
+      local dateStr = string.sub(fileName, -21, -12)
+      local nameStr = string.sub(fileName, -10, -9) .. ":" .. string.sub(fileName, -8, -7) .. ":" .. 
+                      string.sub(fileName, -6, -5) .. " " .. string.sub(fileName, 1, -23)
+
+      if not fileTree[dateStr] then
+        fileTree[dateStr] = { }
+      end
+      
+      fileTree[dateStr][nameStr] = fileName
+      count = count + 1
+    end
+  end
+  
+  if count == 0 then
+    gui = guiNoFiles
+    headers = nil
+    data = { }
+  else
+    refreshDates()
+    gui = guiFile
+  end
 end
 
 local function readLines(fileName)
@@ -99,7 +131,7 @@ local function readLines(fileName)
     i = i + 1
     lines[i] = line
   end
-  
+
   local headers = { }
   i = -1
   for field in string.gmatch(lines[1], "[^,]+") do
@@ -123,10 +155,18 @@ local function readLines(fileName)
     data[2][i] = FMAX
     data[3][i] = -FMAX
   end
-  
-  if guiGraph.ddPlot.selected > #data[1] then
-    guiGraph.ddPlot.selected = plotIdx - 1
+
+  local ddp = guiGraph.ddPlot
+  if #data[1] == 0 then
+    ddp.disabled = true
+  else
+    ddp.disabled = false
+    ddp.items = data[1]
+    if ddp.selected > #data[1] then
+      ddp.selected = plotIdx - 1
+    end
   end
+  gui = guiGraph
 end
 
 local function readData()
@@ -157,6 +197,15 @@ local function readData()
     data[i + 2] = record
   end
   lines = nil
+  cursor = math.ceil((#data + 3) / 2)
+end
+
+local function readSelected()
+  local date = menu1.items[menu1.selected]
+  local name = menu2.items[menu2.selected]
+  guiGraph.title = name
+  fileName = fileTree[date][name]
+  readLines(fileName)
 end
 
 -------------------------------- Setup GUI --------------------------------
@@ -198,213 +247,241 @@ local function setupGUI(title)
   return gui
 end
 
--- GUI to show if there were no log files
-local guiNothing = setupGUI("Graph")
+-- GUI to show if there are no log files
+guiNoFiles = setupGUI("Graph")
 
-function guiNothing.drawMore()
+function guiNoFiles.drawMore()
   lcd.drawText(LCD_W / 2, LCD_H / 2, "NO   LOG   FILES", XXLSIZE + CENTER + VCENTER + colors.primary1)
 end
 
 -- GUI for selecting log file
-guiFile = setupGUI("Select a log file")
+do
+  guiFile = setupGUI("Select a log file")
 
-function guiFile.drawMore()
-  lcd.drawLine(COL2 - LFT / 2, TOP, COL2 - LFT / 2, BOTTOM, SOLID, colors.primary1)
-end
-
-local function refreshTimes()
-  local date = menu1.items[menu1.selected]
-  local times = { }
-  for t in pairs(fileTree[date]) do
-    times[#times + 1] = t
+  function guiFile.drawMore()
+    lcd.drawLine(COL2 - LFT / 2, TOP, COL2 - LFT / 2, BOTTOM, SOLID, colors.primary1)
   end
-  table.sort(times)
-  menu2.items = times
-  menu2.selected = 1
-end
 
-local function refreshDates()
-  local dates = { }
-  for d in pairs(fileTree) do
-    dates[#dates + 1] = d
-  end
-  table.sort(dates)
-  menu1.items = dates
-  refreshTimes()
-end
-
-local function buildFileTree()
-  fileTree = { }
-  local count = 0
-  
-  for fileName in dir("/LOGS") do
-    if string.len(fileName) > 23 and string.sub(fileName, -4) == ".csv" then
-      local dateStr = string.sub(fileName, -21, -12)
-      local nameStr = string.sub(fileName, -10, -9) .. ":" .. string.sub(fileName, -8, -7) .. ":" .. 
-                      string.sub(fileName, -6, -5) .. " " .. string.sub(fileName, 1, -23)
-
-      if not fileTree[dateStr] then
-        fileTree[dateStr] = { }
-      end
-      
-      fileTree[dateStr][nameStr] = fileName
-      count = count + 1
+  local function refreshTimes()
+    local date = menu1.items[menu1.selected]
+    local times = { }
+    for t in pairs(fileTree[date]) do
+      times[#times + 1] = t
     end
-  end
-  
-  if count == 0 then
-    gui = guiNothing
-    headers = nil
-    data = { }
-  else
-    refreshDates()
-    gui = guiFile
-  end
-end
-
-local function onMenu1()
-  refreshTimes()
-  guiFile.onEvent(EVT_VIRTUAL_NEXT)
-  guiFile.onEvent(EVT_VIRTUAL_ENTER)
-end
-
-menu1 = guiFile.menu(LFT, TOP, W1, BOTTOM - TOP, nil, onMenu1)
-
-local function onMenu2(noMove)
-  local date = menu1.items[menu1.selected]
-  local name = menu2.items[menu2.selected]
-  fileName = fileTree[date][name]
-  readLines(fileName)
-  gui = guiGraph
-  gui.title = name
-  gui.ddPlot.items = data[1]
-  if gui.ddPlot.selected > #data[1] then
-    gui.ddPlot.selected = 1
+    table.sort(times)
+    menu2.items = times
+    menu2.selected = 1
   end
 
-  if not noMove then
+  function refreshDates()
+    local dates = { }
+    for d in pairs(fileTree) do
+      dates[#dates + 1] = d
+    end
+    table.sort(dates)
+    menu1.items = dates
+    refreshTimes()
+  end
+
+  local function onMenu1()
+    refreshTimes()
+    guiFile.onEvent(EVT_VIRTUAL_NEXT)
+    guiFile.onEvent(EVT_VIRTUAL_ENTER)
+  end
+
+  menu1 = guiFile.menu(LFT, TOP, W1, BOTTOM - TOP, nil, onMenu1)
+
+  local function onMenu2()
+    readSelected()
     guiFile.onEvent(EVT_VIRTUAL_PREV)
     guiFile.onEvent(EVT_VIRTUAL_ENTER)
   end
-end
 
-menu2 = guiFile.menu(COL2, TOP, W2, BOTTOM - TOP, nil, onMenu2) -- Add graph function
+  menu2 = guiFile.menu(COL2, TOP, W2, BOTTOM - TOP, nil, onMenu2) -- Add graph function
 
-guiFile.onEvent(EVT_VIRTUAL_NEXT)
-guiFile.onEvent(EVT_VIRTUAL_ENTER)
-  
--- GUI for plotting the graph is re-generated every time a new file is selected
-guiGraph = setupGUI("")
+  guiFile.onEvent(EVT_VIRTUAL_NEXT)
+  guiFile.onEvent(EVT_VIRTUAL_ENTER)
+end -- Setup guiFile
 
-function guiGraph.drawMore()
-  local plotIdx = guiGraph.ddPlot.selected + 1
-  
-  if lines then
-    lcd.drawText(LCD_W / 2, LCD_H / 2, "Reading   data", XXLSIZE + CENTER + VCENTER + colors.primary1)
-    readData()
-    return
-  elseif #data < 5 then
-    lcd.drawText(LCD_W / 2, LCD_H / 2, "No   data   in   this   file", DBLSIZE + CENTER + VCENTER + colors.primary1)
-    return
-  end
+-- GUI for plotting the graph
+do
+  guiGraph = setupGUI("")
+  local toggleCursor
 
-  -- Time scale
-  local xMin = data[2][1]
-  local xRange = data[3][1] - xMin
-  local xScale = PLOT_W / xRange
-  -- Y-scale
-  local yRange = data[3][plotIdx] - data[2][plotIdx]
-  local mag = math.floor(math.log(yRange, 10))
-  if mag < -2 then mag = -2 end -- Don't go crazy with the scale
-  local yTick
-  if yRange / 10^mag > 6 then
-    yTick = 2 * 10^mag
-  elseif yRange / 10^mag > 3 then
-    yTick = 1 * 10^mag
-  elseif yRange / 10^mag > 2.4 then
-    yTick = 0.5 * 10^mag
-  elseif yRange / 10^mag > 1.2 then
-    yTick = 0.4 * 10^mag
-  else
-    yTick = 0.2 * 10^mag
-  end
-  local yMin = yTick * math.floor(data[2][plotIdx] / yTick)
-  local yMax = yTick * math.ceil(data[3][plotIdx] / yTick)
-  local yScale = PLOT_H / (yMax - yMin)
-  local y0 = BOTTOM + yScale * yMin
-  -- Flags for number precision
-  local flags
-  local precFac
-  if yTick < 0.1 then
-    flags = PREC2
-    precFac = 100
-  elseif yTick < 1 then
-    flags = PREC1
-    precFac = 10
-  else
-    flags = 0
-    precFac = 1
-  end
-  -- Background and lines
-  lcd.drawFilledRectangle(LFT, TOP, PLOT_W, PLOT_H, colors.primary2)
-  lcd.drawRectangle(LFT, TOP, PLOT_W, PLOT_H, COLOR_THEME_SECONDARY2)
-  for x = 0, xRange, 60 do
-    local xx = LFT + xScale * x
-    lcd.drawLine(xx, TOP, xx, BOTTOM, DOTTED, COLOR_THEME_SECONDARY2)
-    if x > 0 then
-      lcd.drawNumber(xx, BOTTOM, x / 60, CENTER + SMLSIZE + colors.primary3)
-    end
-  end
-  for y = yMin, yMax, yTick do
-    local yy = y0 - yScale * y
-    if math.abs(y) < 1E-12 then
-      lcd.drawLine(LFT, yy, RGT, yy, SOLID, COLOR_THEME_SECONDARY2)
+  local y = TOP
+  guiGraph.ddPlot = guiGraph.dropDown(BUTTON_X, y, BUTTON_W, HEIGHT, { "1", "2", "3", "4", "5", "6", "7" }, 7, nil, CENTER)
+
+  y = y + LINE
+  guiGraph.button(BUTTON_X, y, BUTTON_W, HEIGHT, "New file", function() gui = guiFile end)
+
+  y = y + LINE
+
+  local function onArrows(d)
+    if toggleCursor.value then
+      cursor = cursor + d
+      if cursor > #data then
+        cursor = 4
+      elseif cursor < 4 then
+        cursor = #data
+      end
     else
-      lcd.drawLine(LFT, yy, RGT, yy, DOTTED, COLOR_THEME_SECONDARY2)
+      local s = menu2.selected + d
+      if s < 1 then
+        s = #menu2.items
+      elseif s > #menu2.items then
+        s = 1
+      end
+      menu2.selected = s
+      readSelected()
     end
-    lcd.drawNumber(LFT, yy, precFac * y, flags + VCENTER + RIGHT + SMLSIZE + colors.primary3)
   end
-  -- Graph curve
-  local x1 = LFT + xScale * (data[4][1] - xMin)
-  local y1 = y0 - yScale * data[4][plotIdx]
-  for i = 5, #data do
-    local x2 = LFT + xScale * (data[i][1] - xMin)
-    local y2 = y0 - yScale * data[i][plotIdx]
-    lcd.drawLine(x1, y1, x2, y2, SOLID, COLOR_THEME_SECONDARY1, 3)
-    x1, y1 = x2, y2
+
+  -- Trap events with prompt when cursor is active
+  local trapCursor = {
+    run = function(event, touchState)
+      if event == EVT_VIRTUAL_ENTER then
+        toggleCursor.onEvent(event)
+      elseif event == EVT_VIRTUAL_PREV then
+        onArrows(-1)
+      elseif event == EVT_VIRTUAL_NEXT then
+        onArrows(1)
+      else
+        guiGraph.onEvent(event, touchState)
+      end
+    end
+  }
+
+  local function onToggleCursor()
+    if toggleCursor.value then
+      guiGraph.showPrompt(trapCursor)
+    else
+      guiGraph.dismissPrompt()
+    end
   end
-end
 
-local y = TOP
+  toggleCursor = guiGraph.toggleButton(BUTTON_X, y, BUTTON_W, HEIGHT, "Cursor", false, onToggleCursor)
 
-guiGraph.ddPlot = guiGraph.dropDown(BUTTON_X, y, BUTTON_W, HEIGHT, { "1", "2", "3", "4", "5", "6", "7" }, FMAX, nil, CENTER)
+  y = BOTTOM - HEIGHT
+  local w = (BUTTON_W - MARGIN) / 2
+  guiGraph.button(BUTTON_X, y, w, HEIGHT, CHAR_LEFT, function() onArrows(-1) end)
+  guiGraph.button(BUTTON_X + MARGIN + w, y, w, HEIGHT, CHAR_RIGHT, function() onArrows(1) end)
 
-y = y + LINE
+  function guiGraph.drawMore()
+    local plotIdx = guiGraph.ddPlot.selected + 1
 
-local function onNewFile()
-  gui = guiFile
-end
-
-guiGraph.button(BUTTON_X, y, BUTTON_W, HEIGHT, "New file", onNewFile)
-
-y = BOTTOM - HEIGHT
-local w = (BUTTON_W - MARGIN) / 2
-
-local function moveFile(d)
-  local s = menu2.selected + d
-  if s < 1 then
-    s = #menu2.items
-  elseif s > #menu2.items then
-    s = 1
+    -- Background
+    lcd.drawFilledRectangle(LFT, TOP, PLOT_W, PLOT_H, colors.primary2)
+    lcd.drawRectangle(LFT, TOP, PLOT_W, PLOT_H, COLOR_THEME_SECONDARY2)
+    
+    if lines then
+      local txt = "READING   DATA"
+      local flags = DBLSIZE + CENTER + VCENTER + colors.primary1
+      lcd.drawText(LFT + PLOT_W / 2, TOP + PLOT_H / 2, txt, DBLSIZE + CENTER + VCENTER + colors.primary1)
+      readData()
+      return
+    elseif #data < 6 or #data[1] == 0 then
+      local txt = "NO  DATA  IN  THIS  FILE"
+      local flags = DBLSIZE + VCENTER + CENTER + colors.primary1
+      lcd.drawText(LFT + PLOT_W / 2, TOP + PLOT_H / 2, txt, flags)
+      return
+    end
+    
+    -- Time scale
+    local xMin = data[2][1]
+    local xRange = math.max(60, data[3][1] - xMin)
+    local xScale = PLOT_W / xRange
+    -- Y-scale
+    local yRange = data[3][plotIdx] - data[2][plotIdx]
+    local mag = math.max(-2, math.floor(math.log(yRange, 10)))
+    local yTick
+    local r = yRange / 10^mag
+    if r > 6 then
+      yTick = 2 * 10^mag
+    elseif r > 3 then
+      yTick = 1 * 10^mag
+    elseif r > 2.4 then
+      yTick = 0.5 * 10^mag
+    elseif r > 1.2 then
+      yTick = 0.4 * 10^mag
+    else
+      yTick = 0.2 * 10^mag
+    end
+    yTick = math.max(0.01, yTick)
+    local yMin = yTick * math.floor(data[2][plotIdx] / yTick)
+    local yMax = yTick * math.ceil(data[3][plotIdx] / yTick)
+    if yMin == yMax then
+      yMin = yMin - yTick
+      yMax = yMax + yTick
+    end
+    local yScale = PLOT_H / (yMax - yMin)
+    local y0 = BOTTOM + yScale * yMin
+    -- Flags for number precision
+    local fmt
+    if yTick < 0.1 then
+      fmt = "%1.2f"
+    elseif yTick < 1 then
+      fmt = "%2.1f"
+    else
+      fmt = "%3i"
+    end
+    -- Lines
+    for x = 0, xRange, 60 do
+      local xx = LFT + xScale * x
+      lcd.drawLine(xx, TOP, xx, BOTTOM, DOTTED, COLOR_THEME_SECONDARY2)
+      if x > 0 then
+        lcd.drawNumber(xx, BOTTOM, x / 60, CENTER + colors.primary3)
+      end
+    end
+    for y = yMin, yMax, yTick do
+      local yy = y0 - yScale * y
+      if math.abs(y) < 1E-12 then
+        lcd.drawLine(LFT, yy, RGT, yy, SOLID, COLOR_THEME_SECONDARY2)
+      else
+        lcd.drawLine(LFT, yy, RGT, yy, DOTTED, COLOR_THEME_SECONDARY2)
+      end
+      lcd.drawText(LFT, yy, string.format(fmt, y), VCENTER + RIGHT + colors.primary3)
+    end
+    -- Graph curve
+    local x1 = LFT + xScale * (data[4][1] - xMin)
+    local y1 = y0 - yScale * data[4][plotIdx]
+    for i = 5, #data do
+      local x2 = LFT + xScale * (data[i][1] - xMin)
+      local y2 = y0 - yScale * data[i][plotIdx]
+      lcd.drawLine(x1, y1, x2, y2, SOLID, COLOR_THEME_SECONDARY1, 3)
+      x1, y1 = x2, y2
+    end
+    -- Cursor point
+    if toggleCursor.value then
+      local delta
+      local flags = CENTER + COLOR_THEME_SECONDARY1
+      x1 = LFT + xScale * (data[cursor][1] - xMin)
+      y1 = y0 - yScale * data[cursor][plotIdx]
+      lcd.drawFilledCircle(x1, y1, 5, colors.active)
+      lcd.drawCircle(x1, y1, 4, COLOR_THEME_SECONDARY1)
+      lcd.drawCircle(x1, y1, 5, COLOR_THEME_SECONDARY1)
+      -- Slope
+      if cursor == 4 then
+        delta = (data[cursor + 1][plotIdx] - data[cursor][plotIdx]) / (data[cursor + 1][1] - data[cursor][1])
+      elseif cursor == #data then
+        delta = (data[cursor][plotIdx] - data[cursor - 1][plotIdx]) / (data[cursor][1] - data[cursor - 1][1])
+      else
+        delta = (data[cursor + 1][plotIdx] - data[cursor - 1][plotIdx]) / (data[cursor + 1][1] - data[cursor - 1][1])
+      end
+      -- Plot value and slope
+      if y1 - TOP < 24 then
+        y1 = y1 + 8
+      elseif BOTTOM - y1 < 24 then
+        y1 = y1 - 56
+      else
+        y1 = y1 - 24
+      end
+      lcd.drawText(x1, y1, string.format("Y=" .. fmt, data[cursor][plotIdx]), flags)
+      lcd.drawText(x1, y1 + 24, string.format(CHAR_DELTA .. "=" .. fmt, 60 * delta), flags)
+    end
   end
-  menu2.selected = s
-  onMenu2(true)
-end
 
-guiGraph.button(BUTTON_X, y, w, HEIGHT, CHAR_LEFT, function() moveFile(-1) end)
-guiGraph.button(BUTTON_X + MARGIN + w, y, w, HEIGHT, CHAR_RIGHT, function() moveFile(1) end)
-
-guiGraph.onEvent(EVT_VIRTUAL_NEXT)
+  guiGraph.onEvent(EVT_VIRTUAL_NEXT)
+end -- Setup guiGraph
 
 -------------------- Background and Refresh functions ---------------------
 
@@ -428,3 +505,4 @@ function widget.refresh(event, touchState)
   
   gui.run(event, touchState)
 end -- refresh(...)
+
