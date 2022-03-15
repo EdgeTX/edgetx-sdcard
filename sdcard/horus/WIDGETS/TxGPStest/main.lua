@@ -17,7 +17,7 @@
 local options = {
 }
 
-local INDENT = 1 -- right margin in pixels
+local INDENT = 1 -- left margin in pixels
 
 local function create(zone, options)
   local widget = { zone=zone, options=options }
