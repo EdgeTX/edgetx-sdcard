@@ -2,7 +2,7 @@
 -- SoarETX graph of log data                                             --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Date:    2022-03-12                                                   --
+-- Date:    2022-03-19                                                   --
 -- Version: 1.0.0                                                        --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
@@ -77,6 +77,10 @@ local data
 local refreshDates
 local lines
 local cursor
+local xMin
+local xScale
+local y0
+local yScale
 
 ------------------------------- Reading data ------------------------------
 
@@ -316,37 +320,55 @@ do
 
   y = y + LINE
 
-  local function onArrows(d)
-    if toggleCursor.value then
-      cursor = cursor + d
-      if cursor > #data then
-        cursor = 4
-      elseif cursor < 4 then
-        cursor = #data
-      end
-    else
-      local s = menu2.selected + d
-      if s < 1 then
-        s = #menu2.items
-      elseif s > #menu2.items then
-        s = 1
-      end
-      menu2.selected = s
-      readSelected()
+  local function moveCursor(d)
+    cursor = cursor + d
+    if cursor > #data then
+      cursor = 4
+    elseif cursor < 4 then
+      cursor = #data
     end
   end
-
+  
   -- Trap events with prompt when cursor is active
   local trapCursor = {
     run = function(event, touchState)
-      if event == EVT_VIRTUAL_ENTER then
+      if touchState then
+        local tx, ty = touchState.x - LFT, touchState.y
+        if 0 <= tx and tx <= PLOT_W and TOP <= ty and ty <= TOP + PLOT_H then
+          local x = tx / xScale + xMin
+          local y = (y0 - ty) / yScale
+          -- Find the nearest x-values
+          local i1 = 4
+          local i2 = #data
+          while i2 - i1 > 1 do
+            local i = math.floor((i1 + i2) / 2)
+            if data[i][1] <= x then
+              i1 = i
+            else
+              i2 = i
+            end
+          end
+          -- Search for nearest point within x-window
+          local ddMin = FMAX
+          local plotIdx = guiGraph.ddPlot.selected + 1
+          for i = math.max(4, i1 - 4), math.min(#data, i2 + 4) do
+            x = LFT + xScale * (data[i][1] - xMin)
+            y = y0 - yScale * data[i][plotIdx]
+            local dd = (tx - x) ^ 2 + (ty - y) ^ 2
+            if dd < ddMin then
+              ddMin = dd
+              cursor = i
+            end
+          end
+        elseif event == EVT_TOUCH_TAP then
+          toggleCursor.onEvent(EVT_VIRTUAL_ENTER)
+        end
+      elseif event == EVT_VIRTUAL_ENTER then
         toggleCursor.onEvent(event)
       elseif event == EVT_VIRTUAL_PREV then
-        onArrows(-1)
+        moveCursor(-1)
       elseif event == EVT_VIRTUAL_NEXT then
-        onArrows(1)
-      else
-        guiGraph.onEvent(event, touchState)
+        moveCursor(1)
       end
     end
   }
@@ -360,6 +382,17 @@ do
   end
 
   toggleCursor = guiGraph.toggleButton(BUTTON_X, y, BUTTON_W, HEIGHT, "Cursor", false, onToggleCursor)
+
+  local function onArrows(d)
+    local s = menu2.selected + d
+    if s < 1 then
+      s = #menu2.items
+    elseif s > #menu2.items then
+      s = 1
+    end
+    menu2.selected = s
+    readSelected()
+  end
 
   y = BOTTOM - HEIGHT
   local w = (BUTTON_W - MARGIN) / 2
@@ -387,9 +420,9 @@ do
     end
     
     -- Time scale
-    local xMin = data[2][1]
+    xMin = data[2][1]
     local xRange = math.max(60, data[3][1] - xMin)
-    local xScale = PLOT_W / xRange
+    xScale = PLOT_W / xRange
     -- Y-scale
     local yRange = data[3][plotIdx] - data[2][plotIdx]
     local mag = math.max(-2, math.floor(math.log(yRange, 10)))
@@ -413,8 +446,8 @@ do
       yMin = yMin - yTick
       yMax = yMax + yTick
     end
-    local yScale = PLOT_H / (yMax - yMin)
-    local y0 = BOTTOM + yScale * yMin
+    yScale = PLOT_H / (yMax - yMin)
+    y0 = BOTTOM + yScale * yMin
     -- Flags for number precision
     local fmt
     if yTick < 0.1 then
