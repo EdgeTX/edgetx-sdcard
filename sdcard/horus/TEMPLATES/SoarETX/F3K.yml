@@ -1117,9 +1117,9 @@ screenData:
                widgetData: 
                   options: 
                      0:
-                        type: String
+                        type: Signed
                         value: 
-                           stringValue: "\x01"
+                           signedValue: 1
                      1:
                         type: String
                         value: 
@@ -1154,9 +1154,9 @@ screenData:
                widgetData: 
                   options: 
                      0:
-                        type: String
+                        type: Signed
                         value: 
-                           stringValue: "\x01"
+                           signedValue: 1
                      1:
                         type: String
                         value: 
@@ -1166,9 +1166,9 @@ screenData:
                widgetData: 
                   options: 
                      0:
-                        type: String
+                        type: Signed
                         value: 
-                           stringValue: "\x01"
+                           signedValue: 1
                      1:
                         type: String
                         value: 
@@ -1178,9 +1178,9 @@ screenData:
                widgetData: 
                   options: 
                      0:
-                        type: String
+                        type: Signed
                         value: 
-                           stringValue: "\x01"
+                           signedValue: 1
                      1:
                         type: String
                         value: 
@@ -1190,21 +1190,33 @@ screenData:
                widgetData: 
                   options: 
                      0:
-                        type: String
+                        type: Signed
                         value: 
-                           stringValue: "\x01"
+                           signedValue: 1
                      1:
                         type: String
                         value: 
                            stringValue: "f3k_ctr"
+            4:
+               widgetName: "SoarETX"
+               widgetData: 
+                  options: 
+                     0:
+                        type: Signed
+                        value: 
+                           signedValue: 1
+                     1:
+                        type: String
+                        value: 
+                           stringValue: "graph"
             5:
                widgetName: "SoarETX"
                widgetData: 
                   options: 
                      0:
-                        type: String
+                        type: Signed
                         value: 
-                           stringValue: "\x01"
+                           signedValue: 1
                      1:
                         type: String
                         value: 
@@ -1237,9 +1249,9 @@ topbarData:
          widgetData: 
             options: 
                0:
-                  type: String
+                  type: Signed
                   value: 
-                     stringValue: "\x01"
+                     signedValue: 1
                1:
                   type: String
                   value: 
@@ -1249,12 +1261,12 @@ topbarData:
          widgetData: 
             options: 
                0:
-                  type: String
+                  type: Signed
                   value: 
-                     stringValue: "\x01"
+                     signedValue: 1
                1:
                   type: String
                   value: 
                      stringValue: "battery"
-view: 0
+view: 1
 modelRegistrationID: ""

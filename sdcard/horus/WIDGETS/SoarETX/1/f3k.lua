@@ -2,7 +2,7 @@
 -- SoarETX F3K score keeper, loadable component                          --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Date:    2022-02-21                                                   --
+-- Date:    2022-03-08                                                   --
 -- Version: 1.0.0                                                        --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
@@ -38,6 +38,7 @@ local HEADER =   40
 local LEFT =     40
 local RGT =      LCD_W - 18
 local TOP =      50
+local BOTTOM =   LCD_H - 30
 local LINE =     60
 local LINE2 =    28 
 local HEIGHT =   42
@@ -474,9 +475,6 @@ function widget.background()
 		nextCall = now + 1000
 	end
 
-	-- Write the current flight mode to a telemetry sensor.
-	setTelemetryValue(0x5050, 0, 224, getFlightMode(), 0, 0, "FM")
-	
 	if state <= STATE_READY and state ~= STATE_FINISHED then
 		InitializeFlight()
 	end
@@ -781,7 +779,7 @@ local function SetupScreen(gui, title, pop)
       return event
     end
   end
-  gui.SetEventHandler(EVT_VIRTUAL_EXIT, HandleEXIT)
+  gui.setEventHandler(EVT_VIRTUAL_EXIT, HandleEXIT)
   
   return gui
 end -- SetupScreen
@@ -854,12 +852,12 @@ do -- Setup F3K tasks menu
   }
 
   -- Call back function running when a menu item is selected
-  local function callBack(item, event, touchState)
-    SetupTask(tasks[item.idx], taskData[item.idx])
+  local function callBack(menu, event, touchState)
+    SetupTask(tasks[menu.selected], taskData[menu.selected])
     PushGUI(screenTask)
   end
 
-  menuF3K.menu(LEFT, TOP, N_LINES, tasks, callBack)
+  menuF3K.menu(LEFT, TOP, LCD_W - 2 * LEFT, BOTTOM - TOP, tasks, callBack)
 end
 
 do -- Setup practice tasks menu
@@ -879,12 +877,12 @@ do -- Setup practice tasks menu
   }
   
   -- Call back function running when a menu item is selected
-  local function callBack(item)
-    SetupTask(tasks[item.idx], taskData[item.idx])
+  local function callBack(menu)
+    SetupTask(tasks[menu.selected], taskData[menu.selected])
     PushGUI(screenTask)
   end
 
-  menuPractice.menu(LEFT, TOP, N_LINES, tasks, callBack)
+  menuPractice.menu(LEFT, TOP, LCD_W - 2 * LEFT, BOTTOM - TOP, tasks, callBack)
 end
 
 
@@ -993,7 +991,7 @@ do -- Setup score keeper screen for F3K and Practice tasks
       return event
     end
   end
-  screenTask.SetEventHandler(EVT_VIRTUAL_EXIT, HandleEXIT)
+  screenTask.setEventHandler(EVT_VIRTUAL_EXIT, HandleEXIT)
 end
 
 do -- Prompt asking to save scores and exit task window

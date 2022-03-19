@@ -1,8 +1,8 @@
 ---------------------------------------------------------------------------
--- SoarETX F3K configure mixes and battery warning, loadable component   --
+-- SoarETX F3K RE configure mixes and battery warning                    --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Date:    2022-02-09                                                   --
+-- Date:    2022-02-23                                                   --
 -- Version: 1.0.0                                                        --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
@@ -117,12 +117,7 @@ do
   end
   
   -- ADD GVs
-  addGV("Aileron " .. CHAR_RIGHT .. " rudder", 2, -100, 100)
-  addGV("Differential", 3, -100, 100)
-  addGV("Brake " .. CHAR_RIGHT .. " elevator", 4, 0, 40)
-  addGV("Snap - flap", 5, 0, 50)
   addGV("Elevator input", 6, 20, 100)
-  addGV("Aileron input", 7, 20, 100)
   addGV("Exponential", 8, 20, 100)
   
   -- Add battery warning

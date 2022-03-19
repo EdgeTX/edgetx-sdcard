@@ -110,6 +110,8 @@ end -- Warning prompt
 do
   local PROMPT_W = 280
   local PROMPT_H = 210
+  local MENU_W = 75
+  local MENU_H = PROMPT_H - HEADER - 2 * MARGIN
   local X = { 110, 180, 250 }
   local MAX_D = 20
   local t0 = 0
@@ -125,6 +127,13 @@ do
   editPrompt.y = (LCD_H - PROMPT_H) / 2
   
   function editPrompt.fullScreenRefresh()
+    if not editPrompt.editing then
+      editPoints = 0
+      gui.dismissPrompt()
+      gui.onEvent(EVT_VIRTUAL_EXIT)
+      return
+    end
+
     editPrompt.drawFilledRectangle(0, 0, PROMPT_W, HEADER, COLOR_THEME_SECONDARY1)
     editPrompt.drawFilledRectangle(0, HEADER, PROMPT_W, PROMPT_H - HEADER, libGUI.colors.primary2)
     editPrompt.drawRectangle(0, 0, PROMPT_W, PROMPT_H, libGUI.colors.primary1, 2)
@@ -149,12 +158,12 @@ do
     end
   end -- fullScreenRefresh()
 
-  local function onMenu(item)
-    editPoints = item.idx
+  local function onMenu(menu)
+    editPoints = menu.selected
     gui.dismissPrompt()
   end -- onMenu(...)
   
-  editPrompt.menu(MARGIN, HEADER + MARGIN, #menuItems, menuItems, onMenu)
+  editPrompt.menu(MARGIN, HEADER + MARGIN, MENU_W, MENU_H, menuItems, onMenu)
 end -- Prompt for selecting what to edit
 
 -- Move output channel by swapping with previous or next; direction = -1 or +1
@@ -533,6 +542,7 @@ local function init()
           function interval.onEvent(event, touchState)
             if event == EVT_VIRTUAL_ENTER and not channel.editing then
               channel.editing = true
+              editPrompt.onEvent(EVT_VIRTUAL_ENTER)
               channel.showPrompt(editPrompt)
               return
             end
