@@ -2,7 +2,7 @@
 -- SoarETX graph of log data                                             --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Date:    2022-03-19                                                   --
+-- Date:    2022-03-20                                                   --
 -- Version: 1.0.0                                                        --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
@@ -121,12 +121,24 @@ local function buildFileTree()
 end
 
 local function readLines(fileName)
+  -- data[2] = min values, data[3] = max values
+  data = { { }, { FMAX }, { -FMAX } }
+
+  if not fileName then
+    return
+  end
+
+  fileName = "/LOGS/" .. fileName
+  local fileStat = fstat(fileName)
+
+  if not fileStat then
+    return
+  end
+
   local l = string.len(DEFAULT_PLOT)
   local plotIdx = 2
-  fileName = "/LOGS/" .. fileName
-  local fileLen = fstat(fileName).size
   local logFile = io.open(fileName, "r")
-  local logString = io.read(logFile, fileLen)
+  local logString = io.read(logFile, fileStat.size)
   io.close(logFile)
   lines = { }
 
@@ -134,6 +146,10 @@ local function readLines(fileName)
   for line in string.gmatch(logString, "[^\n]+") do
     i = i + 1
     lines[i] = line
+  end
+
+  if #lines < 3 then
+    return
   end
 
   local headers = { }
@@ -144,9 +160,6 @@ local function readLines(fileName)
       headers[i] = field
     end
   end
-  
-  -- data[2] = min values, data[3] = max values
-  data = { { }, { FMAX }, { -FMAX } }
   
   for i = 2, #headers do
     if string.sub(headers[i], 1, l) == DEFAULT_PLOT then
@@ -268,11 +281,16 @@ do
 
   local function refreshTimes()
     local date = menu1.items[menu1.selected]
-    local times = { }
-    for t in pairs(fileTree[date]) do
-      times[#times + 1] = t
+    local times
+    if fileTree[date] then
+      times = { }
+      for t in pairs(fileTree[date]) do
+        times[#times + 1] = t
+      end
+      table.sort(times)
+    else
+      times = { "No files" }
     end
-    table.sort(times)
     menu2.items = times
     menu2.selected = 1
   end
@@ -313,7 +331,7 @@ do
   local toggleCursor
 
   local y = TOP
-  guiGraph.ddPlot = guiGraph.dropDown(BUTTON_X, y, BUTTON_W, HEIGHT, { "1", "2", "3", "4", "5", "6", "7" }, 7, nil, CENTER)
+  guiGraph.ddPlot = guiGraph.dropDown(BUTTON_X, y, BUTTON_W, HEIGHT, { "1", "2", "3", "4", "5", "6", "- - -" }, 7, nil, CENTER)
 
   y = y + LINE
   guiGraph.button(BUTTON_X, y, BUTTON_W, HEIGHT, "New file", function() gui = guiFile end)
