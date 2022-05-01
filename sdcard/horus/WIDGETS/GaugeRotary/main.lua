@@ -16,7 +16,7 @@
 ---- #                                                                       #
 ---- #########################################################################
 
---  This GaugeRotary widget display a fancy old style analog gauge with needle
+--  This Rotary Gauge widget display a fancy old style analog gauge with needle
 --  Options:
 --    HighAsGreen: [checked] for sensor that high values is good (RSSI/Fuel/...)
 --      [checked] for sensor that high values is good (RSSI/Fuel/...)
@@ -297,7 +297,7 @@ local function refresh(wgt, event, touchState)
   end
 
   -- widget load (debugging)
-  lcd.drawText(wgt.zone.x + 10, wgt.zone.y, string.format("load: %d%%", getUsage()), SMLSIZE + GREY) -- ???
+--  lcd.drawText(wgt.zone.x + 10, wgt.zone.y, string.format("load: %d%%", getUsage()), SMLSIZE + GREY) -- ???
 end
 
 return { name = "GaugeRotary", options = _options, create = create, update = update, refresh = refresh }
