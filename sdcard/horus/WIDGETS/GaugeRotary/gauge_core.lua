@@ -101,6 +101,7 @@ function self.drawGauge(centerX, centerY, centreR, isFull, percentageValue, perc
   -- ticks
   local to_tick
   local tick_offset
+  local tick_step = 10
   if isFull then
     to_tick = 210
     tick_offset = 250
@@ -108,8 +109,10 @@ function self.drawGauge(centerX, centerY, centreR, isFull, percentageValue, perc
     to_tick = 210
     tick_offset = 250
   end
-
-  for i = 0, to_tick, 10 do
+  if (centreR < 100) then
+    tick_step = 10 + 0.15 * (100 - centreR)
+  end
+  for i = 0, to_tick, tick_step do
     --log("HighAsGreen: " .. self.HighAsGreen)
     if (self.HighAsGreen == 1) then
       lcd.setColor(CUSTOM_COLOR, self.getRangeColor(i, 0, to_tick - 10))
@@ -147,17 +150,20 @@ function self.drawGauge(centerX, centerY, centreR, isFull, percentageValue, perc
 
   -- hide the base of the arm
   lcd.drawFilledCircle(centerX, centerY, armCenterR, BLACK)
-
-  if isFull then
-  else
-  end
+  lcd.drawAnnulus(centerX, centerY, armCenterR-2, armCenterR, 0, 360,
+    --lcd.RGB(255, 255, 0)
+    lcd.RGB(192, 192, 192)
+  )
 
   -- text in center
   lcd.drawText(centerX + 0, centerY - 8, txt2, CENTER + SMLSIZE + WHITE) -- XXLSIZE/DBLSIZE/MIDSIZE/SMLSIZE
+
+  -- text below
   if isFull then
-    -- text below
-    lcd.drawText(centerX + 8, centerY + 30, txt1, CENTER + txtSize + WHITE)
+    --lcd.drawText(centerX + 8, centerY + 30, txt1, CENTER + txtSize + WHITE)
+    lcd.drawText(centerX + 0, centerY + armCenterR + 2, txt1, CENTER + txtSize + WHITE)
   else
+    -- no text below in flat mode
   end
 
 end
