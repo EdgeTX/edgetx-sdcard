@@ -2,8 +2,8 @@
 -- The dynamically loadable part of the shared Lua GUI library.          --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Date:    2022-03-10                                                   --
--- Version: 1.0.0                                                        --
+-- Date:    2022-05-05                                                   --
+-- Version: 1.0.1                                                        --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
 --                                                                       --
@@ -661,6 +661,11 @@ function lib.newGUI()
           if event == EVT_VIRTUAL_ENTER then
             event = 0
           end
+        end
+
+        -- If we touch it, then start editing immediately
+        if touchState then
+          gui.editing = true
         end
 
         if event == EVT_TOUCH_SLIDE then
