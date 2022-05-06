@@ -38,6 +38,9 @@
 local UNIT_ID_TO_STRING = { "V", "A", "mA", "kts", "m/s", "f/s", "km/h", "mph", "m", "f", "°C", "°F", "%", "mAh", "W", "mW", "dB", "rpm", "g", "°", "rad", "ml", "fOz", "ml/m", "Hz", "uS", "km" }
 local DEFAULT_MIN_MAX = {
   {"RSSI" ,  0, 100, 0},
+  {"1RSS" ,  -120, 0, 0},
+  {"2RSS" ,  -120, 0, 0},
+  {"RQly" ,  0, 100, 0},
   {"RxBt" ,  4,  10, 1},
   {"TxBt" ,  6, 8.4, 1},
   {"Batt" ,  6, 8.4, 1},

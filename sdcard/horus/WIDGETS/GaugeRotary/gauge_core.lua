@@ -129,11 +129,11 @@ function self.drawGauge(centerX, centerY, centreR, isFull, percentageValue, perc
   local armColor = lcd.RGB(255, 255, 255)
   local armColorMin, armColorMax
   if (self.HighAsGreen == 1) then
-    armColorMin = lcd.RGB(100, 0, 0)
-    armColorMax = lcd.RGB(0, 100, 0)
+    armColorMin = lcd.RGB(200, 0, 0)
+    armColorMax = lcd.RGB(0, 200, 0)
   else
-    armColorMin = lcd.RGB(0, 100, 0)
-    armColorMax = lcd.RGB(100, 0, 0)
+    armColorMin = lcd.RGB(0, 200, 0)
+    armColorMax = lcd.RGB(200, 0, 0)
   end
 
   --self.drawArm(centerX, centerY, armR, 0, armColorMin, isFull)
