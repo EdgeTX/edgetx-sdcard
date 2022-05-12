@@ -115,6 +115,9 @@ local function create(zone, options)
   local wgt = {
     zone = zone,
     options = options,
+    last_value = -1,
+    last_value_min = -1,
+    last_value_max = -1,
     gauge1 = GaugeClass(options.HighAsGreen, 2)
   }
 
@@ -130,6 +133,15 @@ local function update(wgt, options)
 end
 
 -- -----------------------------------------------------------------------------------------------------
+
+local function isTelemetryAvailable()
+  local rx_val = getValue("RxBt")
+  if rx_val > 0 then
+    return true
+  end
+  return false
+end
+
 
 local function getPercentageValue(value, options_min, options_max)
   if value == nil then
@@ -154,7 +166,6 @@ end
 local function getWidgetValue(wgt)
   local currentValue = getValue(wgt.options.Source)
   local sourceName = getSourceName(wgt.options.Source)
-  log("aaaaaa:  "..  sourceName)
   log("aaaaaa:  ".. sourceName .. ": " .. string.byte(string.sub(sourceName, 1, 1)))
 
   -- workaround for bug in getFiledInfo()
@@ -188,19 +199,25 @@ local function getWidgetValue(wgt)
   log(string.format("  idUnit: %s", fieldinfo.unit))
   log(string.format("  txtUnit: %s", txtUnit))
 
-  -- try to get min/max value (if exist)
-  local minValue = getValue(sourceName .. "-")
-  local maxValue = getValue(sourceName .. "+")
-  --log("min/max: " .. minValue .. " < " .. currentValue .. " < " .. maxValue)
+  if isTelemetryAvailable() then
+    -- try to get min/max value (if exist)
+    local minValue = getValue(sourceName .. "-")
+    local maxValue = getValue(sourceName .. "+")
 
-  return sourceName, currentValue, minValue, maxValue, txtUnit
+    wgt.last_value = currentValue
+    wgt.last_value_min = minValue
+    wgt.last_value_max = maxValue
+
+    --log("min/max: " .. minValue .. " < " .. currentValue .. " < " .. maxValue)
+    return sourceName, currentValue, minValue, maxValue, txtUnit
+  else
+    log("overriding value with last_value: " .. wgt.last_value)
+    return sourceName, wgt.last_value, wgt.last_value_min, wgt.last_value_max, txtUnit
+  end
 end
 
 local function refresh_app_mode(wgt, event, touchState, w_name, value, minValue, maxValue, w_unit, percentageValue, percentageValueMin, percentageValueMax)
   local w_name, value, minValue, maxValue, w_unit = getWidgetValue(wgt)
-  if (value == nil) then
-    return
-  end
 
   local percentageValue = getPercentageValue(value, wgt.options.Min, wgt.options.Max)
   local percentageValueMin = getPercentageValue(minValue, wgt.options.Min, wgt.options.Max)
@@ -268,6 +285,10 @@ local function refresh_widget(wgt, w_name, value, minValue, maxValue, w_unit, pe
   wgt.gauge1.drawGauge(centerX, centerY, centerR, isFull, percentageValue, percentageValueMin, percentageValueMax, value_fmt, w_name)
   --lcd.drawText(wgt.zone.x, wgt.zone.y, value_fmt, XXLSIZE + YELLOW)
 
+  if isTelemetryAvailable() == false then
+    lcd.drawText(wgt.zone.x, wgt.zone.y + wgt.zone.h /2, "Disconnected...", MIDSIZE + WHITE+ BLINK)
+  end
+
 end
 
 
@@ -275,6 +296,8 @@ local function refresh(wgt, event, touchState)
   if (wgt == nil) then return end
   if (wgt.options == nil) then return end
   if (wgt.zone == nil) then return end
+  local sourceName = getSourceName(wgt.options.Source)
+  if (sourceName == nil) then return end
 
   --lcd.drawRectangle(wgt.zone.x, wgt.zone.y, wgt.zone.w, wgt.zone.h, BLACK)
 
