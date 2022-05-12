@@ -32,7 +32,7 @@
 --    * batt-capacity
 --    * A1/A2 analog voltage
 
--- Version: 0.1
+-- Version: 0.2
 -- Author : Offer Shmuely
 
 local UNIT_ID_TO_STRING = { "V", "A", "mA", "kts", "m/s", "f/s", "km/h", "mph", "m", "f", "°C", "°F", "%", "mAh", "W", "mW", "dB", "rpm", "g", "°", "rad", "ml", "fOz", "ml/m", "Hz", "uS", "km" }
@@ -78,6 +78,8 @@ local function setAutoMinMax(wgt)
 
   print("GaugeRotary-setting: " .. "AutoMinMax")
   local sourceName = getSourceName(wgt.options.Source)
+  if (sourceName == nil) then return end
+
   -- workaround for bug in getFiledInfo()
   if string.byte(string.sub(sourceName,1,1)) > 127 then
     sourceName = string.sub(sourceName,2,-1) -- ???? why?
