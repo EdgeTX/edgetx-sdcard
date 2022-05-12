@@ -133,9 +133,17 @@ local function update(wgt, options)
 end
 
 -- -----------------------------------------------------------------------------------------------------
-
+local rxbt_id = nil
 local function isTelemetryAvailable()
-  local rx_val = getValue("RxBt")
+  --local rx_val = getValue("RxBt")
+  if rxbt_id == nil then
+    rxbt_id = getFieldInfo("RxBt").id
+  end
+  if rxbt_id == nil then
+    return false
+  end
+
+  local rx_val = getValue(rxbt_id)
   if rx_val > 0 then
     return true
   end
@@ -201,8 +209,21 @@ local function getWidgetValue(wgt)
 
   if isTelemetryAvailable() then
     -- try to get min/max value (if exist)
-    local minValue = getValue(sourceName .. "-")
-    local maxValue = getValue(sourceName .. "+")
+
+    --local minValue = getValue(sourceName .. "-")
+    --local maxValue = getValue(sourceName .. "+")
+    local minValue = nil
+    local maxValue = nil
+    if source_min_id == nil or source_max_id == nil then
+      source_min_id = getFieldInfo(sourceName .. "-").id
+      source_max_id = getFieldInfo(sourceName .. "+").id
+    end
+    if source_min_id ~= nil and source_max_id ~= nil then
+      minValue = getValue(source_min_id)
+      maxValue = getValue(source_max_id)
+    end
+
+
 
     wgt.last_value = currentValue
     wgt.last_value_min = minValue
