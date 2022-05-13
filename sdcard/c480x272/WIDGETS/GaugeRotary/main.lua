@@ -150,7 +150,6 @@ local function isTelemetryAvailable()
   return false
 end
 
-
 local function getPercentageValue(value, options_min, options_max)
   if value == nil then
     return nil
@@ -181,8 +180,6 @@ local function getWidgetValue(wgt)
     sourceName = string.sub(sourceName,2,-1) -- ???? why?
   end
   --log("Source: " .. wgt.options.Source .. ",name: " .. sourceName)
-
-  --local currentValue = getValue(wgt.options.Source) / 10.24
 
   local fieldinfo = getFieldInfo(wgt.options.Source)
   if (fieldinfo == nil) then
@@ -222,8 +219,6 @@ local function getWidgetValue(wgt)
       minValue = getValue(source_min_id)
       maxValue = getValue(source_max_id)
     end
-
-
 
     wgt.last_value = currentValue
     wgt.last_value_min = minValue

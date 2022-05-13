@@ -115,7 +115,9 @@ function self.drawGauge(centerX, centerY, centreR, isFull, percentageValue, perc
   for i = 0, to_tick, tick_step do
     --log("HighAsGreen: " .. self.HighAsGreen)
     if (self.HighAsGreen == 1) then
-      lcd.setColor(CUSTOM_COLOR, self.getRangeColor(i, 0, to_tick - 10))
+      local newColor = self.getRangeColor(i, 0, to_tick - 10)
+      lcd.setColor(CUSTOM_COLOR, newColor)
+      --lcd.setColor(CUSTOM_COLOR, self.getRangeColor(i, 0, to_tick - 10))
     else
       lcd.setColor(CUSTOM_COLOR, self.getRangeColor(i, to_tick - 10, 0))
       --lcd.setColor(CUSTOM_COLOR, self.getRangeColor(i, 120 , 30))
