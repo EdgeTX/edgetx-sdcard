@@ -32,9 +32,17 @@
 --    * batt-capacity
 --    * A1/A2 analog voltage
 
--- Version: 0.2
+-- Version: 0.3
 -- Author : Offer Shmuely
 
+
+local app_name = "GaugeRotary"
+
+-- imports
+local GaugeClass = loadScript("/WIDGETS/" .. app_name .. "/gauge_core.lua")
+local ToolsClass = loadScript("/WIDGETS/" .. app_name .. "/tools.lua")
+
+-- consts
 local UNIT_ID_TO_STRING = { "V", "A", "mA", "kts", "m/s", "f/s", "km/h", "mph", "m", "f", "°C", "°F", "%", "mAh", "W", "mW", "dB", "rpm", "g", "°", "rad", "ml", "fOz", "ml/m", "Hz", "uS", "km" }
 local DEFAULT_MIN_MAX = {
   {"RSSI" ,  0, 100, 0},
@@ -109,46 +117,28 @@ local function setAutoMinMax(wgt)
 
 end
 
-local function create(zone, options)
-  local GaugeClass = loadScript("/WIDGETS/GaugeRotary/gauge_core.lua")
+local function update(wgt, options)
+  wgt.options = options
+  setAutoMinMax(wgt)
+  wgt.gauge1 = GaugeClass(options.HighAsGreen, 2)
+  wgt.tools = ToolsClass()
+end
 
+local function create(zone, options)
   local wgt = {
     zone = zone,
     options = options,
     last_value = -1,
     last_value_min = -1,
     last_value_max = -1,
-    gauge1 = GaugeClass(options.HighAsGreen, 2)
+    gauge1 = nil
   }
 
-  setAutoMinMax(wgt)
-
+  update(wgt, options)
   return wgt
 end
 
-local function update(wgt, options)
-  wgt.options = options
-  setAutoMinMax(wgt)
-  wgt.gauge1.HighAsGreen = wgt.options.HighAsGreen
-end
-
--- -----------------------------------------------------------------------------------------------------
-local rxbt_id = nil
-local function isTelemetryAvailable()
-  --local rx_val = getValue("RxBt")
-  if rxbt_id == nil then
-    rxbt_id = getFieldInfo("RxBt").id
-  end
-  if rxbt_id == nil then
-    return false
-  end
-
-  local rx_val = getValue(rxbt_id)
-  if rx_val > 0 then
-    return true
-  end
-  return false
-end
+--------------------------------------------------------------------------------------------------------
 
 local function getPercentageValue(value, options_min, options_max)
   if value == nil then
@@ -195,20 +185,18 @@ local function getWidgetValue(wgt)
     end
   end
 
-  log("")
-  log(string.format("id: %s", fieldinfo.id))
-  log(string.format("  sourceName: %s", sourceName))
-  log(string.format("  curr: %2.1f", currentValue))
-  log(string.format("  name: %s", fieldinfo.name))
-  log(string.format("  desc: %s", fieldinfo.desc))
-  log(string.format("  idUnit: %s", fieldinfo.unit))
-  log(string.format("  txtUnit: %s", txtUnit))
+  --log("")
+  --log(string.format("id: %s", fieldinfo.id))
+  --log(string.format("  sourceName: %s", sourceName))
+  --log(string.format("  curr: %2.1f", currentValue))
+  --log(string.format("  name: %s", fieldinfo.name))
+  --log(string.format("  desc: %s", fieldinfo.desc))
+  --log(string.format("  idUnit: %s", fieldinfo.unit))
+  --log(string.format("  txtUnit: %s", txtUnit))
 
-  if isTelemetryAvailable() then
+  if (wgt.tools.isTelemetryAvailable()) then
+
     -- try to get min/max value (if exist)
-
-    --local minValue = getValue(sourceName .. "-")
-    --local maxValue = getValue(sourceName .. "+")
     local minValue = nil
     local maxValue = nil
     if source_min_id == nil or source_max_id == nil then
@@ -232,7 +220,7 @@ local function getWidgetValue(wgt)
   end
 end
 
-local function refresh_app_mode(wgt, event, touchState, w_name, value, minValue, maxValue, w_unit, percentageValue, percentageValueMin, percentageValueMax)
+local function refresh_app_mode(wgt, event, touchState)
   local w_name, value, minValue, maxValue, w_unit = getWidgetValue(wgt)
 
   local percentageValue = getPercentageValue(value, wgt.options.Min, wgt.options.Max)
@@ -255,7 +243,7 @@ local function refresh_app_mode(wgt, event, touchState, w_name, value, minValue,
 end
 
 
-local function refresh_widget(wgt, w_name, value, minValue, maxValue, w_unit, percentageValue, percentageValueMin, percentageValueMax)
+local function refresh_widget(wgt)
   local w_name, value, minValue, maxValue, w_unit = getWidgetValue(wgt)
   if (value == nil) then
     return
@@ -301,7 +289,7 @@ local function refresh_widget(wgt, w_name, value, minValue, maxValue, w_unit, pe
   wgt.gauge1.drawGauge(centerX, centerY, centerR, isFull, percentageValue, percentageValueMin, percentageValueMax, value_fmt, w_name)
   --lcd.drawText(wgt.zone.x, wgt.zone.y, value_fmt, XXLSIZE + YELLOW)
 
-  if isTelemetryAvailable() == false then
+  if wgt.tools.isTelemetryAvailable() == false then
     lcd.drawText(wgt.zone.x, wgt.zone.y + wgt.zone.h /2, "Disconnected...", MIDSIZE + WHITE+ BLINK)
   end
 
