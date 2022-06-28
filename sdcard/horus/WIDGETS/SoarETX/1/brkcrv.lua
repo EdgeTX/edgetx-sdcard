@@ -1,5 +1,5 @@
 ---------------------------------------------------------------------------
--- SoarETX flaps and aileron alignment, loadable component               --
+-- SoarETX Adjust airbrake curves for flaps and ailerons                 --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
 -- Date:    2022-06-27                                                   --
@@ -21,53 +21,35 @@
 
 local widget, soarGlobals =  ...
 local libGUI =  loadGUI()
-libGUI.flags =  MIDSIZE
-local gui = libGUI.newGUI()
+libGUI.flags =  0
+local gui =     libGUI.newGUI()
 local colors =  libGUI.colors
-local title =   "Wing alignment"
+local title =   "Airbrake curves"
 
 -- Screen drawing constants
 local HEADER =    40
 local TOP =       50
 local MARGIN =    20
-local DIST_X =    25
+local DIST_X =    40
 local HEIGHT =    150
-local WIDTH =     (LCD_W - 4.5 * DIST_X) / 4
-local TEXT_Y =    210
+local WIDTH =     (LCD_W - 3 * DIST_X) / 2
 local BUTTON_W =  80
 local BUTTON_X =  LCD_W - BUTTON_W - MARGIN
 local BUTTON_H =  36
 local BUTTON_Y =  (LCD_H + TOP + HEIGHT - BUTTON_H) / 2
+local TEXT_Y =    BUTTON_Y
 
--- Other constants
-local INP_STEP = getFieldInfo("input8").id  -- Step input
+-- Global variables
+local INP_STEP = getFieldInfo("input8").id 	-- Step input for selecting curve point
 local LS_STEP = 10                          -- Set this LS to apply step input and adjust
-local N = 5                                 -- Number of curve points
-local MAX_Y = 1500                          -- Max output value
-local MINDIF = 100                          -- Minimum difference between lower, center and upper values
-local NC = 32																-- Number of channels
-
--- Flaperon curve indices (LA, LF, RF, RA)
-local CRV_IDX = { 0, 2, 3, 1 }
--- Tables with data for flaperon curves
-local crvTbls = { {}, {}, {}, {} }
--- Indices of output channels
-local outIds = { {}, {}, {}, {} }
--- Tables with data for flaperon output channels
-local outTbls = { {}, {}, {}, {} }
--- Tables with y-values after both curve and output settings have been applied
-local yVals = { {}, {}, {}, {} }
--- The point currently being edited
-local activeP
--- Labels for curve plots
-local labels = {
-	"Lft ail",
-	"Lft flp",
-	"Rgt flp",
-	"Rgt ail"
-}
--- Step input has be turned on by this widget
-local stepOn = false
+local N = 5 																-- Number of points on the curves
+local MAX_Y = 100   												-- Max plot value
+local CRV_FLP = 4 													-- Index of the  flap curve
+local CRV_AIL = 5 													-- Index of the  aileron curve
+local tblFlp 																-- Table with data for the flap curve
+local tblAil 																-- Table with data for the aileron curve
+local activeP   														-- The point currently being edited
+local stepOn = false												-- Step input has be turned on by this widget
 
 -- Turn off step input (if it was turned on by this widget)
 local function stepOff()
@@ -96,59 +78,12 @@ local function GetCurve(crvIndex)
 	return newTbl
 end -- GetCurve()
 
--- Find the output where the specified curve index is being used
-local function GetOutput(crvIndex)
-	for i = 0, NC - 1 do
-		local out = model.getOutput(i)
-
-		if out and out.curve == crvIndex then
-			return i, out
-		end
-	end
-
-  stepOff()
-  error("No output channel with curve CV" .. crvIndex + 1)
-end -- GetOutput()
-
 local function init()
-	for i, j in ipairs(CRV_IDX) do
-		crvTbls[i] = GetCurve(j)
-		outIds[i], outTbls[i] = GetOutput(j)
-	end
-
-  setStickySwitch(LS_STEP, true)
+	tblFlp = GetCurve(CRV_FLP)
+	tblAil = GetCurve(CRV_AIL)
+	setStickySwitch(LS_STEP, true)
 	stepOn = true
 end -- init()
-
--- Find index of the curve point that corresponds to the value of the step input
-local function FindPoint()
-	local x = getValue(INP_STEP)
-	return math.floor((N - 1) / 2048 * (x + 1024) + 1.5)
-end -- FindPoint()
-
--- Compute output after applying curve and center/endpoints
-local function ComputeYs()
-	for i, j in ipairs(CRV_IDX) do
-		local crv = crvTbls[i]
-		local out = outTbls[i]
-		local y = yVals[i]
-
-		for p = 1, N do
-			if crv.y[p] < 0 then
-				y[p] = out.offset + 0.01 * crv.y[p] * (out.offset - out.min)
-			else
-				y[p] = out.offset + 0.01 * crv.y[p] * (out.max - out.offset)
-			end
-		end
-
-		if i <= 2 then
-			-- Reverse curve points on the left side
-			for k = 1, math.floor((N + 1) / 2) do
-		    y[k], y[N + 1 - k] = -y[N + 1 - k], -y[k]
-		  end
-		end
-	end
-end -- ComputeYs()
 
 local function drawCurve(x, y, w, h, yValues)
   -- Background and lines
@@ -191,92 +126,26 @@ local function drawCurve(x, y, w, h, yValues)
   end
 end -- drawCurve()
 
--- Adjustment is +/-750 around this offset
-local function offset()
-  local ctr = (N + 1) / 2
-  return (activeP - ctr) * 750 / (ctr - 1)
-end
-
 -- Adjust a point, either on a curve or output
-local function adjustPoint(crvIdx, slider)
-	local crvTbl = crvTbls[crvIdx]
-	local outIdx = outIds[crvIdx]
-	local outTbl = outTbls[crvIdx]
-	local activeP = activeP
-	local y = slider.value + offset()
-
-	if crvIdx <= 2 then
-		-- Left side; reverse
-		activeP = N + 1 - activeP
-		y = -y
-	end
-
-  if activeP == 1 then
-    outTbl.min = math.min(y, outTbl.offset - MINDIF)
-    model.setOutput(outIdx, outTbl)
-  elseif activeP == (N + 1) / 2 then
-    outTbl.offset = math.min(math.max(y, outTbl.min + MINDIF), outTbl.max - MINDIF)
-    model.setOutput(outIdx, outTbl)
-  elseif activeP == N then
-    outTbl.max = math.max(y, outTbl.offset + MINDIF)
-    model.setOutput(outIdx, outTbl)
-  else
-    crvTbl.y[activeP] = 0.1 * y
-    model.setCurve(crvIdx, crvTbl)
-  end
+local function adjustPoint(crvIdx, crvTbl, slider)
+  crvTbl.y[activeP] = slider.value
+  model.setCurve(crvIdx, crvTbl)
 end
 
--- The inverse function of adjust to set slider value from current settings
-local function sliderPoint(crvIdx)
-	local crvTbl = crvTbls[crvIdx]
-	local outTbl = outTbls[crvIdx]
-	local activeP = activeP
-  local value
-
-  if crvIdx <= 2 then
-		-- Left side; reverse
-    activeP = N + 1 - activeP
-  end
-
-  if activeP == 1 then
-    value = outTbl.min
-  elseif activeP == (N + 1) / 2 then
-    value = outTbl.offset
-  elseif activeP == N then
-    value = outTbl.max
-  else
-    value = 10 * crvTbl.y[activeP]
-  end
-
-  if crvIdx <= 2 then
-    value = -value
-  end
-
-  return 10 * math.floor(0.1 * (value - offset()) + 0.5)
-end
-
--- Reset outputs
+-- Reset curves to defaults
 local function reset()
-  local midpt = (N + 1) / 2
-
-	for i, j in ipairs(CRV_IDX) do
-		local crvTbl = crvTbls[i]
-		for p = 1, N do
-	    local y = 200.0 / (N - 1) * (p - midpt)
-			crvTbl.y[p] = y
-		end
-		model.setCurve(j, crvTbl)
-
-		local outTbl = outTbls[i]
-		outTbl.min = -1000
-		outTbl.offset = 0
-		outTbl.max = 1000
-		model.setOutput(outIds[i], outTbl)
+	local ys = { -100, -50, 0, 25, 50 }
+	for i, y in ipairs(ys) do
+		tblFlp.y[i] = y
 	end
+	model.setCurve(CRV_FLP, tblFlp)
 
-	init()
-end -- Reset()
-
+	ys = { -50, -50, -50, -25, 0 }
+	for i, y in ipairs(ys) do
+		tblAil.y[i] = y
+	end
+	model.setCurve(CRV_AIL, tblAil)
+end
 -------------------------------- Setup GUI --------------------------------
 
 do
@@ -287,20 +156,16 @@ do
     lcd.drawFilledRectangle(0, 0, LCD_W, HEADER, COLOR_THEME_SECONDARY1)
     lcd.drawText(10, 2, title, bit32.bor(DBLSIZE, colors.primary2))
 
-    -- Curves
-		for i, j in ipairs(CRV_IDX) do
-			local x = (i - 1) * (DIST_X + WIDTH) + DIST_X
-			if i > 2 then
-				x = x - DIST_X / 2
-			end
-			drawCurve(x, TOP, WIDTH, HEIGHT, yVals[i])
-			lcd.drawText(x + 2, TOP, labels[i], SMLSIZE + colors.primary1)
-		end
+		-- Curves
+    drawCurve(DIST_X, TOP, WIDTH, HEIGHT, tblFlp.y)
+		lcd.drawText(DIST_X + 2, TOP, "Flaps", SMLSIZE + colors.primary1)
+
+    drawCurve(WIDTH + 2 * DIST_X, TOP, WIDTH, HEIGHT, tblAil.y)
+		lcd.drawText(WIDTH + 2 * DIST_X + 2, TOP, "Aileron", SMLSIZE + colors.primary1)
 
     -- Help text
     local txt = "Use the throttle stick to select a point on the\n" ..
-                "curve, and adjust with the sliders on the screen.\n" ..
-                "First end points, then center, and finally +/-50%."
+                "curve, and adjust with the sliders on the screen."
     lcd.drawTextLines(MARGIN, TEXT_Y, BUTTON_X - MARGIN, LCD_H - TEXT_Y, txt, colors.primary1)
   end
 
@@ -323,17 +188,17 @@ do
   end
 
 	-- Sliders
-	for i, j in ipairs(CRV_IDX) do
-		local x = DIST_X / 2 + (i - 1) * (DIST_X + WIDTH)
-		if i > 2 then
-			x = x + WIDTH + DIST_X / 2
-		end
-	  local slider = gui.verticalSlider(x, TOP, HEIGHT, 0, -750, 750, 10, function(slider) adjustPoint(i, slider) end)
+	local flpSlider = gui.verticalSlider(MARGIN, TOP, HEIGHT, 0, -100, 100, 1, function(slider) adjustPoint(CRV_FLP, tblFlp, slider) end)
 
-	  function slider.update()
-	    slider.value = sliderPoint(i)
-	  end
-	end
+  function flpSlider.update()
+    flpSlider.value = tblFlp.y[activeP]
+  end
+
+  local ailSlider = gui.verticalSlider(LCD_W - MARGIN, TOP, HEIGHT, 0, -100, 100, 1, function(slider) adjustPoint(CRV_AIL, tblAil, slider) end)
+
+  function ailSlider.update()
+    ailSlider.value = tblAil.y[activeP]
+  end
 
   gui.button(BUTTON_X, BUTTON_Y, BUTTON_W, BUTTON_H, "Reset", reset)
 end -- Setup GUI
@@ -341,7 +206,7 @@ end -- Setup GUI
 -------------------- Background and Refresh functions ---------------------
 
 function widget.background()
-	stepOff()
+  stepOff()
 end -- background()
 
 function widget.refresh(event, touchState)
@@ -356,8 +221,6 @@ function widget.refresh(event, touchState)
     return
   end
 
-  activeP = FindPoint()
-  ComputeYs()
-
+  activeP = math.floor((N - 1) / 2048 * (getValue(INP_STEP) + 1024) + 1.5)
   gui.run(event, touchState)
 end -- refresh(...)
