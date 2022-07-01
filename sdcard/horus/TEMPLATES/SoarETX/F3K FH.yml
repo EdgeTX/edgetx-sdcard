@@ -93,9 +93,6 @@ mixData:
    offset: GV5
    swtch: "NONE"
    flightModes: 000000000
-   curve:
-      type: 3
-      value: 5
    delayUp: 0
    delayDown: 0
    speedUp: 0
@@ -117,15 +114,15 @@ mixData:
    speedDown: 0
    name: ""
  -
-   weight: GV1
+   weight: 100
    destCh: 2
    srcRaw: I2
    carryTrim: 0
    mixWarn: 0
    mltpx: ADD
    offset: 0
-   swtch: "NONE"
-   flightModes: 010000000
+   swtch: "!L13"
+   flightModes: 000000000
    curve:
       type: 0
       value: -GV4
@@ -216,15 +213,15 @@ mixData:
    speedDown: 0
    name: ""
  -
-   weight: GV1
+   weight: 100
    destCh: 5
    srcRaw: I2
    carryTrim: 0
    mixWarn: 0
    mltpx: ADD
    offset: 0
-   swtch: "NONE"
-   flightModes: 010000000
+   swtch: "!L13"
+   flightModes: 000000000
    curve:
       type: 0
       value: GV4
@@ -356,7 +353,7 @@ mixData:
    mltpx: ADD
    offset: -10
    swtch: "NONE"
-   flightModes: 011100111
+   flightModes: 011100000
    curve:
       type: 3
       value: 11
@@ -442,8 +439,8 @@ mixData:
    mixWarn: 0
    mltpx: ADD
    offset: 0
-   swtch: "NONE"
-   flightModes: 010100000
+   swtch: "!L13"
+   flightModes: 000000000
    delayUp: 0
    delayDown: 0
    speedUp: 0
@@ -556,8 +553,8 @@ mixData:
    mixWarn: 0
    mltpx: ADD
    offset: 0
-   swtch: "NONE"
-   flightModes: 010000000
+   swtch: "!L13"
+   flightModes: 000000000
    curve:
       type: 0
       value: -100
@@ -574,8 +571,8 @@ mixData:
    mixWarn: 0
    mltpx: ADD
    offset: 0
-   swtch: "NONE"
-   flightModes: 010000000
+   swtch: "!L13"
+   flightModes: 000000000
    curve:
       type: 0
       value: 100
@@ -625,8 +622,8 @@ mixData:
    mixWarn: 0
    mltpx: ADD
    offset: 0
-   swtch: "NONE"
-   flightModes: 010000000
+   swtch: "!L13"
+   flightModes: 000000000
    delayUp: 0
    delayDown: 0
    speedUp: 0
@@ -655,8 +652,8 @@ mixData:
    mixWarn: 0
    mltpx: ADD
    offset: 0
-   swtch: "NONE"
-   flightModes: 010000000
+   swtch: "!L13"
+   flightModes: 000000000
    curve:
       type: 0
       value: -100
@@ -770,12 +767,12 @@ expoData:
    chn: 1
    swtch: "NONE"
    flightModes: 000000000
-   weight: GV9
+   weight: GV8
    name: "Elevat"
    offset: 0
    curve:
       type: 1
-      value: 50
+      value: GV9
  -
    mode: 3
    scale: 0
@@ -784,12 +781,12 @@ expoData:
    chn: 2
    swtch: "NONE"
    flightModes: 000000000
-   weight: GV8
+   weight: GV1
    name: "Ailero"
    offset: 0
    curve:
       type: 1
-      value: 50
+      value: GV9
  -
    mode: 3
    scale: 0
@@ -1208,7 +1205,7 @@ flightModeData:
          7:
             val: 100
          8:
-            val: 100
+            val: 50
    1:
       trim:
          0:
@@ -1257,6 +1254,13 @@ flightModeData:
       swtch: "L3"
       fadeIn: 0
       fadeOut: 0
+      gvars:
+         0:
+            val: 100
+         7:
+            val: 100
+         8:
+            val: 50
    4:
       trim:
          1:
@@ -1269,8 +1273,15 @@ flightModeData:
       swtch: "L4"
       fadeIn: 0
       fadeOut: 0
+      gvars:
+         0:
+            val: 100
+         7:
+            val: 100
+         8:
+            val: 50
 thrTraceSrc: Thr
-switchWarningState: Hu
+switchWarningState:
 gvars:
    0:
       name: "Ail"
@@ -1322,14 +1333,14 @@ gvars:
       prec: 0
       unit: 0
    7:
-      name: "Ail"
+      name: "Ele"
       min: 0
       max: 0
       popup: 0
       prec: 0
       unit: 0
    8:
-      name: "Ele"
+      name: "Exp"
       min: 0
       max: 0
       popup: 0
