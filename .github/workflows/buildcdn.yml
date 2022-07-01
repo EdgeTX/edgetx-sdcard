@@ -46,7 +46,7 @@ jobs:
           prerelease: false
           title: "Latest"
           files: |
-            taranis-x9.zip
-            taranis-x7.zip
-            nv14.zip
-            horus.zip
+            bw212x64.zip
+            bw128x64.zip
+            c320x480.zip
+            c480x272.zip
