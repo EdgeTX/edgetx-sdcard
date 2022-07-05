@@ -1,0 +1,1 @@
+Simple model templates that use the Lua Wizard scripts to configure the models.
