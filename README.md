@@ -6,22 +6,24 @@ This repo contains the Updated SD Card contents for all EdgeTX Radios.
 
 All platforms here are based on screen size/color. <br>
 
-- horus.zip (480x272 Horizontal Color Screen)
+- c480x272.zip (480x272 landscape orientation color screen radios)
     - TX16s
     - T16
+	- T18
     - Horus x10s
     - Horus x12s
     - Most color screen radios...
-- nv14.zip (320x480 Vertical Color Screen)
+- c320x480.zip (320x480 portrait orientation color screen radios)
     - FlySky Nirvana NV14
-- taranis-x7.zip (128x64 BW Screens)
+    - FlySky Nirvana EL18
+- bw128x64.zip (128x64 black and white screen radios)
     - T-Lite / T-Pro
     - TX12
     - ZORRO
     - QX7
     - X9 Lite
     - X-Lite
-- taranis-x9.zip (212x64 BW Screens)
+- bw212x64.zip (212x64 black and white screen radios)
     - X9D
     - X9D Plus
     - X9D Plus 2019
