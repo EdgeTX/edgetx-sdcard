@@ -12,7 +12,7 @@ The contents of this repository are organised by color type and screen size, wit
     - T18
     - Horus x10s
     - Horus x12s
-    - Generally, Most color screen radios...
+    - Generally, most color screen radios
 - **c480x320.zip** (480x320 pixel landscape orientation color screen radios)
     - FlySky PL18
     - FlySky Paladin EV (PL18EV)
