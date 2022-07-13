@@ -2,7 +2,9 @@ local wgt_options_xx = ...
 
 local self = {}
 self.wgt_options_xx = wgt_options_xx
-self.rxbt_id = nil
+self.tele_src_name = nil
+self.tele_src_id = nil
+
 self.periodic1 = {startTime = getTime(), sampleIntervalMili = sampleIntervalMili}
 
 --------------------------------------------------------------
@@ -37,16 +39,34 @@ end
 --------------------------------------------------------------------------------------------------------
 
 function self.isTelemetryAvailable()
-  --local rx_val = getValue("RxBt")
-  if self.rxbt_id == nil then
-    self.rxbt_id = getFieldInfo("RxBt").id
+  -- select telemetry source
+  if not self.tele_src_id then
+    log("select telemetry source")
+    tele_src = getFieldInfo("RSSI")
+    if not tele_src then tele_src = getFieldInfo("RxBt") end
+    if not tele_src then tele_src = getFieldInfo("A1") end
+    if not tele_src then tele_src = getFieldInfo("A2") end
+    if not tele_src then tele_src = getFieldInfo("1RSS") end
+    if not tele_src then tele_src = getFieldInfo("2RSS") end
+    if not tele_src then tele_src = getFieldInfo("RQly") end
+
+    if tele_src == nil then
+      log("no telemetry sensor found")
+      self.tele_src_id = nil
+      self.tele_src_name = "---"
+      tele_is_available = false
+      return
+    end
   end
-  if self.rxbt_id == nil then
+  self.tele_src_id = tele_src.id
+  self.tele_src_name = tele_src.name
+
+  if self.tele_src_id == nil then
     return false
   end
 
-  local rx_val = getValue(self.rxbt_id)
-  if rx_val > 0 then
+  local rx_val = getValue(self.tele_src_id)
+  if rx_val ~= 0 then
     return true
   end
   return false

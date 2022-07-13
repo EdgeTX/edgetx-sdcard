@@ -301,7 +301,10 @@ local function refresh(wgt, event, touchState)
   if (wgt.options == nil) then return end
   if (wgt.zone == nil) then return end
   local sourceName = getSourceName(wgt.options.Source)
-  if (sourceName == nil) then return end
+  if (sourceName == nil) then
+    lcd.drawText(wgt.zone.x, wgt.zone.y + wgt.zone.h /2, "No source selected...", MIDSIZE + WHITE+ BLINK)
+    return
+  end
 
   --lcd.drawRectangle(wgt.zone.x, wgt.zone.y, wgt.zone.w, wgt.zone.h, BLACK)
 
