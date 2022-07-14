@@ -32,9 +32,17 @@
 --    * batt-capacity
 --    * A1/A2 analog voltage
 
--- Version: 0.1
+-- Version: 0.3
 -- Author : Offer Shmuely
 
+
+local app_name = "GaugeRotary"
+
+-- imports
+local GaugeClass = loadScript("/WIDGETS/" .. app_name .. "/gauge_core.lua")
+local ToolsClass = loadScript("/WIDGETS/" .. app_name .. "/tools.lua")
+
+-- consts
 local UNIT_ID_TO_STRING = { "V", "A", "mA", "kts", "m/s", "f/s", "km/h", "mph", "m", "f", "°C", "°F", "%", "mAh", "W", "mW", "dB", "rpm", "g", "°", "rad", "ml", "fOz", "ml/m", "Hz", "uS", "km" }
 local DEFAULT_MIN_MAX = {
   {"RSSI" ,  0, 100, 0},
@@ -78,6 +86,8 @@ local function setAutoMinMax(wgt)
 
   print("GaugeRotary-setting: " .. "AutoMinMax")
   local sourceName = getSourceName(wgt.options.Source)
+  if (sourceName == nil) then return end
+
   -- workaround for bug in getFiledInfo()
   if string.byte(string.sub(sourceName,1,1)) > 127 then
     sourceName = string.sub(sourceName,2,-1) -- ???? why?
@@ -107,27 +117,28 @@ local function setAutoMinMax(wgt)
 
 end
 
-local function create(zone, options)
-  local GaugeClass = loadScript("/WIDGETS/GaugeRotary/gauge_core.lua")
-
-  local wgt = {
-    zone = zone,
-    options = options,
-    gauge1 = GaugeClass(options.HighAsGreen, 2)
-  }
-
-  setAutoMinMax(wgt)
-
-  return wgt
-end
-
 local function update(wgt, options)
   wgt.options = options
   setAutoMinMax(wgt)
-  wgt.gauge1.HighAsGreen = wgt.options.HighAsGreen
+  wgt.gauge1 = GaugeClass(options.HighAsGreen, 2)
+  wgt.tools = ToolsClass()
 end
 
--- -----------------------------------------------------------------------------------------------------
+local function create(zone, options)
+  local wgt = {
+    zone = zone,
+    options = options,
+    last_value = -1,
+    last_value_min = -1,
+    last_value_max = -1,
+    gauge1 = nil
+  }
+
+  update(wgt, options)
+  return wgt
+end
+
+--------------------------------------------------------------------------------------------------------
 
 local function getPercentageValue(value, options_min, options_max)
   if value == nil then
@@ -152,7 +163,6 @@ end
 local function getWidgetValue(wgt)
   local currentValue = getValue(wgt.options.Source)
   local sourceName = getSourceName(wgt.options.Source)
-  log("aaaaaa:  "..  sourceName)
   log("aaaaaa:  ".. sourceName .. ": " .. string.byte(string.sub(sourceName, 1, 1)))
 
   -- workaround for bug in getFiledInfo()
@@ -160,8 +170,6 @@ local function getWidgetValue(wgt)
     sourceName = string.sub(sourceName,2,-1) -- ???? why?
   end
   --log("Source: " .. wgt.options.Source .. ",name: " .. sourceName)
-
-  --local currentValue = getValue(wgt.options.Source) / 10.24
 
   local fieldinfo = getFieldInfo(wgt.options.Source)
   if (fieldinfo == nil) then
@@ -177,28 +185,43 @@ local function getWidgetValue(wgt)
     end
   end
 
-  log("")
-  log(string.format("id: %s", fieldinfo.id))
-  log(string.format("  sourceName: %s", sourceName))
-  log(string.format("  curr: %2.1f", currentValue))
-  log(string.format("  name: %s", fieldinfo.name))
-  log(string.format("  desc: %s", fieldinfo.desc))
-  log(string.format("  idUnit: %s", fieldinfo.unit))
-  log(string.format("  txtUnit: %s", txtUnit))
+  --log("")
+  --log(string.format("id: %s", fieldinfo.id))
+  --log(string.format("  sourceName: %s", sourceName))
+  --log(string.format("  curr: %2.1f", currentValue))
+  --log(string.format("  name: %s", fieldinfo.name))
+  --log(string.format("  desc: %s", fieldinfo.desc))
+  --log(string.format("  idUnit: %s", fieldinfo.unit))
+  --log(string.format("  txtUnit: %s", txtUnit))
 
-  -- try to get min/max value (if exist)
-  local minValue = getValue(sourceName .. "-")
-  local maxValue = getValue(sourceName .. "+")
-  --log("min/max: " .. minValue .. " < " .. currentValue .. " < " .. maxValue)
+  if (wgt.tools.isTelemetryAvailable()) then
 
-  return sourceName, currentValue, minValue, maxValue, txtUnit
+    -- try to get min/max value (if exist)
+    local minValue = nil
+    local maxValue = nil
+    if source_min_id == nil or source_max_id == nil then
+      source_min_id = getFieldInfo(sourceName .. "-").id
+      source_max_id = getFieldInfo(sourceName .. "+").id
+    end
+    if source_min_id ~= nil and source_max_id ~= nil then
+      minValue = getValue(source_min_id)
+      maxValue = getValue(source_max_id)
+    end
+
+    wgt.last_value = currentValue
+    wgt.last_value_min = minValue
+    wgt.last_value_max = maxValue
+
+    --log("min/max: " .. minValue .. " < " .. currentValue .. " < " .. maxValue)
+    return sourceName, currentValue, minValue, maxValue, txtUnit
+  else
+    log("overriding value with last_value: " .. wgt.last_value)
+    return sourceName, wgt.last_value, wgt.last_value_min, wgt.last_value_max, txtUnit
+  end
 end
 
-local function refresh_app_mode(wgt, event, touchState, w_name, value, minValue, maxValue, w_unit, percentageValue, percentageValueMin, percentageValueMax)
+local function refresh_app_mode(wgt, event, touchState)
   local w_name, value, minValue, maxValue, w_unit = getWidgetValue(wgt)
-  if (value == nil) then
-    return
-  end
 
   local percentageValue = getPercentageValue(value, wgt.options.Min, wgt.options.Max)
   local percentageValueMin = getPercentageValue(minValue, wgt.options.Min, wgt.options.Max)
@@ -220,7 +243,7 @@ local function refresh_app_mode(wgt, event, touchState, w_name, value, minValue,
 end
 
 
-local function refresh_widget(wgt, w_name, value, minValue, maxValue, w_unit, percentageValue, percentageValueMin, percentageValueMax)
+local function refresh_widget(wgt)
   local w_name, value, minValue, maxValue, w_unit = getWidgetValue(wgt)
   if (value == nil) then
     return
@@ -266,6 +289,10 @@ local function refresh_widget(wgt, w_name, value, minValue, maxValue, w_unit, pe
   wgt.gauge1.drawGauge(centerX, centerY, centerR, isFull, percentageValue, percentageValueMin, percentageValueMax, value_fmt, w_name)
   --lcd.drawText(wgt.zone.x, wgt.zone.y, value_fmt, XXLSIZE + YELLOW)
 
+  if wgt.tools.isTelemetryAvailable() == false then
+    lcd.drawText(wgt.zone.x, wgt.zone.y + wgt.zone.h /2, "Disconnected...", MIDSIZE + WHITE+ BLINK)
+  end
+
 end
 
 
@@ -273,6 +300,11 @@ local function refresh(wgt, event, touchState)
   if (wgt == nil) then return end
   if (wgt.options == nil) then return end
   if (wgt.zone == nil) then return end
+  local sourceName = getSourceName(wgt.options.Source)
+  if (sourceName == nil) then
+    lcd.drawText(wgt.zone.x, wgt.zone.y + wgt.zone.h /2, "No source selected...", MIDSIZE + WHITE+ BLINK)
+    return
+  end
 
   --lcd.drawRectangle(wgt.zone.x, wgt.zone.y, wgt.zone.w, wgt.zone.h, BLACK)
 

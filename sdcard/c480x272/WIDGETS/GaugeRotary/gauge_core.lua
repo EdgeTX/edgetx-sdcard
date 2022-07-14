@@ -70,32 +70,32 @@ function self.getRangeColor(value, red_value, green_value)
   end
 end
 
-function self.drawGauge(centerX, centerY, centreR, isFull, percentageValue, percentageValueMin, percentageValueMax, txt1, txt2)
+function self.drawGauge(centerX, centerY, centerR, isFull, percentageValue, percentageValueMin, percentageValueMax, txt1, txt2)
 
   local fender = 4
   local tickWidth = 9
-  local armCenterR = centreR / 2.5
-  local armR = centreR - 8
+  local armCenterR = centerR / 2.5
+  local armR = centerR - 8
   local txtSize = DBLSIZE
-  if centreR < 65 then
+  if centerR < 65 then
     txtSize = MIDSIZE
   end
-  if centreR < 30 then
+  if centerR < 30 then
     txtSize = SMLSIZE
   end
 
   -- main gauge background
   if isFull then
-    lcd.drawFilledCircle(centerX, centerY, centreR, lcd.RGB(0x1A1A1A))
+    lcd.drawFilledCircle(centerX, centerY, centerR, lcd.RGB(0x1A1A1A))
   else
-    lcd.drawPie(centerX,centerY,centreR, -110,110, lcd.RGB(0x1A1A1A))
+    lcd.drawPie(centerX,centerY,centerR, -110,110, lcd.RGB(0x1A1A1A))
   end
 
   -- fender
   if isFull then
-    lcd.drawAnnulus(centerX, centerY, centreR - fender, centreR, 0, 360, BLACK)
+    lcd.drawAnnulus(centerX, centerY, centerR - fender, centerR, 0, 360, BLACK)
   else
-    lcd.drawAnnulus(centerX, centerY, centreR - fender, centreR, -110, 110, BLACK)
+    lcd.drawAnnulus(centerX, centerY, centerR - fender, centerR, -110, 110, BLACK)
   end
 
   -- ticks
@@ -109,22 +109,24 @@ function self.drawGauge(centerX, centerY, centreR, isFull, percentageValue, perc
     to_tick = 210
     tick_offset = 250
   end
-  if (centreR < 100) then
-    tick_step = 10 + 0.15 * (100 - centreR)
+  if (centerR < 100) then
+    tick_step = 10 + 0.15 * (100 - centerR)
   end
   for i = 0, to_tick, tick_step do
     --log("HighAsGreen: " .. self.HighAsGreen)
     if (self.HighAsGreen == 1) then
-      lcd.setColor(CUSTOM_COLOR, self.getRangeColor(i, 0, to_tick - 10))
+      local newColor = self.getRangeColor(i, 0, to_tick - 10)
+      lcd.setColor(CUSTOM_COLOR, newColor)
+      --lcd.setColor(CUSTOM_COLOR, self.getRangeColor(i, 0, to_tick - 10))
     else
       lcd.setColor(CUSTOM_COLOR, self.getRangeColor(i, to_tick - 10, 0))
       --lcd.setColor(CUSTOM_COLOR, self.getRangeColor(i, 120 , 30))
     end
-    lcd.drawAnnulus(centerX, centerY, centreR - fender - 3 - tickWidth, centreR - fender - 3, tick_offset + i, tick_offset + i + 7, CUSTOM_COLOR)
-    --lcd.drawAnnulus(centerX, centerY, centreR -fender -3 -tickWidth,     centreR -fender -3 , 250 +i, 250 +i +7, YELLOW)
-    --lcd.drawAnnulus(centerX, centerY, centreR -fender -3 -tickWidth -15, centreR -fender -3 -tickWidth -4 , 250 +i, 250 +i +7, RED)
+    lcd.drawAnnulus(centerX, centerY, centerR - fender - 3 - tickWidth, centerR - fender - 3, tick_offset + i, tick_offset + i + 7, CUSTOM_COLOR)
+    --lcd.drawAnnulus(centerX, centerY, centerR -fender -3 -tickWidth,     centerR -fender -3 , 250 +i, 250 +i +7, YELLOW)
+    --lcd.drawAnnulus(centerX, centerY, centerR -fender -3 -tickWidth -15, centerR -fender -3 -tickWidth -4 , 250 +i, 250 +i +7, RED)
   end
-  --lcd.drawPie(centerX,centerY,centreR - fender, 0,20)
+  --lcd.drawPie(centerX,centerY,centerR - fender, 0,20)
 
   local armColor = lcd.RGB(255, 255, 255)
   local armColorMin, armColorMax
