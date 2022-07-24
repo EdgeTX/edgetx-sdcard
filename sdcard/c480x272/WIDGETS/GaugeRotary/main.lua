@@ -231,14 +231,14 @@ local function refresh_app_mode(wgt, event, touchState)
   local zone_h = 252
 
   local centerX = zone_w / 2
-  wgt.gauge1.drawGauge(centerX, 120, 110, false, percentageValue, percentageValueMin, percentageValueMax, percentageValue .. w_unit, w_name)
-  lcd.drawText(10, 10, string.format("%d%s", percentageValue, w_unit), XXLSIZE + YELLOW)
+  wgt.gauge1.drawGauge(centerX, 120, 110, false, percentageValue, percentageValueMin, percentageValueMax, value .. w_unit, w_name)
+  lcd.drawText(10, 10, string.format("%d%s", value, w_unit), XXLSIZE + YELLOW)
 
   -- min / max
   wgt.gauge1.drawGauge(100, 180, 50, false, percentageValueMin, nil, nil, "", w_name)
   wgt.gauge1.drawGauge(zone_w - 100, 180, 50, false, percentageValueMax, nil, nil, "", w_name)
-  lcd.drawText(50, 230, string.format("Min: %d%s", percentageValueMin, w_unit), MIDSIZE)
-  lcd.drawText(350, 230, string.format("Max: %d%s", percentageValueMax, w_unit), MIDSIZE)
+  lcd.drawText(50, 230, string.format("Min: %d%s", minValue, w_unit), MIDSIZE)
+  lcd.drawText(350, 230, string.format("Max: %d%s", maxValue, w_unit), MIDSIZE)
 
 end
 
