@@ -72,13 +72,13 @@ local _options = {
 
 --------------------------------------------------------------
 local function log(s)
-  return;
   --print("GaugeRotary: " .. s)
 end
 --------------------------------------------------------------
 
 local function setAutoMinMax(wgt)
-  if wgt.options.Min ~= -1 and wgt.options.Max ~= -1 then
+  -- log(string.format("setAutoMinMax(wgt.options.Min: %d, wgt.options.Max: %d) ", wgt.options.Min, wgt.options.Max))
+  if wgt.options.Min ~= -1 or wgt.options.Max ~= -1 then
   --if wgt.options.Min ~= wgt.options.Max then
     print("GaugeRotary-setting: " .. "no need for AutoMinMax")
     return
@@ -163,7 +163,7 @@ end
 local function getWidgetValue(wgt)
   local currentValue = getValue(wgt.options.Source)
   local sourceName = getSourceName(wgt.options.Source)
-  log("aaaaaa:  ".. sourceName .. ": " .. string.byte(string.sub(sourceName, 1, 1)))
+  --log("aaaaaa:  ".. sourceName .. ": " .. string.byte(string.sub(sourceName, 1, 1)))
 
   -- workaround for bug in getFiledInfo()
   if string.byte(string.sub(sourceName,1,1)) > 127 then
