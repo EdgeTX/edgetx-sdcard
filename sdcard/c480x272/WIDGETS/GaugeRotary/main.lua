@@ -197,8 +197,8 @@ local function getWidgetValue(wgt)
   if (wgt.tools.isTelemetryAvailable()) then
 
     -- try to get min/max value (if exist)
-    local minValue = nil
-    local maxValue = nil
+    local minValue, maxValue, source_min_id, source_max_id
+
     if source_min_id == nil or source_max_id == nil then
       source_min_id = getFieldInfo(sourceName .. "-").id
       source_max_id = getFieldInfo(sourceName .. "+").id
