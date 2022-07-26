@@ -72,13 +72,13 @@ local _options = {
 
 --------------------------------------------------------------
 local function log(s)
-  return;
   --print("GaugeRotary: " .. s)
 end
 --------------------------------------------------------------
 
 local function setAutoMinMax(wgt)
-  if wgt.options.Min ~= -1 and wgt.options.Max ~= -1 then
+  -- log(string.format("setAutoMinMax(wgt.options.Min: %d, wgt.options.Max: %d) ", wgt.options.Min, wgt.options.Max))
+  if wgt.options.Min ~= -1 or wgt.options.Max ~= -1 then
   --if wgt.options.Min ~= wgt.options.Max then
     print("GaugeRotary-setting: " .. "no need for AutoMinMax")
     return
@@ -163,7 +163,7 @@ end
 local function getWidgetValue(wgt)
   local currentValue = getValue(wgt.options.Source)
   local sourceName = getSourceName(wgt.options.Source)
-  log("aaaaaa:  ".. sourceName .. ": " .. string.byte(string.sub(sourceName, 1, 1)))
+  --log("aaaaaa:  ".. sourceName .. ": " .. string.byte(string.sub(sourceName, 1, 1)))
 
   -- workaround for bug in getFiledInfo()
   if string.byte(string.sub(sourceName,1,1)) > 127 then
@@ -197,8 +197,8 @@ local function getWidgetValue(wgt)
   if (wgt.tools.isTelemetryAvailable()) then
 
     -- try to get min/max value (if exist)
-    local minValue = nil
-    local maxValue = nil
+    local minValue, maxValue, source_min_id, source_max_id
+
     if source_min_id == nil or source_max_id == nil then
       source_min_id = getFieldInfo(sourceName .. "-").id
       source_max_id = getFieldInfo(sourceName .. "+").id
@@ -231,14 +231,14 @@ local function refresh_app_mode(wgt, event, touchState)
   local zone_h = 252
 
   local centerX = zone_w / 2
-  wgt.gauge1.drawGauge(centerX, 120, 110, false, percentageValue, percentageValueMin, percentageValueMax, percentageValue .. w_unit, w_name)
-  lcd.drawText(10, 10, string.format("%d%s", percentageValue, w_unit), XXLSIZE + YELLOW)
+  wgt.gauge1.drawGauge(centerX, 120, 110, false, percentageValue, percentageValueMin, percentageValueMax, value .. w_unit, w_name)
+  lcd.drawText(10, 10, string.format("%d%s", value, w_unit), XXLSIZE + YELLOW)
 
   -- min / max
   wgt.gauge1.drawGauge(100, 180, 50, false, percentageValueMin, nil, nil, "", w_name)
   wgt.gauge1.drawGauge(zone_w - 100, 180, 50, false, percentageValueMax, nil, nil, "", w_name)
-  lcd.drawText(50, 230, string.format("Min: %d%s", percentageValueMin, w_unit), MIDSIZE)
-  lcd.drawText(350, 230, string.format("Max: %d%s", percentageValueMax, w_unit), MIDSIZE)
+  lcd.drawText(50, 230, string.format("Min: %d%s", minValue, w_unit), MIDSIZE)
+  lcd.drawText(350, 230, string.format("Max: %d%s", maxValue, w_unit), MIDSIZE)
 
 end
 
