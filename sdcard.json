@@ -1,6 +1,8 @@
 {
   "targets": [
     ["Flysky NV14", "nv14-", "c320x480"],
+    ["Flysky EL18", "el18-", "c320x480"],
+    ["Flysky PL18", "pl18-", "c480x320"],
     ["FrSky Horus X10", "x10-", "c480x272"],
     ["FrSky Horus X10 Access", "x10-access-", "c480x272"],
     ["FrSky Horus X12s", "x12s-", "c480x272"],
