@@ -21,18 +21,6 @@
 
 local app_name = "FlightsCount"
 
--- status
-local switch_on
-local switch_name
-local tele_src
-local tele_src_name
-local tele_is_available
-local motor_active
-local motor_channel_name
-local motor_channel_direction_inv
-local flight_state = "GROUND"
-local duration_passed = 0
-
 local periodic1 = {
   startTime = getTime(),
   durationMili = 0
@@ -41,7 +29,7 @@ local periodic1 = {
 -- imports
 local img = Bitmap.open("/WIDGETS/".. app_name .. "/logo.png")
 
--- consts
+-- const
 local default_flight_starting_duration = 30 -- 20 sec to detect fight success
 local default_flight_ending_duration = 8 -- 8 sec to detect fight ended
 local default_min_motor_value = 200
@@ -62,6 +50,21 @@ end
 local function update(wgt, options)
   if (wgt == nil) then return end
   wgt.options = options
+
+  -- status
+  wgt.status = {}
+  wgt.status.switch_on = nil
+  wgt.status.switch_name = nil
+  wgt.status.tele_src = nil
+  wgt.status.tele_src_name = nil
+  wgt.status.tele_is_available = nil
+  wgt.status.motor_active = nil
+  wgt.status.motor_channel_name = nil
+  wgt.status.motor_channel_direction_inv = nil
+  wgt.status.flight_state = "GROUND"
+  wgt.status.duration_passed = 0
+
+
   --log("TimerNumB:" .. options.Timer)
   if (wgt.options.switch == nil) then
     wgt.options.switch = "sf"
@@ -70,16 +73,16 @@ local function update(wgt, options)
   --log("wgt.options.switch: " .. wgt.options.switch)
   fi_sw = getFieldInfo(wgt.options.switch)
   if (fi_sw == nil) then
-    switch_name = "--"
+    wgt.status.switch_name = "--"
   else
-    switch_name = fi_sw.name
+    wgt.status.switch_name = fi_sw.name
   end
 
   fi_mot = getFieldInfo(wgt.options.motor_channel)
   if (fi_mot == nil) then
-    motor_channel_name = "--"
+    wgt.status.motor_channel_name = "--"
   else
-    motor_channel_name = fi_mot.name
+    wgt.status.motor_channel_name = fi_mot.name
   end
 
 end
@@ -154,77 +157,81 @@ end
 
 function updateTelemetryStatus(wgt)
   -- select telemetry source
-  if not tele_src then
+  if not wgt.status.tele_src then
     --log("select telemetry source")
-    tele_src = getFieldInfo("RSSI")
-    if not tele_src then tele_src = getFieldInfo("RxBt") end
-    if not tele_src then tele_src = getFieldInfo("A1") end
-    if not tele_src then tele_src = getFieldInfo("A2") end
-    if not tele_src then tele_src = getFieldInfo("1RSS") end
-    if not tele_src then tele_src = getFieldInfo("2RSS") end
-    if not tele_src then tele_src = getFieldInfo("RQly") end
+    wgt.status.tele_src = getFieldInfo("RSSI")
+    if not wgt.status.tele_src then wgt.status.tele_src = getFieldInfo("RxBt") end
+    if not wgt.status.tele_src then wgt.status.tele_src = getFieldInfo("A1") end
+    if not wgt.status.tele_src then wgt.status.tele_src = getFieldInfo("A2") end
+    if not wgt.status.tele_src then wgt.status.tele_src = getFieldInfo("1RSS") end
+    if not wgt.status.tele_src then wgt.status.tele_src = getFieldInfo("2RSS") end
+    if not wgt.status.tele_src then wgt.status.tele_src = getFieldInfo("RQly") end
 
-    if tele_src ~= nil then
-      tele_src_name = tele_src.name
-      log("found telemetry source: " .. tele_src_name)
+    if wgt.status.tele_src ~= nil then
+      wgt.status.tele_src_name = wgt.status.tele_src.name
+      log("found telemetry source: " .. wgt.status.tele_src_name)
     end
   end
 
-  if tele_src == nil then
+  if wgt.status.tele_src == nil then
     log("no telemetry sensor found")
-    tele_src_name = "---"
-    tele_is_available = false
+    wgt.status.tele_src_name = "---"
+    wgt.status.tele_is_available = false
     return
   end
 
-  local tele_src_val = getValue(tele_src.id)
+  local tele_src_val = getValue(wgt.status.tele_src.id)
   --log("tele_src.id: " .. tele_src.id)
-  --log("tele_src_name: " .. tele_src_name)
-  --log("tele_src_val: " .. tele_src_val)
-  local tele_val = getValue(tele_src.id)
+  --log("tele_src_name: " .. wgt.status.tele_src_name)
+  --log("tele_src_val: " .. wgt.status.tele_src_val)
+  local tele_val = getValue(wgt.status.tele_src.id)
   if tele_val <= 0 then
     --log("tele: tele_val<=0")
-    tele_is_available = false
+    wgt.status.tele_is_available = false
     return
   end
 
   --log("tele: tele_val>0")
-  tele_is_available = true
+  wgt.status.tele_is_available = true
   return
 
 end
 
 function updateMotorStatus(wgt)
   local motor_value = getValue(wgt.options.motor_channel)
-  --log(string.format("motor_value (%s): %s", wgt.options.motor_channel, motor_value))
+  log(string.format("motor_value (%s): %s", wgt.options.motor_channel, motor_value))
 
-  -- if we do not have telemetry, then the battery is not connected yet, so we can detect yet motor channel direction
-  if (tele_is_available == nil or tele_is_available == false) then
-    return
-  end
+  ---- if we do not have telemetry, then the battery is not connected yet, so we can detect yet motor channel direction
+  --if (wgt.status.tele_is_available == nil or wgt.status.tele_is_available == false) then
+  --  return
+  --end
 
-  if (motor_channel_direction_inv == nil) then
+  if (wgt.status.motor_channel_direction_inv == nil) then
     -- detect motor channel direction
-    if (motor_value < 0) then
-      motor_channel_direction_inv = false
+    if (motor_value < (-1024 + default_min_motor_value)) then
+      wgt.status.motor_channel_direction_inv = false
+    else if (motor_value > (1024 - default_min_motor_value)) then
+      wgt.status.motor_channel_direction_inv = true
     else
-      motor_channel_direction_inv = true
+      -- still nil
+      return
+    end
     end
   end
 
-  if (motor_channel_direction_inv == false) then
+  if (wgt.status.motor_channel_direction_inv == false) then
     -- non inverted mixer
     if (motor_value > (-1024 + default_min_motor_value)) then
-      motor_active = true
+      wgt.status.motor_active = true
     else
-      motor_active = false
+      wgt.status.motor_active = false
     end
   else
     -- inverted mixer
     if (motor_value < (1024 - default_min_motor_value)) then
-      motor_active = true
+      wgt.status.motor_active = true
     else
-      motor_active = false
+      wgt.status.motor_active = false
     end
   end
 
@@ -233,11 +240,11 @@ end
 function updateSwitchStatus(wgt)
   if getValue(wgt.options.switch) < 0 then
     --log(string.format("switch status (%s): =ON", wgt.options.switch))
-    switch_on = true
+    wgt.status.switch_on = true
     --return 2
   else
-    --log(string.format("switch status (%s): =OFF", switch_name))
-    switch_on = false
+    --log(string.format("switch status (%s): =OFF", wgt.status.switch_name))
+    wgt.status.switch_on = false
     --return 1
   end
 end
@@ -264,13 +271,13 @@ end
 
 ---------------------------------------------------------------
 local function stateChange(wgt, newState, timer_sec)
-  log(string.format("flight_state: %s --> %s", flight_state, newState))
-  flight_state = newState
+  log(string.format("flight_state: %s --> %s", wgt.status.flight_state, newState))
+  wgt.status.flight_state = newState
 
   if (timer_sec > 0) then
     periodicStart(periodic1, timer_sec * 1000)
   else
-    duration_passed = 0
+    wgt.status.duration_passed = 0
     --periodicReset(periodic1)
   end
 end
@@ -283,19 +290,19 @@ local function background(wgt)
 
   updateTelemetryStatus(wgt)
 
-  --log(string.format("tele_is_available: %s", tele_is_available))
+  --log(string.format("tele_is_available: %s", wgt.status.tele_is_available))
 
   -- **** state: GROUND ***
-  if flight_state == "GROUND" then
-    if (motor_active == true) and (switch_on == true) and (tele_is_available == true) then
+  if wgt.status.flight_state == "GROUND" then
+    if (wgt.status.motor_active == true) and (wgt.status.switch_on == true) and (wgt.status.tele_is_available == true) then
       stateChange(wgt, "FLIGHT_STARTING", wgt.options.min_flight_duration)
     end
 
   -- **** state: FLIGHT_STARTING ***
-  elseif flight_state == "FLIGHT_STARTING" then
-    if (motor_active == true) and (switch_on == true) and (tele_is_available == true) then
-      duration_passed = periodicGetElapsedTime(periodic1)
-      log("flight_state: FLIGHT_STARTING ..." .. duration_passed)
+  elseif wgt.status.flight_state == "FLIGHT_STARTING" then
+    if (wgt.status.motor_active == true) and (wgt.status.switch_on == true) and (wgt.status.tele_is_available == true) then
+      wgt.status.duration_passed = periodicGetElapsedTime(periodic1)
+      log("flight_state: FLIGHT_STARTING ..." .. wgt.status.duration_passed)
       if (periodicHasPassed(periodic1)) then
         stateChange(wgt, "FLIGHT_ON", 0)
 
@@ -308,15 +315,15 @@ local function background(wgt)
     end
 
   -- **** state: FLIGHT_ON ***
-  elseif flight_state == "FLIGHT_ON" then
-    if (tele_is_available == false) then
+  elseif wgt.status.flight_state == "FLIGHT_ON" then
+    if (wgt.status.tele_is_available == false) then
       stateChange(wgt, "FLIGHT_ENDING", default_flight_ending_duration)
     end
 
   -- **** state: FLIGHT_ENDING ***
-  elseif flight_state == "FLIGHT_ENDING" then
-    duration_passed = periodicGetElapsedTime(periodic1)
-    log("flight_state: FLIGHT_ENDING ..." .. duration_passed)
+  elseif wgt.status.flight_state == "FLIGHT_ENDING" then
+    wgt.status.duration_passed = periodicGetElapsedTime(periodic1)
+    log("flight_state: FLIGHT_ENDING ..." .. wgt.status.duration_passed)
 
     if (periodicHasPassed(periodic1)) then
       stateChange(wgt, "GROUND", 0)
@@ -325,12 +332,12 @@ local function background(wgt)
       end
     end
 
-    if (tele_is_available == true) then
+    if (wgt.status.tele_is_available == true) then
       stateChange(wgt, "FLIGHT_ON", 0)
     end
 
   end
-  --log("flight_state: " .. flight_state)
+  --log("flight_state: " .. wgt.status.flight_state)
 
 end
 
@@ -382,14 +389,14 @@ local function refresh(wgt, event, touchState)
   -- icon
   if wgt.options.debug == 0 then
     if (zone_h < 50) then
-      lcd.drawBitmap(img, 0, dyh + 15, 20)
+      lcd.drawBitmap(img, 0, dyh + 17, 20)
     else
       lcd.drawBitmap(img, 15, dyh + 15, 45)
     end
   end
 
   -- draw header
-  lcd.drawText(wgt.zone.x, wgt.zone.y + dyh, header, font_size_header)
+  lcd.drawText(wgt.zone.x, wgt.zone.y + dyh, header, font_size_header + YELLOW)
 
   -- draw count
   --if wgt.options.debug == 0 then
@@ -401,11 +408,11 @@ local function refresh(wgt, event, touchState)
   -- dbg
   if wgt.options.debug == 1 then
     lcd.drawText(wgt.zone.x, wgt.zone.y + 20, string.format("DEBUG:"), SMLSIZE)
-    lcd.drawText(wgt.zone.x, wgt.zone.y + 35, string.format("state: %s", flight_state), SMLSIZE)
-    lcd.drawText(wgt.zone.x, wgt.zone.y + 50, string.format("%s - switch(%s)", ternary(switch_on), switch_name ), SMLSIZE)
-    lcd.drawText(wgt.zone.x, wgt.zone.y + 65, string.format("%s - motor(%s) (inv: %s)", ternary(motor_active), motor_channel_name, motor_channel_direction_inv), SMLSIZE)
-    lcd.drawText(wgt.zone.x, wgt.zone.y + 80, string.format("%s - telemetry(%s)", ternary(tele_is_available), tele_src_name ), SMLSIZE)
-    lcd.drawText(wgt.zone.x, wgt.zone.y + 95, string.format("duration: %.1f/%d",duration_passed/1000  ,periodic1.durationMili/1000) , SMLSIZE)
+    lcd.drawText(wgt.zone.x, wgt.zone.y + 35, string.format("state: %s", wgt.status.flight_state), SMLSIZE)
+    lcd.drawText(wgt.zone.x, wgt.zone.y + 50, string.format("%s - switch(%s)", ternary(wgt.status.switch_on), wgt.status.switch_name ), SMLSIZE)
+    lcd.drawText(wgt.zone.x, wgt.zone.y + 65, string.format("%s - motor(%s) (inv: %s)", ternary(wgt.status.motor_active), wgt.status.motor_channel_name, wgt.status.motor_channel_direction_inv), SMLSIZE)
+    lcd.drawText(wgt.zone.x, wgt.zone.y + 80, string.format("%s - telemetry(%s)", ternary(wgt.status.tele_is_available), wgt.status.tele_src_name ), SMLSIZE)
+    lcd.drawText(wgt.zone.x, wgt.zone.y + 95, string.format("duration: %.1f/%d",wgt.status.duration_passed/1000  ,periodic1.durationMili/1000) , SMLSIZE)
   end
 
 end
