@@ -19,7 +19,7 @@
 --   no telemetry for 8s  => flight-completed
 
 
-local app_name = "FlightsCount"
+local app_name = "Flights"
 
 local periodic1 = {
   startTime = getTime(),
