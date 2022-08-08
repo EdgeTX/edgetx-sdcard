@@ -1,7 +1,7 @@
 ---- #########################################################################
 ---- #                                                                       #
----- # Telemetry Widget script for FrSky Horus/Radio Master TX16s            #
----- # Copyright (C) OpenTX                                                  #
+---- # Telemetry Widget script for FrSky Horus/RadioMaster TX16S             #
+---- # Copyright (C) EdgeTX                                                  #
 -----#                                                                       #
 ---- # License GPLv2: http://www.gnu.org/licenses/gpl-2.0.html               #
 ---- #                                                                       #
@@ -372,6 +372,13 @@ end
 --- Zone size: 70x39 1/8th top bar
 local function refreshZoneTiny(wgt)
   local myString = string.format("%2.1fV", wgt.mainValue)
+
+  if wgt.isDataAvailable then
+    lcd.setColor(CUSTOM_COLOR, wgt.options.Color)
+  else
+    lcd.setColor(CUSTOM_COLOR, GREY)
+  end
+
   lcd.drawText(wgt.zone.x + wgt.zone.w - 25, wgt.zone.y + 5, wgt.cellPercent .. "%", RIGHT + SMLSIZE + CUSTOM_COLOR + wgt.no_telem_blink)
   lcd.drawText(wgt.zone.x + wgt.zone.w - 25, wgt.zone.y + 20, myString, RIGHT + SMLSIZE + CUSTOM_COLOR + wgt.no_telem_blink)
   -- draw batt
@@ -496,11 +503,9 @@ local function refreshZoneLarge(wgt)
 
 end
 
-local function refreshFullScreenImpl(wgt, x, w, y, h)
+local function refreshAppModeImpl(wgt, x, w, y, h)
 
   local myBatt = { ["x"] = 10, ["y"] = 20, ["w"] = 80, ["h"] = 121, ["segments_h"] = 30, ["color"] = WHITE, ["cath_w"] = 30, ["cath_h"] = 10 }
-
-  lcd.setColor(CUSTOM_COLOR, wgt.options.Color)
 
   -- fill batt
   lcd.setColor(CUSTOM_COLOR, getPercentColor(wgt.cellPercent))
@@ -520,7 +525,10 @@ local function refreshFullScreenImpl(wgt, x, w, y, h)
   -- draw cells
   local pos = { { x = 111, y = 38 }, { x = 164, y = 38 }, { x = 217, y = 38 }, { x = 111, y = 57 }, { x = 164, y = 57 }, { x = 217, y = 57 } }
   for i = 1, wgt.cellCount, 1 do
-    lcd.setColor(CUSTOM_COLOR, getRangeColor(wgt.cellDataLive[i], wgt.cellMax, wgt.cellMax - 0.2))
+    --log(string.format("11111111111111 %d, %d, %d", wgt.cellDataLive[i], wgt.cellMax, wgt.cellMax - 0.2))
+    local cell_color =  getRangeColor(wgt.cellDataLive[i], wgt.cellMax, wgt.cellMax - 0.2)
+    --log(string.format("222 %s", cell_color))
+    lcd.setColor(CUSTOM_COLOR, cell_color)
     lcd.drawFilledRectangle(x + pos[i].x, y + pos[i].y, 53, 20, CUSTOM_COLOR)
     lcd.setColor(CUSTOM_COLOR, WHITE)
     lcd.drawText(x + pos[i].x + 10, y + pos[i].y, string.format("%.2f", wgt.cellDataLive[i]), CUSTOM_COLOR + wgt.shadowed + wgt.no_telem_blink)
@@ -559,17 +567,17 @@ local function refreshZoneXLarge(wgt)
   local y = wgt.zone.y
   local h = wgt.zone.h
 
-  refreshFullScreenImpl(wgt, x, w, y, h)
+  refreshAppModeImpl(wgt, x, w, y, h)
 end
 
 
 --- Zone size: 460x252 (full screen app mode)
-local function refreshFullScreen(wgt, event, touchState)
+local function refreshAppMode(wgt, event, touchState)
   local x = 0
   local w = 460
   local y = 0
   local h = 252
-  refreshFullScreenImpl(wgt, x, w, y, h)
+  refreshAppModeImpl(wgt, x, w, y, h)
 end
 
 
@@ -615,8 +623,7 @@ local function refresh(wgt, event, touchState)
   end
 
   local t4 = getUsage();
-  if (event ~= nil) then
-    refreshFullScreen(wgt, event, touchState)
+  if (event ~= nil) then                              refreshAppMode(wgt, event, touchState)
   elseif wgt.zone.w > 380 and wgt.zone.h > 165 then   refreshZoneXLarge(wgt)
   elseif wgt.zone.w > 180 and wgt.zone.h > 145 then   refreshZoneLarge(wgt)
   elseif wgt.zone.w > 170 and wgt.zone.h > 65 then    refreshZoneMedium(wgt)

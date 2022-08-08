@@ -1,7 +1,7 @@
 ---- #########################################################################
 ---- #                                                                       #
----- # Telemetry Widget script for FrSky Horus/Radio Master TX16s            #
----- # Copyright (C) OpenTX                                                  #
+---- # Telemetry Widget script for FrSky Horus/RadioMaster TX16S             #
+---- # Copyright (C) EdgeTX                                                  #
 -----#                                                                       #
 ---- # License GPLv2: http://www.gnu.org/licenses/gpl-2.0.html               #
 ---- #                                                                       #
@@ -45,7 +45,7 @@ local defaultSensor = "RxBt" -- RxBt / A1 / A3/ VFAS /RxBt
 --------------------------------------------------------------
 local function log(s)
   return;
-  --print("Batt_A1: " .. s)
+  --print("BattAnalog: " .. s)
 end
 --------------------------------------------------------------
 
@@ -373,6 +373,13 @@ end
 --- Zone size: 70x39 1/8th top bar
 local function refreshZoneTiny(wgt)
   local myString = string.format("%2.1fV", wgt.mainValue)
+
+  if wgt.isDataAvailable then
+    lcd.setColor(CUSTOM_COLOR, wgt.options.Color)
+  else
+    lcd.setColor(CUSTOM_COLOR, GREY)
+  end
+
   lcd.drawText(wgt.zone.x + wgt.zone.w - 25, wgt.zone.y + 5, wgt.vPercent .. "%", RIGHT + SMLSIZE + CUSTOM_COLOR + wgt.no_telem_blink)
   lcd.drawText(wgt.zone.x + wgt.zone.w - 25, wgt.zone.y + 20, myString, RIGHT + SMLSIZE + CUSTOM_COLOR + wgt.no_telem_blink)
   -- draw batt
@@ -487,8 +494,8 @@ local function refreshZoneXLarge(wgt)
 end
 
 
---- Zone size: 460x252 (full screen app mode)
-local function refreshFullScreen(wgt, event, touchState)
+--- Zone size: 460x252 - app mode (full screen)
+local function refreshAppMode(wgt, event, touchState)
   local x = 0
   local w = 460
   local y = 0
@@ -561,7 +568,7 @@ local function refresh(wgt, event, touchState)
   --lcd.drawRectangle(wgt.zone.x, wgt.zone.y, wgt.zone.w, wgt.zone.h, BLACK)
 
   if (event ~= nil) then
-    refreshFullScreen(wgt, event, touchState)
+    refreshAppMode(wgt, event, touchState)
   elseif wgt.zone.w > 380 and wgt.zone.h > 165 then
     refreshZoneXLarge(wgt)
   elseif wgt.zone.w > 180 and wgt.zone.h > 145 then
