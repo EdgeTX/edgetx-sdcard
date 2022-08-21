@@ -424,8 +424,6 @@ local function refreshZoneMedium(wgt)
 
     -- fill current cell
     local fill_color = getRangeColor(wgt.cellDataLive[i], wgt.cellMax, wgt.cellMax - 0.2)
-    print(fill_color)
-    log(string.format("fill_color: %d", fill_color))
     --lcd.drawFilledRectangle(wgt.zone.x + cellX     , cellY, 58, cellH, fill_color)
     lcd.drawFilledRectangle(wgt.zone.x + cellX     , cellY, cellW * wgt.cellDataLivePercent[i] / 100, cellH, fill_color)
 
@@ -459,8 +457,6 @@ local function refreshZoneLarge(wgt)
   local pos = { { x = 80, y = 90 }, { x = 138, y = 90 }, { x = 80, y = 109 }, { x = 138, y = 109 }, { x = 80, y = 128 }, { x = 138, y = 128 } }
   for i = 1, wgt.cellCount, 1 do
     local fill_color = getRangeColor(wgt.cellDataLive[i], wgt.cellMax, wgt.cellMax - 0.2)
-    print(fill_color)
-    log(string.format("fill_color: %d", fill_color))
     lcd.drawFilledRectangle(wgt.zone.x + pos[i].x, wgt.zone.y + pos[i].y, 58, 20, fill_color)
 
     lcd.drawText(wgt.zone.x + pos[i].x + 10, wgt.zone.y + pos[i].y, string.format("%.2f", wgt.cellDataLive[i]), WHITE + wgt.shadowed)
@@ -494,11 +490,7 @@ local function refreshAppModeImpl(wgt, x, w, y, h)
   -- draw cells
   local pos = { { x = 111, y = 38 }, { x = 164, y = 38 }, { x = 217, y = 38 }, { x = 111, y = 57 }, { x = 164, y = 57 }, { x = 217, y = 57 } }
   for i = 1, wgt.cellCount, 1 do
-
-    --log(string.format("11111111111111 %d, %d, %d", wgt.cellDataLive[i], wgt.cellMax, wgt.cellMax - 0.2))
     local cell_color =  getRangeColor(wgt.cellDataLive[i], wgt.cellMax, wgt.cellMax - 0.2)
-    --log(string.format("222 %s", cell_color))
-
     lcd.drawFilledRectangle(x + pos[i].x, y + pos[i].y, 53, 20, cell_color)
     lcd.drawText(x + pos[i].x + 10, y + pos[i].y, string.format("%.2f", wgt.cellDataLive[i]), WHITE + wgt.shadowed + wgt.no_telem_blink)
     lcd.drawRectangle(x + pos[i].x, y + pos[i].y, 54, 20, WHITE, 1)
