@@ -1,7 +1,7 @@
 ---- #########################################################################
 ---- #                                                                       #
----- # Telemetry Widget script for FrSky Horus/Radio Master TX16s            #
----- # Copyright (C) OpenTX                                                  #
+---- # Telemetry Widget script for FrSky Horus/RadioMaster TX16s             #
+---- # Copyright (C) EdgeTX                                                  #
 -----#                                                                       #
 ---- # License GPLv2: http://www.gnu.org/licenses/gpl-2.0.html               #
 ---- #                                                                       #
@@ -18,15 +18,15 @@
 
 -- Horus Widget to display the levels of lipo battery with per cell indication
 -- 3djc & Offer Shmuely
--- Date: 2021
--- ver: 0.6
-local version = "v0.6"
+-- Date: 2022
+-- ver: 0.7
+local version = "v0.7"
 
 local _options = {
-  { "Sensor", SOURCE, 0 }, -- default to 'Cels'
+  { "Sensor", SOURCE, 0   }, -- default to 'Cels'
   { "Color", COLOR, WHITE },
-  { "Shadow", BOOL, 0 },
-  { "LowestCell", BOOL, 1 }   -- 0=main voltage display shows all-cell-voltage, 1=main voltage display shows lowest-cell
+  { "Shadow", BOOL, 0     },
+  { "LowestCell", BOOL, 1 },   -- 0=main voltage display shows all-cell-voltage, 1=main voltage display shows lowest-cell
 }
 
 -- Data gathered from commercial lipo sensors
@@ -44,10 +44,10 @@ local _lipoPercentListSplit = {
 
 --------------------------------------------------------------
 local function log(s)
-  return;
-  --print("app: " .. s)
+  --print("BattCheck: " .. s)
 end
 --------------------------------------------------------------
+
 --periodic1 = {startTime = -1, durationMili = -1},
 local function periodicInit(t, durationMili)
   t.startTime = getTime();
@@ -100,12 +100,28 @@ local function cpuProfilerShow(wgt)
 end
 -----------------------------------------------------------------
 
--- This function is run once at the creation of the widget
+local function update(wgt, options)
+  if (wgt == nil) then
+    return
+  end
+
+  wgt.options = options
+
+  -- use default if user did not set, So widget is operational on "select widget"
+  if wgt.options.Sensor == 0 then
+    wgt.options.Sensor = "Cels"
+  end
+
+  wgt.options.LowestCell = wgt.options.LowestCell % 2 -- modulo due to bug that cause the value to be other than 0|1
+
+end
+
 local function create(zone, options)
   local wgt = {
     zone = zone,
     options = options,
     counter = 0,
+    text_color = 0,
     shadowed = 0,
 
     telemResetCount = 0,
@@ -130,31 +146,8 @@ local function create(zone, options)
     profTimes = {},
   }
 
-  -- use default if user did not set, So widget is operational on "select widget"
-  if wgt.options.Sensor == 0 then
-    wgt.options.Sensor = "Cels"
-  end
-
-  wgt.options.LowestCell = wgt.options.LowestCell % 2 -- modulo due to bug that cause the value to be other than 0|1
-
+  update(wgt, options)
   return wgt
-end
-
--- This function allow updates when you change widgets settings
-local function update(wgt, options)
-  if (wgt == nil) then
-    return
-  end
-
-  wgt.options = options
-
-  -- use default if user did not set, So widget is operational on "select widget"
-  if wgt.options.Sensor == 0 then
-    wgt.options.Sensor = "Cels"
-  end
-
-  wgt.options.LowestCell = wgt.options.LowestCell % 2 -- modulo due to bug that cause the value to be other than 0|1
-
 end
 
 
@@ -372,62 +365,54 @@ end
 --- Zone size: 70x39 1/8th top bar
 local function refreshZoneTiny(wgt)
   local myString = string.format("%2.1fV", wgt.mainValue)
-  lcd.drawText(wgt.zone.x + wgt.zone.w - 25, wgt.zone.y + 5, wgt.cellPercent .. "%", RIGHT + SMLSIZE + CUSTOM_COLOR + wgt.no_telem_blink)
-  lcd.drawText(wgt.zone.x + wgt.zone.w - 25, wgt.zone.y + 20, myString, RIGHT + SMLSIZE + CUSTOM_COLOR + wgt.no_telem_blink)
-  -- draw batt
-  lcd.drawRectangle(wgt.zone.x + 50, wgt.zone.y + 9, 16, 25, CUSTOM_COLOR, 2)
-  lcd.drawFilledRectangle(wgt.zone.x + 50 + 4, wgt.zone.y + 7, 6, 3, CUSTOM_COLOR)
+  lcd.drawText(wgt.zone.x + wgt.zone.w - 25, wgt.zone.y + 5, wgt.cellPercent .. "%", RIGHT + SMLSIZE + wgt.text_color + wgt.no_telem_blink)
+  lcd.drawText(wgt.zone.x + wgt.zone.w - 25, wgt.zone.y + 20, myString, RIGHT + SMLSIZE + wgt.text_color + wgt.no_telem_blink)
+
+  -- draw battery
+  local batt_color = wgt.options.Color
+  lcd.drawRectangle(wgt.zone.x + 50, wgt.zone.y + 9, 16, 25, batt_color, 2)
+  lcd.drawFilledRectangle(wgt.zone.x + 50 + 4, wgt.zone.y + 7, 6, 3, batt_color)
   local rect_h = math.floor(25 * wgt.cellPercent / 100)
-  lcd.drawFilledRectangle(wgt.zone.x + 50, wgt.zone.y + 9 + 25 - rect_h, 16, rect_h, CUSTOM_COLOR + wgt.no_telem_blink)
+  lcd.drawFilledRectangle(wgt.zone.x + 50, wgt.zone.y + 9 + 25 - rect_h, 16, rect_h, batt_color + wgt.no_telem_blink)
 end
 
 --- Zone size: 160x32 1/8th
 local function refreshZoneSmall(wgt)
   local myBatt = { ["x"] = 0, ["y"] = 0, ["w"] = 155, ["h"] = 35, ["segments_w"] = 25, ["color"] = WHITE, ["cath_w"] = 6, ["cath_h"] = 20 }
 
-  -- draws bat
-  lcd.setColor(CUSTOM_COLOR, WHITE)
-  lcd.drawRectangle(wgt.zone.x + myBatt.x, wgt.zone.y + myBatt.y, myBatt.w, myBatt.h, CUSTOM_COLOR, 2)
+  -- fill battery
+  local fill_color = getPercentColor(wgt.cellPercent)
+  lcd.drawGauge(wgt.zone.x, wgt.zone.y, myBatt.w, myBatt.h, wgt.cellPercent, 100, fill_color)
 
-  -- fill batt
-  lcd.setColor(CUSTOM_COLOR, getPercentColor(wgt.cellPercent))
-  lcd.drawGauge(wgt.zone.x + 2, wgt.zone.y + 2, myBatt.w - 4, wgt.zone.h, wgt.cellPercent, 100, CUSTOM_COLOR)
+  -- draw battery
+  lcd.drawRectangle(wgt.zone.x + myBatt.x, wgt.zone.y + myBatt.y, myBatt.w, myBatt.h, WHITE, 2)
+
 
   -- write text
-  if wgt.isDataAvailable then
-    lcd.setColor(CUSTOM_COLOR, wgt.options.Color)
-  else
-    lcd.setColor(CUSTOM_COLOR, GREY)
-  end
   local topLine = string.format("%2.1fV      %2.0f%%", wgt.mainValue, wgt.cellPercent)
-  lcd.drawText(wgt.zone.x + 20, wgt.zone.y + 2, topLine, MIDSIZE + CUSTOM_COLOR + wgt.shadowed + wgt.no_telem_blink)
+  lcd.drawText(wgt.zone.x + 20, wgt.zone.y + 2, topLine, MIDSIZE + wgt.text_color + wgt.shadowed + wgt.no_telem_blink)
 
 end
+
 
 --- Zone size: 180x70 1/4th  (with sliders/trim)
 --- Zone size: 225x98 1/4th  (no sliders/trim)
 local function refreshZoneMedium(wgt)
   local myBatt = { ["x"] = 0, ["y"] = 0, ["w"] = 85, ["h"] = 35, ["segments_w"] = 15, ["color"] = WHITE, ["cath_w"] = 6, ["cath_h"] = 20 }
 
-  if wgt.isDataAvailable then
-    lcd.setColor(CUSTOM_COLOR, wgt.options.Color)
-  else
-    lcd.setColor(CUSTOM_COLOR, GREY)
-  end
-
   -- draw values
-  lcd.drawText(wgt.zone.x, wgt.zone.y + 35, string.format("%2.1fV", wgt.mainValue), DBLSIZE + CUSTOM_COLOR + wgt.shadowed + wgt.no_telem_blink)
+  lcd.drawText(wgt.zone.x, wgt.zone.y + 35, string.format("%2.1fV", wgt.mainValue), DBLSIZE + wgt.text_color + wgt.shadowed + wgt.no_telem_blink)
 
   -- more info if 1/4 is high enough (without trim & slider)
   if wgt.zone.h > 80 then
-    --lcd.drawText(wgt.zone.x + 50     , wgt.zone.y + 70, string.format("%2.2fV"   , wgt.secondaryValue), SMLSIZE + CUSTOM_COLOR + wgt.no_telem_blink)
-    lcd.drawText(wgt.zone.x, wgt.zone.y + 70, string.format("dV %2.2fV", wgt.cellMax - wgt.cellMin), SMLSIZE + CUSTOM_COLOR + wgt.no_telem_blink)
-    lcd.drawText(wgt.zone.x, wgt.zone.y + 84, string.format("Min %2.2fV", wgt.cellDataHistoryCellLowest), SMLSIZE + CUSTOM_COLOR + wgt.no_telem_blink)
+    --lcd.drawText(wgt.zone.x + 50     , wgt.zone.y + 70, string.format("%2.2fV"   , wgt.secondaryValue), SMLSIZE + wgt.text_color + wgt.no_telem_blink)
+    lcd.drawText(wgt.zone.x, wgt.zone.y + 70, string.format("dV %2.2fV", wgt.cellMax - wgt.cellMin), SMLSIZE + wgt.text_color + wgt.no_telem_blink)
+    lcd.drawText(wgt.zone.x, wgt.zone.y + 84, string.format("Min %2.2fV", wgt.cellDataHistoryCellLowest), SMLSIZE + wgt.text_color + wgt.no_telem_blink)
   end
 
-  -- fill batt
-  lcd.setColor(CUSTOM_COLOR, getPercentColor(wgt.cellPercent))
-  lcd.drawGauge(wgt.zone.x + myBatt.x, wgt.zone.y + myBatt.y, myBatt.w, myBatt.h, wgt.cellPercent, 100, CUSTOM_COLOR)
+  -- fill battery
+  local fill_color = getPercentColor(wgt.cellPercent)
+  lcd.drawGauge(wgt.zone.x + myBatt.x, wgt.zone.y + myBatt.y, myBatt.w, myBatt.h, wgt.cellPercent, 100, fill_color)
 
   -- draw cells
   local cellH = wgt.zone.h / wgt.cellCount
@@ -438,25 +423,24 @@ local function refreshZoneMedium(wgt)
     local cellY = wgt.zone.y + (i - 1) * (cellH - 1)
 
     -- fill current cell
-    --lcd.drawFilledRectangle(wgt.zone.x + cellX     , cellY, 58, cellH, CUSTOM_COLOR)
-    lcd.setColor(CUSTOM_COLOR, getRangeColor(wgt.cellDataLive[i], wgt.cellMax, wgt.cellMax - 0.2))
-    lcd.drawFilledRectangle(wgt.zone.x + cellX     , cellY, cellW * wgt.cellDataLivePercent[i] / 100, cellH, CUSTOM_COLOR)
+    local fill_color = getRangeColor(wgt.cellDataLive[i], wgt.cellMax, wgt.cellMax - 0.2)
+    print(fill_color)
+    log(string.format("fill_color: %d", fill_color))
+    --lcd.drawFilledRectangle(wgt.zone.x + cellX     , cellY, 58, cellH, fill_color)
+    lcd.drawFilledRectangle(wgt.zone.x + cellX     , cellY, cellW * wgt.cellDataLivePercent[i] / 100, cellH, fill_color)
 
     -- fill cell history min
-    --lcd.setColor(CUSTOM_COLOR, getRangeColor(wgt.cellDataHistoryLowest[i], wgt.cellMax, wgt.cellMax - 0.2))
-    lcd.setColor(CUSTOM_COLOR, lcd.RGB(0x00, 0, 0))
-    lcd.drawFilledRectangle(wgt.zone.x + cellX + (cellW * wgt.cellDataHistoryLowestPercent[i])/100 -2, cellY, 2 , cellH, CUSTOM_COLOR)
+    --lcd.setColor(fill_color, getRangeColor(wgt.cellDataHistoryLowest[i], wgt.cellMax, wgt.cellMax - 0.2))
+    lcd.drawFilledRectangle(wgt.zone.x + cellX + (cellW * wgt.cellDataHistoryLowestPercent[i])/100 -2, cellY, 2 , cellH, BLACK)
 
-    lcd.setColor(CUSTOM_COLOR, WHITE)
-    lcd.drawText           (wgt.zone.x + cellX + 10, cellY, string.format("%.2f", wgt.cellDataLive[i]), SMLSIZE + CUSTOM_COLOR + wgt.shadowed + wgt.no_telem_blink)
-    lcd.drawRectangle      (wgt.zone.x + cellX     , cellY, 59, cellH, CUSTOM_COLOR , 1)
+    lcd.drawText           (wgt.zone.x + cellX + 10, cellY, string.format("%.2f", wgt.cellDataLive[i]), SMLSIZE + WHITE + wgt.shadowed + wgt.no_telem_blink)
+    lcd.drawRectangle      (wgt.zone.x + cellX     , cellY, 59, cellH, WHITE , 1)
   end
 
-  -- draws bat
-  lcd.setColor(CUSTOM_COLOR, WHITE)
-  lcd.drawRectangle(wgt.zone.x + myBatt.x, wgt.zone.y + myBatt.y, myBatt.w, myBatt.h, CUSTOM_COLOR, 2)
-  lcd.drawFilledRectangle(wgt.zone.x + myBatt.x + myBatt.w, wgt.zone.y + myBatt.h / 2 - myBatt.cath_h / 2, myBatt.cath_w, myBatt.cath_h, CUSTOM_COLOR)
-  lcd.drawText(wgt.zone.x + myBatt.x + 20, wgt.zone.y + myBatt.y + 5, string.format("%2.0f%%", wgt.cellPercent), LEFT + MIDSIZE + CUSTOM_COLOR + wgt.shadowed)
+  -- draw battery
+  lcd.drawRectangle(wgt.zone.x + myBatt.x, wgt.zone.y + myBatt.y, myBatt.w, myBatt.h, WHITE, 2)
+  lcd.drawFilledRectangle(wgt.zone.x + myBatt.x + myBatt.w, wgt.zone.y + myBatt.h / 2 - myBatt.cath_h / 2, myBatt.cath_w, myBatt.cath_h, WHITE)
+  lcd.drawText(wgt.zone.x + myBatt.x + 20, wgt.zone.y + myBatt.y + 5, string.format("%2.0f%%", wgt.cellPercent), LEFT + MIDSIZE + WHITE + wgt.shadowed)
 
 end
 
@@ -464,90 +448,76 @@ end
 local function refreshZoneLarge(wgt)
   local myBatt = { ["x"] = 0, ["y"] = 18, ["w"] = 76, ["h"] = 121, ["segments_h"] = 30, ["color"] = WHITE, ["cath_w"] = 30, ["cath_h"] = 10 }
 
-  if wgt.isDataAvailable then
-    lcd.setColor(CUSTOM_COLOR, wgt.options.Color)
-  else
-    lcd.setColor(CUSTOM_COLOR, GREY)
-  end
+  lcd.drawText(wgt.zone.x + wgt.zone.w, wgt.zone.y, wgt.cellPercent .. "%", RIGHT + DBLSIZE + wgt.text_color + wgt.shadowed)
+  lcd.drawText(wgt.zone.x + wgt.zone.w, wgt.zone.y + 30, string.format("%2.1fV", wgt.mainValue), RIGHT + DBLSIZE + wgt.text_color + wgt.shadowed)
+  lcd.drawText(wgt.zone.x + wgt.zone.w, wgt.zone.y + 70, string.format("%2.1fV %dS", wgt.secondaryValue, wgt.cellCount), RIGHT + SMLSIZE + wgt.text_color + wgt.shadowed)
 
-  lcd.drawText(wgt.zone.x + wgt.zone.w, wgt.zone.y, wgt.cellPercent .. "%", RIGHT + DBLSIZE + CUSTOM_COLOR + wgt.shadowed)
-  lcd.drawText(wgt.zone.x + wgt.zone.w, wgt.zone.y + 30, string.format("%2.1fV", wgt.mainValue), RIGHT + DBLSIZE + CUSTOM_COLOR + wgt.shadowed)
-  lcd.drawText(wgt.zone.x + wgt.zone.w, wgt.zone.y + 70, string.format("%2.1fV %dS", wgt.secondaryValue, wgt.cellCount), RIGHT + SMLSIZE + CUSTOM_COLOR + wgt.shadowed)
-  -- fill batt
-  lcd.setColor(CUSTOM_COLOR, getPercentColor(wgt.cellPercent))
-  lcd.drawFilledRectangle(wgt.zone.x + myBatt.x, wgt.zone.y + myBatt.y + myBatt.h + myBatt.cath_h - math.floor(wgt.cellPercent / 100 * myBatt.h), myBatt.w, math.floor(wgt.cellPercent / 100 * myBatt.h), CUSTOM_COLOR)
+  -- fill battery
+  local fill_color = getPercentColor(wgt.cellPercent)
+  lcd.drawFilledRectangle(wgt.zone.x + myBatt.x, wgt.zone.y + myBatt.y + myBatt.h + myBatt.cath_h - math.floor(wgt.cellPercent / 100 * myBatt.h), myBatt.w, math.floor(wgt.cellPercent / 100 * myBatt.h), fill_color)
   -- draw cells
   local pos = { { x = 80, y = 90 }, { x = 138, y = 90 }, { x = 80, y = 109 }, { x = 138, y = 109 }, { x = 80, y = 128 }, { x = 138, y = 128 } }
   for i = 1, wgt.cellCount, 1 do
-    lcd.setColor(CUSTOM_COLOR, getRangeColor(wgt.cellDataLive[i], wgt.cellMax, wgt.cellMax - 0.2))
-    lcd.drawFilledRectangle(wgt.zone.x + pos[i].x, wgt.zone.y + pos[i].y, 58, 20, CUSTOM_COLOR)
-    lcd.setColor(CUSTOM_COLOR, WHITE)
-    lcd.drawText(wgt.zone.x + pos[i].x + 10, wgt.zone.y + pos[i].y, string.format("%.2f", wgt.cellDataLive[i]), CUSTOM_COLOR + wgt.shadowed)
-    lcd.drawRectangle(wgt.zone.x + pos[i].x, wgt.zone.y + pos[i].y, 59, 20, CUSTOM_COLOR, 1)
+    local fill_color = getRangeColor(wgt.cellDataLive[i], wgt.cellMax, wgt.cellMax - 0.2)
+    lcd.drawFilledRectangle(wgt.zone.x + pos[i].x, wgt.zone.y + pos[i].y, 58, 20, fill_color)
+
+    lcd.drawText(wgt.zone.x + pos[i].x + 10, wgt.zone.y + pos[i].y, string.format("%.2f", wgt.cellDataLive[i]), WHITE + wgt.shadowed)
+    lcd.drawRectangle(wgt.zone.x + pos[i].x, wgt.zone.y + pos[i].y, 59, 20, WHITE, 1)
   end
 
-  -- draw bat
-  lcd.setColor(CUSTOM_COLOR, WHITE)
-  lcd.drawRectangle(wgt.zone.x + myBatt.x, wgt.zone.y + myBatt.y + myBatt.cath_h, myBatt.w, myBatt.h, CUSTOM_COLOR, 2)
-  lcd.drawFilledRectangle(wgt.zone.x + myBatt.x + myBatt.w / 2 - myBatt.cath_w / 2, wgt.zone.y + myBatt.y, myBatt.cath_w, myBatt.cath_h, CUSTOM_COLOR)
+  -- draw battery
+  lcd.drawRectangle(wgt.zone.x + myBatt.x, wgt.zone.y + myBatt.y + myBatt.cath_h, myBatt.w, myBatt.h, WHITE, 2)
+  lcd.drawFilledRectangle(wgt.zone.x + myBatt.x + myBatt.w / 2 - myBatt.cath_w / 2, wgt.zone.y + myBatt.y, myBatt.cath_w, myBatt.cath_h, WHITE)
   for i = 1, myBatt.h - myBatt.segments_h, myBatt.segments_h do
-    lcd.drawRectangle(wgt.zone.x + myBatt.x, wgt.zone.y + myBatt.y + myBatt.cath_h + i, myBatt.w, myBatt.segments_h, CUSTOM_COLOR, 1)
+    lcd.drawRectangle(wgt.zone.x + myBatt.x, wgt.zone.y + myBatt.y + myBatt.cath_h + i, myBatt.w, myBatt.segments_h, WHITE, 1)
   end
 
 end
 
-local function refreshFullScreenImpl(wgt, x, w, y, h)
+local function refreshAppModeImpl(wgt, x, w, y, h)
 
   local myBatt = { ["x"] = 10, ["y"] = 20, ["w"] = 80, ["h"] = 121, ["segments_h"] = 30, ["color"] = WHITE, ["cath_w"] = 30, ["cath_h"] = 10 }
 
-  lcd.setColor(CUSTOM_COLOR, wgt.options.Color)
 
-  -- fill batt
-  lcd.setColor(CUSTOM_COLOR, getPercentColor(wgt.cellPercent))
-  lcd.drawFilledRectangle(x + myBatt.x, y + myBatt.y + myBatt.h + myBatt.cath_h - math.floor(wgt.cellPercent / 100 * myBatt.h), myBatt.w, math.floor(wgt.cellPercent / 100 * myBatt.h), CUSTOM_COLOR)
+  -- fill battery
+  local fill_color = getPercentColor(wgt.cellPercent)
+  lcd.drawFilledRectangle(x + myBatt.x, y + myBatt.y + myBatt.h + myBatt.cath_h - math.floor(wgt.cellPercent / 100 * myBatt.h), myBatt.w, math.floor(wgt.cellPercent / 100 * myBatt.h), fill_color)
 
   -- draw right text section
-  if wgt.isDataAvailable then
-    lcd.setColor(CUSTOM_COLOR, wgt.options.Color)
-  else
-    lcd.setColor(CUSTOM_COLOR, GREY)
-  end
-  lcd.drawText(x + w, y + myBatt.y, wgt.cellPercent .. "%", RIGHT + DBLSIZE + CUSTOM_COLOR + wgt.shadowed + wgt.no_telem_blink)
+  lcd.drawText(x + w, y + myBatt.y, wgt.cellPercent .. "%", RIGHT + DBLSIZE + wgt.text_color + wgt.shadowed + wgt.no_telem_blink)
 
-  lcd.drawText(x + w, y + myBatt.y + 30, string.format("%2.1fV", wgt.mainValue), RIGHT + DBLSIZE + CUSTOM_COLOR + wgt.shadowed + wgt.no_telem_blink)
-  lcd.drawText(x + w, y + myBatt.y + 105, string.format("%2.1fV %dS", wgt.secondaryValue, wgt.cellCount), RIGHT + SMLSIZE + CUSTOM_COLOR + wgt.shadowed + wgt.no_telem_blink)
+  lcd.drawText(x + w, y + myBatt.y + 30, string.format("%2.1fV", wgt.mainValue), RIGHT + DBLSIZE + wgt.text_color + wgt.shadowed + wgt.no_telem_blink)
+  lcd.drawText(x + w, y + myBatt.y + 105, string.format("%2.1fV %dS", wgt.secondaryValue, wgt.cellCount), RIGHT + SMLSIZE + wgt.text_color + wgt.shadowed + wgt.no_telem_blink)
 
   -- draw cells
   local pos = { { x = 111, y = 38 }, { x = 164, y = 38 }, { x = 217, y = 38 }, { x = 111, y = 57 }, { x = 164, y = 57 }, { x = 217, y = 57 } }
   for i = 1, wgt.cellCount, 1 do
-    lcd.setColor(CUSTOM_COLOR, getRangeColor(wgt.cellDataLive[i], wgt.cellMax, wgt.cellMax - 0.2))
-    lcd.drawFilledRectangle(x + pos[i].x, y + pos[i].y, 53, 20, CUSTOM_COLOR)
-    lcd.setColor(CUSTOM_COLOR, WHITE)
-    lcd.drawText(x + pos[i].x + 10, y + pos[i].y, string.format("%.2f", wgt.cellDataLive[i]), CUSTOM_COLOR + wgt.shadowed + wgt.no_telem_blink)
-    lcd.drawRectangle(x + pos[i].x, y + pos[i].y, 54, 20, CUSTOM_COLOR, 1)
+    local cell_color =  getRangeColor(wgt.cellDataLive[i], wgt.cellMax, wgt.cellMax - 0.2)
+    lcd.drawFilledRectangle(x + pos[i].x, y + pos[i].y, 53, 20, cell_color)
+    lcd.drawText(x + pos[i].x + 10, y + pos[i].y, string.format("%.2f", wgt.cellDataLive[i]), WHITE + wgt.shadowed + wgt.no_telem_blink)
+    lcd.drawRectangle(x + pos[i].x, y + pos[i].y, 54, 20, WHITE, 1)
   end
   -- draw cells for lowest cells
   local pos = { { x = 111, y = 110 }, { x = 164, y = 110 }, { x = 217, y = 110 }, { x = 111, y = 129 }, { x = 164, y = 129 }, { x = 217, y = 129 } }
   for i = 1, wgt.cellCount, 1 do
-    lcd.setColor(CUSTOM_COLOR, getRangeColor(wgt.cellDataHistoryLowest[i], wgt.cellDataLive[i], wgt.cellDataLive[i] - 0.3))
-    lcd.drawFilledRectangle(x + pos[i].x, y + pos[i].y, 53, 20, CUSTOM_COLOR)
-    lcd.setColor(CUSTOM_COLOR, WHITE)
-    lcd.drawRectangle(x + pos[i].x, y + pos[i].y, 54, 20, CUSTOM_COLOR, 1)
-    lcd.drawText(x + pos[i].x + 10, y + pos[i].y, string.format("%.2f", wgt.cellDataHistoryLowest[i]), CUSTOM_COLOR + wgt.shadowed + wgt.no_telem_blink)
+    local cell_color = getRangeColor(wgt.cellDataHistoryLowest[i], wgt.cellDataLive[i], wgt.cellDataLive[i] - 0.3)
+    lcd.drawFilledRectangle(x + pos[i].x, y + pos[i].y, 53, 20, cell_color)
+
+    lcd.drawRectangle(x + pos[i].x, y + pos[i].y, 54, 20, WHITE, 1)
+    lcd.drawText(x + pos[i].x + 10, y + pos[i].y, string.format("%.2f", wgt.cellDataHistoryLowest[i]), WHITE + wgt.shadowed + wgt.no_telem_blink)
   end
 
-  -- draws bat
-  lcd.setColor(CUSTOM_COLOR, WHITE)
-  lcd.drawRectangle(x + myBatt.x, y + myBatt.y + myBatt.cath_h, myBatt.w, myBatt.h, CUSTOM_COLOR, 2)
-  lcd.drawFilledRectangle(x + myBatt.x + myBatt.w / 2 - myBatt.cath_w / 2, y + myBatt.y, myBatt.cath_w, myBatt.cath_h, CUSTOM_COLOR)
+  -- draws battery
+  lcd.drawRectangle(x + myBatt.x, y + myBatt.y + myBatt.cath_h, myBatt.w, myBatt.h, WHITE, 2)
+  lcd.drawFilledRectangle(x + myBatt.x + myBatt.w / 2 - myBatt.cath_w / 2, y + myBatt.y, myBatt.cath_w, myBatt.cath_h, WHITE)
   for i = 1, myBatt.h - myBatt.segments_h, myBatt.segments_h do
-    lcd.drawRectangle(x + myBatt.x, y + myBatt.y + myBatt.cath_h + i, myBatt.w, myBatt.segments_h, CUSTOM_COLOR, 1)
+    lcd.drawRectangle(x + myBatt.x, y + myBatt.y + myBatt.cath_h + i, myBatt.w, myBatt.segments_h, WHITE, 1)
   end
   -- draw middle rectangles
-  lcd.drawRectangle(x + 110, y + 38, 161, 40, CUSTOM_COLOR, 1)
-  lcd.drawText(x + 220, y + 21, "Live data", RIGHT + SMLSIZE + INVERS + CUSTOM_COLOR + wgt.shadowed)
-  lcd.drawRectangle(x + 110, y + 110, 161, 40, CUSTOM_COLOR, 1)
-  lcd.drawText(x + 230, y + 93, "Lowest data", RIGHT + SMLSIZE + INVERS + CUSTOM_COLOR + wgt.shadowed)
+  lcd.drawRectangle(x + 110, y + 38, 161, 40, WHITE, 1)
+  lcd.drawText(x + 220, y + 21, "Live data", RIGHT + SMLSIZE + INVERS + WHITE + wgt.shadowed)
+  lcd.drawRectangle(x + 110, y + 110, 161, 40, WHITE, 1)
+  lcd.drawText(x + 230, y + 93, "Lowest data", RIGHT + SMLSIZE + INVERS + WHITE + wgt.shadowed)
   return
 end
 
@@ -559,17 +529,17 @@ local function refreshZoneXLarge(wgt)
   local y = wgt.zone.y
   local h = wgt.zone.h
 
-  refreshFullScreenImpl(wgt, x, w, y, h)
+  refreshAppModeImpl(wgt, x, w, y, h)
 end
 
 
---- Zone size: 460x252 (full screen app mode)
-local function refreshFullScreen(wgt, event, touchState)
+--- Zone size: 460x252 - app mode (full screen)
+local function refreshAppMode(wgt, event, touchState)
   local x = 0
   local w = 460
   local y = 0
   local h = 252
-  refreshFullScreenImpl(wgt, x, w, y, h)
+  refreshAppModeImpl(wgt, x, w, y, h)
 end
 
 
@@ -610,13 +580,15 @@ local function refresh(wgt, event, touchState)
 
   if wgt.isDataAvailable then
     wgt.no_telem_blink = 0
+    wgt.text_color = wgt.options.Color
   else
     wgt.no_telem_blink = INVERS + BLINK
+    wgt.text_color = GREY
   end
 
   local t4 = getUsage();
   if (event ~= nil) then
-    refreshFullScreen(wgt, event, touchState)
+    refreshAppMode(wgt, event, touchState)
   elseif wgt.zone.w > 380 and wgt.zone.h > 165 then   refreshZoneXLarge(wgt)
   elseif wgt.zone.w > 180 and wgt.zone.h > 145 then   refreshZoneLarge(wgt)
   elseif wgt.zone.w > 170 and wgt.zone.h > 65 then    refreshZoneMedium(wgt)
@@ -628,8 +600,8 @@ local function refresh(wgt, event, touchState)
 
   --cpuProfilerAdd(wgt, 'main-loop', t1);
   --cpuProfilerShow(wgt);
-  --lcd.drawText(wgt.zone.x, wgt.zone.y, string.format("r:%d", wgt.telemResetCount), SMLSIZE + CUSTOM_COLOR) -- ???
-  --lcd.drawText(wgt.zone.x+100, wgt.zone.y, string.format("%d%%", getUsage()), SMLSIZE + CUSTOM_COLOR) -- ???
+  --lcd.drawText(wgt.zone.x, wgt.zone.y, string.format("r:%d", wgt.telemResetCount), SMLSIZE + wgt.text_color)
+  --lcd.drawText(wgt.zone.x+100, wgt.zone.y, string.format("%d%%", getUsage()), SMLSIZE + wgt.text_color)
 end
 
 return { name = "BattCheck", options = _options, create = create, update = update, background = background, refresh = refresh }
