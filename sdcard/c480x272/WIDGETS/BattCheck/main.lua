@@ -1,7 +1,7 @@
 ---- #########################################################################
 ---- #                                                                       #
----- # Telemetry Widget script for FrSky Horus/Radio Master TX16s            #
----- # Copyright (C) OpenTX                                                  #
+---- # Telemetry Widget script for FrSky Horus/RadioMaster TX16s             #
+---- # Copyright (C) EdgeTX                                                  #
 -----#                                                                       #
 ---- # License GPLv2: http://www.gnu.org/licenses/gpl-2.0.html               #
 ---- #                                                                       #
@@ -18,15 +18,15 @@
 
 -- Horus Widget to display the levels of lipo battery with per cell indication
 -- 3djc & Offer Shmuely
--- Date: 2021
--- ver: 0.6
-local version = "v0.6"
+-- Date: 2022
+-- ver: 0.7
+local version = "v0.7"
 
 local _options = {
-  { "Sensor", SOURCE, 0 }, -- default to 'Cels'
+  { "Sensor", SOURCE, 0   }, -- default to 'Cels'
   { "Color", COLOR, WHITE },
-  { "Shadow", BOOL, 0 },
-  { "LowestCell", BOOL, 1 }   -- 0=main voltage display shows all-cell-voltage, 1=main voltage display shows lowest-cell
+  { "Shadow", BOOL, 0     },
+  { "LowestCell", BOOL, 1 },   -- 0=main voltage display shows all-cell-voltage, 1=main voltage display shows lowest-cell
 }
 
 -- Data gathered from commercial lipo sensors
@@ -44,10 +44,10 @@ local _lipoPercentListSplit = {
 
 --------------------------------------------------------------
 local function log(s)
-  return;
-  --print("app: " .. s)
+  --print("BattCheck: " .. s)
 end
 --------------------------------------------------------------
+
 --periodic1 = {startTime = -1, durationMili = -1},
 local function periodicInit(t, durationMili)
   t.startTime = getTime();
@@ -452,7 +452,7 @@ local function refreshZoneMedium(wgt)
     lcd.drawRectangle      (wgt.zone.x + cellX     , cellY, 59, cellH, CUSTOM_COLOR , 1)
   end
 
-  -- draws bat
+  -- draw battery
   lcd.setColor(CUSTOM_COLOR, WHITE)
   lcd.drawRectangle(wgt.zone.x + myBatt.x, wgt.zone.y + myBatt.y, myBatt.w, myBatt.h, CUSTOM_COLOR, 2)
   lcd.drawFilledRectangle(wgt.zone.x + myBatt.x + myBatt.w, wgt.zone.y + myBatt.h / 2 - myBatt.cath_h / 2, myBatt.cath_w, myBatt.cath_h, CUSTOM_COLOR)
@@ -536,7 +536,7 @@ local function refreshFullScreenImpl(wgt, x, w, y, h)
     lcd.drawText(x + pos[i].x + 10, y + pos[i].y, string.format("%.2f", wgt.cellDataHistoryLowest[i]), CUSTOM_COLOR + wgt.shadowed + wgt.no_telem_blink)
   end
 
-  -- draws bat
+  -- draws battery
   lcd.setColor(CUSTOM_COLOR, WHITE)
   lcd.drawRectangle(x + myBatt.x, y + myBatt.y + myBatt.cath_h, myBatt.w, myBatt.h, CUSTOM_COLOR, 2)
   lcd.drawFilledRectangle(x + myBatt.x + myBatt.w / 2 - myBatt.cath_w / 2, y + myBatt.y, myBatt.cath_w, myBatt.cath_h, CUSTOM_COLOR)
@@ -559,17 +559,17 @@ local function refreshZoneXLarge(wgt)
   local y = wgt.zone.y
   local h = wgt.zone.h
 
-  refreshFullScreenImpl(wgt, x, w, y, h)
+  refreshAppModeImpl(wgt, x, w, y, h)
 end
 
 
---- Zone size: 460x252 (full screen app mode)
-local function refreshFullScreen(wgt, event, touchState)
+--- Zone size: 460x252 - app mode (full screen)
+local function refreshAppMode(wgt, event, touchState)
   local x = 0
   local w = 460
   local y = 0
   local h = 252
-  refreshFullScreenImpl(wgt, x, w, y, h)
+  refreshAppModeImpl(wgt, x, w, y, h)
 end
 
 
@@ -616,7 +616,7 @@ local function refresh(wgt, event, touchState)
 
   local t4 = getUsage();
   if (event ~= nil) then
-    refreshFullScreen(wgt, event, touchState)
+    refreshAppMode(wgt, event, touchState)
   elseif wgt.zone.w > 380 and wgt.zone.h > 165 then   refreshZoneXLarge(wgt)
   elseif wgt.zone.w > 180 and wgt.zone.h > 145 then   refreshZoneLarge(wgt)
   elseif wgt.zone.w > 170 and wgt.zone.h > 65 then    refreshZoneMedium(wgt)

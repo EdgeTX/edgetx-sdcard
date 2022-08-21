@@ -1,7 +1,7 @@
----- #########################################################################
+n---- #########################################################################
 ---- #                                                                       #
----- # Telemetry Widget script for FrSky Horus/Radio Master TX16s            #
----- # Copyright (C) OpenTX                                                  #
+---- # Telemetry Widget script for FrSky Horus/RadioMaster TX16s             #
+---- # Copyright (C) EdgeTX                                                  #
 -----#                                                                       #
 ---- # License GPLv2: http://www.gnu.org/licenses/gpl-2.0.html               #
 ---- #                                                                       #
@@ -29,8 +29,8 @@
 
 -- Widget to display the levels of Lipo battery from single analog source
 -- Offer Shmuely
--- Date: 2021
--- ver: 0.2
+-- Date: 2022
+-- ver: 0.3
 
 local _options = {
   { "Sensor", SOURCE, 0 }, -- default to 'A1'
@@ -44,8 +44,7 @@ local defaultSensor = "RxBt" -- RxBt / A1 / A3/ VFAS /RxBt
 
 --------------------------------------------------------------
 local function log(s)
-  return;
-  --print("Batt_A1: " .. s)
+  --print("BattAnalog: " .. s)
 end
 --------------------------------------------------------------
 
@@ -191,7 +190,7 @@ local function calcCellCount(wgt, singleVoltage)
     return 12
   end
 
-  print("no match found" .. singleVoltage)
+  log("no match found" .. singleVoltage)
   return 1
 end
 
@@ -200,31 +199,31 @@ local function calculateBatteryData(wgt)
 
   local v = getValue(wgt.options.Sensor)
   local fieldinfo = getFieldInfo(wgt.options.Sensor)
-  print("wgt.options.Sensor: " .. wgt.options.Sensor)
-  print("v: " .. v)
+  log("wgt.options.Sensor: " .. wgt.options.Sensor)
+  log("v: " .. v)
 
   if type(v) == "table" then
     -- multi cell values using FLVSS liPo Voltage Sensor
     if (#v > 1) then
       wgt.isDataAvailable = false
       local txt = "FLVSS liPo Voltage Sensor, not supported"
-      print(txt)
+      log(txt)
       return
     end
   elseif v ~= nil and v >= 1 then
     -- single cell or VFAS lipo sensor
     if fieldinfo then
-      print("single value: " .. fieldinfo['name'] .. "=" .. v)
+      log("single value: " .. fieldinfo['name'] .. "=" .. v)
     else
-      print("only one cell using Ax lipo sensor")
+      log("only one cell using Ax lipo sensor")
     end
   else
     -- no telemetry available
     wgt.isDataAvailable = false
     if fieldinfo then
-      print("no telemetry data: " .. fieldinfo['name'] .. "=??")
+      log("no telemetry data: " .. fieldinfo['name'] .. "=??")
     else
-      print("no telemetry data")
+      log("no telemetry data")
     end
     return
   end
@@ -247,8 +246,8 @@ local function calculateBatteryData(wgt)
   wgt.vCellLive = wgt.vTotalLive / wgt.cellCount
   wgt.vPercent = getCellPercent(wgt.vCellLive)
 
-  -- print("wgt.vCellLive: ".. wgt.vCellLive)
-  -- print("wgt.vPercent: ".. wgt.vPercent)
+  -- log("wgt.vCellLive: ".. wgt.vCellLive)
+  -- log("wgt.vPercent: ".. wgt.vPercent)
 
   -- mainValue
   if wgt.options.Show_Total_Voltage == 0 then
@@ -487,8 +486,8 @@ local function refreshZoneXLarge(wgt)
 end
 
 
---- Zone size: 460x252 (full screen app mode)
-local function refreshFullScreen(wgt, event, touchState)
+--- Zone size: 460x252 - app mode (full screen)
+local function refreshAppMode(wgt, event, touchState)
   local x = 0
   local w = 460
   local y = 0
@@ -497,7 +496,7 @@ local function refreshFullScreen(wgt, event, touchState)
   local myBatt = { ["x"] = 10, ["y"] = 0, ["w"] = 80, ["h"] = h, ["segments_h"] = 30, ["color"] = WHITE, ["cath_w"] = 30, ["cath_h"] = 10 }
 
   if (event ~= nil) then
-    print("event: " .. event)
+    log("event: " .. event)
   end
     
   -- draw right text section
@@ -529,21 +528,11 @@ end
 
 local function refresh(wgt, event, touchState)
 
-  if (wgt == nil) then
-    return
-  end
-  if type(wgt) ~= "table" then
-    return
-  end
-  if (wgt.options == nil) then
-    return
-  end
-  if (wgt.zone == nil) then
-    return
-  end
-  if (wgt.options.Show_Total_Voltage == nil) then
-    return
-  end
+  if (wgt == nil)         then return end
+  if type(wgt) ~= "table" then return end
+  if (wgt.options == nil) then return end
+  if (wgt.zone == nil)    then return end
+  if (wgt.options.Show_Total_Voltage == nil) then return end
 
   detectResetEvent(wgt)
 
@@ -555,13 +544,8 @@ local function refresh(wgt, event, touchState)
     wgt.no_telem_blink = INVERS + BLINK
   end
 
-
-  -- debug
-  --lcd.setColor(CUSTOM_COLOR, lcd.RGB(0, 150, 0))
-  --lcd.drawRectangle(wgt.zone.x, wgt.zone.y, wgt.zone.w, wgt.zone.h, BLACK)
-
   if (event ~= nil) then
-    refreshFullScreen(wgt, event, touchState)
+    refreshAppMode(wgt, event, touchState)
   elseif wgt.zone.w > 380 and wgt.zone.h > 165 then
     refreshZoneXLarge(wgt)
   elseif wgt.zone.w > 180 and wgt.zone.h > 145 then
@@ -576,5 +560,4 @@ local function refresh(wgt, event, touchState)
 
 end
 
--- return { name = "BattCheck (Analog)", options = _options, create = create, update = update, background = background, refresh = refresh }
 return { name = "BattAnalog", options = _options, create = create, update = update, background = background, refresh = refresh }
