@@ -1,9 +1,9 @@
 -- Horus Widget that count number of flights
 -- Offer Shmuely
 -- Date: 2022
--- ver: 0.1
--- flight considered successful: after 20sec the engine above 25%, and telemetry is active (to indicated that the model connected), and safe switch ON
--- flight considered ended: after 20sec of battery disconnection (detected by no telemetry)
+-- ver: 0.3
+-- flight considered successful: after 30sec the engine above 25%, and telemetry is active (to indicated that the model connected), and safe switch ON
+-- flight considered ended: after 8sec of battery disconnection (detected by no telemetry)
 -- warning: do NOT use this widget if model is using GV9!!!
 
 -- widget assume the following:
@@ -18,7 +18,7 @@
 --   all-flags on for 30s => flight-on
 --   no telemetry for 8s  => flight-completed
 
-
+-- Note: there is two options of voice indication, and you can also put your own, if you do not like the sound, just delete the files
 local app_name = "Flights"
 
 local periodic1 = {
@@ -33,13 +33,14 @@ local img = Bitmap.open("/WIDGETS/".. app_name .. "/logo.png")
 local default_flight_starting_duration = 30 -- 20 sec to detect fight success
 local default_flight_ending_duration = 8 -- 8 sec to detect fight ended
 local default_min_motor_value = 200
-
+local enable_sounds = 1
 
 local options = {
   { "switch", SOURCE, 117 },             -- 117== SF (arm/safety switch)
   { "motor_channel", SOURCE, 204 },      -- 204==CH3
   { "min_flight_duration", VALUE, default_flight_starting_duration, 1, 120},
-  { "enable_sounds", BOOL, 1 },          -- enable sound on adding succ flight, and on end of flight
+  --{ "enable_sounds", BOOL, 1 },          -- enable sound on adding succ flight, and on end of flight
+  { "text_color", COLOR, YELLOW },
   { "debug", BOOL, 0 }                   -- show status on screen
 }
 
@@ -264,8 +265,9 @@ local function incrementFlightCount(wgt)
   log("num_flights updated: " .. new_flight_count)
 
   -- beep
-  if (wgt.options.enable_sounds) then
-    playFile("/WIDGETS/" .. app_name .. "/on_air.wav")
+  --if (wgt.options.enable_sounds) then
+  if (enable_sounds == 1) then
+    playFile("/WIDGETS/" .. app_name .. "/flight_logged.wav")
   end
 end
 
@@ -327,8 +329,9 @@ local function background(wgt)
 
     if (periodicHasPassed(periodic1)) then
       stateChange(wgt, "GROUND", 0)
-      if (wgt.options.enable_sounds) then
-        playFile("/WIDGETS/" .. app_name .. "/ground.wav")
+      --if (wgt.options.enable_sounds) then
+      if (enable_sounds == 1) then
+        playFile("/WIDGETS/" .. app_name .. "/flight_ended.wav")
       end
     end
 
@@ -389,30 +392,36 @@ local function refresh(wgt, event, touchState)
   -- icon
   if wgt.options.debug == 0 then
     if (zone_h < 50) then
-      lcd.drawBitmap(img, 0, dyh + 17, 20)
+      local num_flights = getFlightCount()
+      -- if more than 2 digit, on a tight place, do not display
+      if num_flights < 100 then
+        lcd.drawBitmap(img, 0, dyh + 17, 20)
+      end
+
     else
       lcd.drawBitmap(img, 15, dyh + 15, 45)
     end
   end
 
   -- draw header
-  lcd.drawText(wgt.zone.x, wgt.zone.y + dyh, header, font_size_header + YELLOW)
+  lcd.drawText(wgt.zone.x, wgt.zone.y + dyh, header, font_size_header + wgt.options.text_color)
 
   -- draw count
   --if wgt.options.debug == 0 then
-  --  lcd.drawText(wgt.zone.x + (wgt.zone.w / 2), wgt.zone.y + dy, num_flights, font_size + YELLOW )
+  --  lcd.drawText(wgt.zone.x + (wgt.zone.w / 2), wgt.zone.y + dy, num_flights, font_size + wgt.options.text_color )
   --else
-    lcd.drawText(wgt.zone.x + wgt.zone.w, wgt.zone.y + dy, num_flights, font_size + YELLOW + RIGHT)
+    lcd.drawText(wgt.zone.x + wgt.zone.w, wgt.zone.y + dy, num_flights, font_size + wgt.options.text_color + RIGHT)
   --end
 
   -- dbg
   if wgt.options.debug == 1 then
-    lcd.drawText(wgt.zone.x, wgt.zone.y + 20, string.format("DEBUG:"), SMLSIZE)
-    lcd.drawText(wgt.zone.x, wgt.zone.y + 35, string.format("state: %s", wgt.status.flight_state), SMLSIZE)
-    lcd.drawText(wgt.zone.x, wgt.zone.y + 50, string.format("%s - switch(%s)", ternary(wgt.status.switch_on), wgt.status.switch_name ), SMLSIZE)
-    lcd.drawText(wgt.zone.x, wgt.zone.y + 65, string.format("%s - motor(%s) (inv: %s)", ternary(wgt.status.motor_active), wgt.status.motor_channel_name, wgt.status.motor_channel_direction_inv), SMLSIZE)
-    lcd.drawText(wgt.zone.x, wgt.zone.y + 80, string.format("%s - telemetry(%s)", ternary(wgt.status.tele_is_available), wgt.status.tele_src_name ), SMLSIZE)
-    lcd.drawText(wgt.zone.x, wgt.zone.y + 95, string.format("duration: %.1f/%d",wgt.status.duration_passed/1000  ,periodic1.durationMili/1000) , SMLSIZE)
+    local dx = 5
+    --lcd.drawText(wgt.zone.x + dx, wgt.zone.y + 25, string.format("DEBUG:"), SMLSIZE)
+    lcd.drawText(wgt.zone.x + dx, wgt.zone.y + 30, string.format("%s - switch(%s)", ternary(wgt.status.switch_on), wgt.status.switch_name ), SMLSIZE)
+    lcd.drawText(wgt.zone.x + dx, wgt.zone.y + 45, string.format("%s - motor(%s) (inv: %s)", ternary(wgt.status.motor_active), wgt.status.motor_channel_name, wgt.status.motor_channel_direction_inv), SMLSIZE)
+    lcd.drawText(wgt.zone.x + dx, wgt.zone.y + 60, string.format("%s - telemetry(%s)", ternary(wgt.status.tele_is_available), wgt.status.tele_src_name ), SMLSIZE)
+    lcd.drawText(wgt.zone.x + dx, wgt.zone.y + 75, string.format("duration: %.1f/%d",wgt.status.duration_passed/1000  ,periodic1.durationMili/1000) , SMLSIZE)
+    lcd.drawText(wgt.zone.x + dx, wgt.zone.y + 100, string.format("state: %s", wgt.status.flight_state), 0)
   end
 
 end
