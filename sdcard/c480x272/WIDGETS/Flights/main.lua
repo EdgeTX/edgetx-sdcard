@@ -36,12 +36,12 @@ local default_min_motor_value = 200
 local enable_sounds = 1
 
 local options = {
-  { "switch", SOURCE, 117 },             -- 117== SF (arm/safety switch)
-  { "motor_channel", SOURCE, 204 },      -- 204==CH3
-  { "min_flight_duration", VALUE, default_flight_starting_duration, 1, 120},
-  --{ "enable_sounds", BOOL, 1 },          -- enable sound on adding succ flight, and on end of flight
-  { "text_color", COLOR, YELLOW },
-  { "debug", BOOL, 0 }                   -- show status on screen
+  { "switch"             , SOURCE, 117    },  -- 117== SF (arm/safety switch)
+  { "motor_channel"      , SOURCE, 204    },  -- 204==CH3
+  { "min_flight_duration", VALUE , default_flight_starting_duration, 2, 120},
+  --{ "enable_sounds"    , BOOL  , 1      },  -- enable sound on adding succ flight, and on end of flight
+  { "text_color"         , COLOR , YELLOW },
+  { "debug"              , BOOL  , 0      }   -- show status on screen
 }
 
 local function log(s)
@@ -84,6 +84,14 @@ local function update(wgt, options)
     wgt.status.motor_channel_name = "--"
   else
     wgt.status.motor_channel_name = fi_mot.name
+  end
+
+  -- backward compatibility
+  if wgt.options.text_color == 32768 or wgt.options.text_color == 65536 or wgt.options.text_color == 98304 then
+    log(string.format("wgt.options.text_color: %s", wgt.options.text_color))
+    log("flights wgt.options.text_color == <invalid value>, probably upgraded from previous ver, setting to RED")
+    wgt.options.text_color = RED
+    log(string.format("wgt.options.text_color (fixed): %s", wgt.options.text_color))
   end
 
 end
@@ -200,7 +208,7 @@ end
 
 function updateMotorStatus(wgt)
   local motor_value = getValue(wgt.options.motor_channel)
-  log(string.format("motor_value (%s): %s", wgt.options.motor_channel, motor_value))
+  --log(string.format("motor_value (%s): %s", wgt.options.motor_channel, motor_value))
 
   ---- if we do not have telemetry, then the battery is not connected yet, so we can detect yet motor channel direction
   --if (wgt.status.tele_is_available == nil or wgt.status.tele_is_available == false) then
@@ -384,7 +392,7 @@ local function refresh(wgt, event, touchState)
   local dyh = 5
   local dy = header_h -1
   if (header_h + ts_h > zone_h) and (zone_h < 50) then
-    log(string.format("--- not enough height, force minimal spaces"))
+    --log(string.format("--- not enough height, force minimal spaces"))
     dyh = -3
     dy = 8
   end
