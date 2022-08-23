@@ -16,8 +16,9 @@
 ---- #                                                                       #
 ---- #########################################################################
 
--- This widget display a graphical representation of a Lipo (not other types) battery level, it will automatically detect the cell amount of the battery.
--- it will take a lipo voltage that received as a single value (as opposed to multi cell values send while using FLVSS liPo Voltage Sensor)
+-- This widget display a graphical representation of a Lipo/Li-ion (not other types) battery level,
+-- it will automatically detect the cell amount of the battery.
+-- it will take a lipo/li-ion voltage that received as a single value (as opposed to multi cell values send while using FLVSS liPo Voltage Sensor)
 -- common sources are:
 --   * Transmitter Battery
 --   * FrSky VFAS
@@ -34,8 +35,8 @@
 
 local _options = {
   { "Sensor", SOURCE, 0 }, -- default to 'A1'
-  { "Color", COLOR, YELLOW },
-  { "Show_Total_Voltage", BOOL, 0 } -- 0=Show as average Lipo cell level, 1=show the total voltage (voltage as is)
+  { "Color"             , COLOR , YELLOW },
+  { "Show_Total_Voltage", BOOL  , 0      }, -- 0=Show as average Lipo cell level, 1=show the total voltage (voltage as is)
 }
 
 -- Data gathered from commercial lipo sensors
@@ -423,20 +424,21 @@ end
 --- Zone size: 460x252 - app mode (full screen)
 local function refreshAppMode(wgt, event, touchState)
   local x = 0
-  local w = 460
   local y = 0
-  local h = 252
-  
-  local myBatt = { ["x"] = 10, ["y"] = 0, ["w"] = 80, ["h"] = h, ["segments_h"] = 30, ["color"] = WHITE, ["cath_w"] = 30, ["cath_h"] = 10 }
+  local w = LCD_W
+  local h = LCD_H - 20
+
+  local myBatt = { ["x"] = 10, ["y"] = 10, ["w"] = 90, ["h"] = h, ["segments_h"] = 30, ["color"] = WHITE, ["cath_w"] = 30, ["cath_h"] = 10 }
 
   if (event ~= nil) then
     log("event: " .. event)
   end
     
   -- draw right text section
-  lcd.drawText(x + w, y + myBatt.y + 0, string.format("%2.1fV    %2.0f%%", wgt.mainValue, wgt.vPercent), RIGHT + XXLSIZE + wgt.text_color + wgt.no_telem_blink)
-  lcd.drawText(x + w, y +h - 60, string.format("%2.1fV %dS", wgt.secondaryValue, wgt.cellCount), RIGHT + DBLSIZE + wgt.text_color + wgt.no_telem_blink)
-  lcd.drawText(x + w, y +h - 30, string.format("min %2.2fV", wgt.vMin), RIGHT + DBLSIZE + wgt.text_color + wgt.no_telem_blink)
+  lcd.drawText(x + w - 20, y + myBatt.y + 0, string.format("%2.1fV    %2.0f%%", wgt.mainValue, wgt.vPercent), RIGHT + XXLSIZE + wgt.text_color + wgt.no_telem_blink)
+  lcd.drawText(x + w - 20, y + 80, string.format("%2.1fV", wgt.secondaryValue), RIGHT + XXLSIZE + wgt.text_color + wgt.no_telem_blink)
+  lcd.drawText(x + w - 20, y + 150, string.format("%dS", wgt.cellCount), RIGHT + XXLSIZE + wgt.text_color + wgt.no_telem_blink)
+  lcd.drawText(x + w - 20, y +h - 30, string.format("min %2.2fV", wgt.vMin), RIGHT + DBLSIZE + wgt.text_color + wgt.no_telem_blink)
 
   drawBattery(wgt, myBatt)
 

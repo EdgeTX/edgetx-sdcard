@@ -16,21 +16,20 @@
 ---- #                                                                       #
 ---- #########################################################################
 
--- Horus Widget to display the levels of lipo battery with per cell indication
+-- Widget to display the levels of lipo/li-ion battery with indication of each cell (FLVSS)
 -- 3djc & Offer Shmuely
 -- Date: 2022
 -- ver: 0.7
 local version = "v0.7"
 
 local _options = {
-  { "Sensor", SOURCE, 0   }, -- default to 'Cels'
-  { "Color", COLOR, WHITE },
-  { "Shadow", BOOL, 0     },
-  { "LowestCell", BOOL, 1 },   -- 0=main voltage display shows all-cell-voltage, 1=main voltage display shows lowest-cell
+  { "Sensor"     , SOURCE, 0     }, -- default to 'Cels'
+  { "Color"      , COLOR , YELLOW},
+  { "Shadow"     , BOOL  , 0     },
+  { "LowestCell" , BOOL  , 1     }, -- 0=main voltage display shows all-cell-voltage, 1=main voltage display shows lowest-cell
 }
 
 -- Data gathered from commercial lipo sensors
-
 local _lipoPercentListSplit = {
   { { 3, 0 }, { 3.093, 1 }, { 3.196, 2 }, { 3.301, 3 }, { 3.401, 4 }, { 3.477, 5 }, { 3.544, 6 }, { 3.601, 7 }, { 3.637, 8 }, { 3.664, 9 }, { 3.679, 10 }, { 3.683, 11 }, { 3.689, 12 }, { 3.692, 13 } },
   { { 3.705, 14 }, { 3.71, 15 }, { 3.713, 16 }, { 3.715, 17 }, { 3.72, 18 }, { 3.731, 19 }, { 3.735, 20 }, { 3.744, 21 }, { 3.753, 22 }, { 3.756, 23 }, { 3.758, 24 }, { 3.762, 25 }, { 3.767, 26 } },
