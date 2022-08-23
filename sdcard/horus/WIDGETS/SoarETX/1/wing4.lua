@@ -2,7 +2,7 @@
 -- SoarETX flaps and aileron alignment, loadable component               --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Date:    2022-06-27                                                   --
+-- Date:    2022-08-20                                                   --
 -- Version: 1.0.0                                                        --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
@@ -198,14 +198,15 @@ local function offset()
 end
 
 -- Adjust a point, either on a curve or output
-local function adjustPoint(crvIdx, slider)
-	local crvTbl = crvTbls[crvIdx]
-	local outIdx = outIds[crvIdx]
-	local outTbl = outTbls[crvIdx]
+local function adjustPoint(i, slider)
+	local crvIdx = CRV_IDX[i]
+	local crvTbl = crvTbls[i]
+	local outIdx = outIds[i]
+	local outTbl = outTbls[i]
 	local activeP = activeP
 	local y = slider.value + offset()
 
-	if crvIdx <= 2 then
+	if i <= 2 then
 		-- Left side; reverse
 		activeP = N + 1 - activeP
 		y = -y
@@ -227,13 +228,13 @@ local function adjustPoint(crvIdx, slider)
 end
 
 -- The inverse function of adjust to set slider value from current settings
-local function sliderPoint(crvIdx)
-	local crvTbl = crvTbls[crvIdx]
-	local outTbl = outTbls[crvIdx]
+local function sliderPoint(i)
+	local crvTbl = crvTbls[i]
+	local outTbl = outTbls[i]
 	local activeP = activeP
   local value
 
-  if crvIdx <= 2 then
+  if i <= 2 then
 		-- Left side; reverse
     activeP = N + 1 - activeP
   end
@@ -248,7 +249,7 @@ local function sliderPoint(crvIdx)
     value = 10 * crvTbl.y[activeP]
   end
 
-  if crvIdx <= 2 then
+  if i <= 2 then
     value = -value
   end
 

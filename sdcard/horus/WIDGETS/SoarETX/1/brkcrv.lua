@@ -2,7 +2,7 @@
 -- SoarETX Adjust airbrake curves for flaps and ailerons                 --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Date:    2022-06-27                                                   --
+-- Date:    2022-08-20                                                   --
 -- Version: 1.0.0                                                        --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
@@ -41,7 +41,7 @@ local TEXT_Y =    BUTTON_Y
 
 -- Global variables
 local INP_STEP = getFieldInfo("input8").id 	-- Step input for selecting curve point
-local LS_STEP = 10                          -- Set this LS to apply step input and adjust
+local LS_STEP = 11                          -- Set this LS to apply step input
 local N = 5 																-- Number of points on the curves
 local MAX_Y = 100   												-- Max plot value
 local CRV_FLP = 4 													-- Index of the  flap curve
