@@ -1110,7 +1110,7 @@ logicalSw:
       duration: 0
    20:
       func: FUNC_STICKY
-      def: "FM2,L20"
+      def: "FM1,L20"
       andsw: "NONE"
       delay: 0
       duration: 0
@@ -1122,7 +1122,7 @@ logicalSw:
       duration: 0
    23:
       func: FUNC_STICKY
-      def: "FM2,L23"
+      def: "FM1,L23"
       andsw: "NONE"
       delay: 0
       duration: 0
@@ -1134,19 +1134,19 @@ logicalSw:
       duration: 0
    25:
       func: FUNC_AND
-      def: "!FM2,L24"
+      def: "!FM1,L24"
       andsw: "!L23"
       delay: 30
       duration: 0
    27:
-      func: FUNC_AND
-      def: "FM3,L16"
+      func: FUNC_OR
+      def: "FM1,FM2"
       andsw: "NONE"
       delay: 0
       duration: 0
    28:
-      func: FUNC_OR
-      def: "FM2,L28"
+      func: FUNC_AND
+      def: "L28,L16"
       andsw: "L8"
       delay: 0
       duration: 0

@@ -1,5 +1,5 @@
 header:
-  name: F3K
+  name: F3K-TRAD
   bitmap: ""
 timers:
   0:
@@ -187,7 +187,7 @@ mixData:
     offset: 0
     name: ""
   - destCh: 1
-    srcRaw: ch(24)
+    srcRaw: ch(29)
     weight: -GV5
     swtch: NONE
     curve:
@@ -271,7 +271,7 @@ mixData:
     flightModes: 000000000
     offset: 0
     name: ""
-  - destCh: 24
+  - destCh: 29
     srcRaw: I3
     weight: 100
     swtch: NONE
@@ -287,8 +287,8 @@ mixData:
     mixWarn: 0
     flightModes: 000000000
     offset: 0
-    name: Brake
-  - destCh: 24
+    name: ""
+  - destCh: 29
     srcRaw: MAX
     weight: 100
     swtch: L25
@@ -305,75 +305,7 @@ mixData:
     flightModes: 000000000
     offset: 0
     name: BrkOff
-  - destCh: 25
-    srcRaw: I4
-    weight: 100
-    swtch: NONE
-    curve:
-      type: 0
-      value: 0
-    delayUp: 0
-    delayDown: 0
-    speedUp: 0
-    speedDown: 0
-    carryTrim: 0
-    mltpx: ADD
-    mixWarn: 0
-    flightModes: 000000000
-    offset: 0
-    name: SnpNeg
-  - destCh: 25
-    srcRaw: I1
-    weight: 100
-    swtch: NONE
-    curve:
-      type: 3
-      value: -4
-    delayUp: 0
-    delayDown: 0
-    speedUp: 0
-    speedDown: 0
-    carryTrim: 1
-    mltpx: MUL
-    mixWarn: 0
-    flightModes: 000000000
-    offset: 0
-    name: ""
-  - destCh: 26
-    srcRaw: I4
-    weight: 100
-    swtch: NONE
-    curve:
-      type: 0
-      value: 0
-    delayUp: 0
-    delayDown: 0
-    speedUp: 0
-    speedDown: 0
-    carryTrim: 0
-    mltpx: ADD
-    mixWarn: 0
-    flightModes: 000000000
-    offset: GV6
-    name: SnpPos
-  - destCh: 26
-    srcRaw: I1
-    weight: 100
-    swtch: NONE
-    curve:
-      type: 3
-      value: 4
-    delayUp: 0
-    delayDown: 0
-    speedUp: 0
-    speedDown: 0
-    carryTrim: 1
-    mltpx: MUL
-    mixWarn: 0
-    flightModes: 000000000
-    offset: 0
-    name: ""
-  - destCh: 27
+  - destCh: 30
     srcRaw: I5
     weight: 10
     swtch: NONE
@@ -390,7 +322,7 @@ mixData:
     flightModes: 011001111
     offset: -10
     name: Slider
-  - destCh: 27
+  - destCh: 30
     srcRaw: I4
     weight: 100
     swtch: NONE
@@ -407,47 +339,13 @@ mixData:
     flightModes: 000000000
     offset: 0
     name: ""
-  - destCh: 27
-    srcRaw: ch(25)
-    weight: 100
-    swtch: NONE
-    curve:
-      type: 0
-      value: 100
-    delayUp: 0
-    delayDown: 0
-    speedUp: 0
-    speedDown: 0
-    carryTrim: 0
-    mltpx: ADD
-    mixWarn: 0
-    flightModes: 000000000
-    offset: 0
-    name: ""
-  - destCh: 27
-    srcRaw: ch(26)
-    weight: 100
-    swtch: NONE
-    curve:
-      type: 0
-      value: -100
-    delayUp: 0
-    delayDown: 0
-    speedUp: 0
-    speedDown: 0
-    carryTrim: 0
-    mltpx: ADD
-    mixWarn: 0
-    flightModes: 000000000
-    offset: 0
-    name: ""
-  - destCh: 28
-    srcRaw: ch(24)
-    weight: GV2
+  - destCh: 30
+    srcRaw: I1
+    weight: GV6
     swtch: NONE
     curve:
       type: 3
-      value: 3
+      value: 4
     delayUp: 0
     delayDown: 0
     speedUp: 0
@@ -457,8 +355,25 @@ mixData:
     mixWarn: 0
     flightModes: 000000000
     offset: 0
-    name: Flap
-  - destCh: 28
+    name: SnpFlp
+  - destCh: 31
+    srcRaw: ch(29)
+    weight: GV2
+    swtch: NONE
+    curve:
+      type: 0
+      value: 0
+    delayUp: 0
+    delayDown: 0
+    speedUp: 0
+    speedDown: 0
+    carryTrim: 0
+    mltpx: ADD
+    mixWarn: 0
+    flightModes: 000000000
+    offset: 0
+    name: Brake
+  - destCh: 31
     srcRaw: MAX
     weight: GV2
     swtch: NONE
@@ -475,8 +390,8 @@ mixData:
     flightModes: 000000000
     offset: -100
     name: Offset
-  - destCh: 28
-    srcRaw: ch(27)
+  - destCh: 31
+    srcRaw: ch(30)
     weight: 100
     swtch: "!L13"
     curve:
@@ -491,92 +406,7 @@ mixData:
     mixWarn: 0
     flightModes: 000000000
     offset: 0
-    name: ""
-  - destCh: 29
-    srcRaw: I2
-    weight: GV1
-    swtch: NONE
-    curve:
-      type: 3
-      value: 5
-    delayUp: 0
-    delayDown: 0
-    speedUp: 0
-    speedDown: 0
-    carryTrim: 1
-    mltpx: ADD
-    mixWarn: 0
-    flightModes: 000000000
-    offset: 0
-    name: AbsAil
-  - destCh: 30
-    srcRaw: ch(28)
-    weight: 100
-    swtch: NONE
-    curve:
-      type: 0
-      value: 0
-    delayUp: 0
-    delayDown: 0
-    speedUp: 0
-    speedDown: 0
-    carryTrim: 0
-    mltpx: ADD
-    mixWarn: 0
-    flightModes: 000000000
-    offset: 100
-    name: DwnExc
-  - destCh: 30
-    srcRaw: ch(29)
-    weight: -100
-    swtch: NONE
-    curve:
-      type: 0
-      value: GV4
-    delayUp: 0
-    delayDown: 0
-    speedUp: 0
-    speedDown: 0
-    carryTrim: 0
-    mltpx: ADD
-    mixWarn: 0
-    flightModes: 000000000
-    offset: 0
-    name: AilDow
-  - destCh: 31
-    srcRaw: ch(28)
-    weight: 100
-    swtch: NONE
-    curve:
-      type: 0
-      value: 0
-    delayUp: 0
-    delayDown: 0
-    speedUp: 0
-    speedDown: 0
-    carryTrim: 0
-    mltpx: ADD
-    mixWarn: 0
-    flightModes: 000000000
-    offset: 0
-    name: Flap
-  - destCh: 31
-    srcRaw: ch(30)
-    weight: -100
-    swtch: NONE
-    curve:
-      type: 0
-      value: 100
-    delayUp: 0
-    delayDown: 0
-    speedUp: 0
-    speedDown: 0
-    carryTrim: 0
-    mltpx: ADD
-    mixWarn: 0
-    flightModes: 000000000
-    offset: 0
-    name: BmpUp
+    name: Camber
   - destCh: 31
     srcRaw: I6
     weight: 100
