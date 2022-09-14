@@ -1,7 +1,7 @@
 -- Horus Widget that count number of flights
 -- Offer Shmuely
 -- Date: 2022
--- ver: 0.3
+-- ver: 0.4
 -- flight considered successful: after 30sec the engine above 25%, and telemetry is active (to indicated that the model connected), and safe switch ON
 -- flight considered ended: after 8sec of battery disconnection (detected by no telemetry)
 -- warning: do NOT use this widget if model is using GV9!!!
@@ -34,6 +34,8 @@ local default_flight_starting_duration = 30 -- 20 sec to detect fight success
 local default_flight_ending_duration = 8 -- 8 sec to detect fight ended
 local default_min_motor_value = 200
 local enable_sounds = 1
+local enable_count_announcement_on_start = 1
+local enable_count_announcement_on_end = 1
 
 local options = {
   { "switch"             , SOURCE, 117    },  -- 117== SF (arm/safety switch)
@@ -175,6 +177,7 @@ function updateTelemetryStatus(wgt)
     if not wgt.status.tele_src then wgt.status.tele_src = getFieldInfo("1RSS") end
     if not wgt.status.tele_src then wgt.status.tele_src = getFieldInfo("2RSS") end
     if not wgt.status.tele_src then wgt.status.tele_src = getFieldInfo("RQly") end
+    if not wgt.status.tele_src then wgt.status.tele_src = getFieldInfo("TRSS") end
 
     if wgt.status.tele_src ~= nil then
       wgt.status.tele_src_name = wgt.status.tele_src.name
@@ -277,6 +280,13 @@ local function incrementFlightCount(wgt)
   if (enable_sounds == 1) then
     playFile("/WIDGETS/" .. app_name .. "/flight_logged.wav")
   end
+
+  if (enable_count_announcement_on_start == 1) then
+    local num_flights = getFlightCount()
+    playNumber(num_flights, 0)
+    playFile("/WIDGETS/" .. app_name .. "/flights.wav")
+  end
+
 end
 
 ---------------------------------------------------------------
@@ -341,6 +351,12 @@ local function background(wgt)
       if (enable_sounds == 1) then
         playFile("/WIDGETS/" .. app_name .. "/flight_ended.wav")
       end
+
+      if (enable_count_announcement_on_end == 1) then
+        local num_flights = getFlightCount()
+        playNumber(num_flights, 0)
+        playFile("/WIDGETS/" .. app_name .. "/flights.wav")
+      end
     end
 
     if (wgt.status.tele_is_available == true) then
@@ -383,31 +399,41 @@ local function refresh(wgt, event, touchState)
     -- app mode (full screen)
     font_size = XXLSIZE
     font_size_header = DBLSIZE
-    zone_w = 460
-    zone_h = 252
+    zone_w = LCD_W
+    zone_h = LCD_H - 20
   end
 
   local ts_w,ts_h = lcd.sizeText(num_flights, font_size)
   local dx = (zone_w - ts_w) /2
   local dyh = 5
   local dy = header_h -1
+  local icon_y = 22
+  local icon_x = 15
+  local is_top_bar = false
   if (header_h + ts_h > zone_h) and (zone_h < 50) then
+    is_top_bar = true
+  end
+
+  if is_top_bar then
     --log(string.format("--- not enough height, force minimal spaces"))
     dyh = -3
     dy = 8
+    --icon_y = 13
+    --icon_x = wgt.zone.w - 30
+    --icon_x = 0 --???????????
   end
 
   -- icon
   if wgt.options.debug == 0 then
-    if (zone_h < 50) then
-      local num_flights = getFlightCount()
-      -- if more than 2 digit, on a tight place, do not display
-      if num_flights < 100 then
-        lcd.drawBitmap(img, 0, dyh + 17, 20)
-      end
-
-    else
-      lcd.drawBitmap(img, 15, dyh + 15, 45)
+    if  is_top_bar == false then
+      lcd.drawBitmap(img, icon_x, icon_y, 45)
+    --else
+    --  local num_flights = getFlightCount()
+    --  -- if more than 2 digit, on a tight place, do not display
+    --  if num_flights < 100 then
+    --    --lcd.drawBitmap(img, 0, dyh + 17, 20)
+    --    --lcd.drawBitmap(img, icon_x, icon_y, 20)
+    --  end
     end
   end
 
@@ -415,11 +441,13 @@ local function refresh(wgt, event, touchState)
   lcd.drawText(wgt.zone.x, wgt.zone.y + dyh, header, font_size_header + wgt.options.text_color)
 
   -- draw count
-  --if wgt.options.debug == 0 then
-  --  lcd.drawText(wgt.zone.x + (wgt.zone.w / 2), wgt.zone.y + dy, num_flights, font_size + wgt.options.text_color )
-  --else
+  if is_top_bar == true then
+    --lcd.drawText(wgt.zone.x + 4, wgt.zone.y + dy, num_flights, font_size + wgt.options.text_color)
+    --lcd.drawText(wgt.zone.x + wgt.zone.w -6, wgt.zone.y + dy, num_flights, font_size + wgt.options.text_color + RIGHT)
+    lcd.drawText(wgt.zone.x + (wgt.zone.w /2), wgt.zone.y + dy, num_flights, font_size + wgt.options.text_color + CENTER)
+  else
     lcd.drawText(wgt.zone.x + wgt.zone.w, wgt.zone.y + dy, num_flights, font_size + wgt.options.text_color + RIGHT)
-  --end
+  end
 
   -- dbg
   if wgt.options.debug == 1 then
