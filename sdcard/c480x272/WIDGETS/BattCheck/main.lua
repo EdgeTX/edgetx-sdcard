@@ -19,7 +19,7 @@
 -- Widget to display the levels of lipo/li-ion battery with indication of each cell (FLVSS)
 -- 3djc & Offer Shmuely
 -- Date: 2022
--- ver: 0.7
+-- ver: 0.8
 local version = "v0.7"
 
 local _options = {
@@ -27,23 +27,51 @@ local _options = {
   { "Color"      , COLOR , YELLOW},
   { "Shadow"     , BOOL  , 0     },
   { "LowestCell" , BOOL  , 1     }, -- 0=main voltage display shows all-cell-voltage, 1=main voltage display shows lowest-cell
+  { "Lithium_Ion"       , BOOL  , 0      }, -- 0=LIPO battery, 1=LI-ION (18650/21500)
 }
 
 -- Data gathered from commercial lipo sensors
 local _lipoPercentListSplit = {
-  { { 3, 0 }, { 3.093, 1 }, { 3.196, 2 }, { 3.301, 3 }, { 3.401, 4 }, { 3.477, 5 }, { 3.544, 6 }, { 3.601, 7 }, { 3.637, 8 }, { 3.664, 9 }, { 3.679, 10 }, { 3.683, 11 }, { 3.689, 12 }, { 3.692, 13 } },
-  { { 3.705, 14 }, { 3.71, 15 }, { 3.713, 16 }, { 3.715, 17 }, { 3.72, 18 }, { 3.731, 19 }, { 3.735, 20 }, { 3.744, 21 }, { 3.753, 22 }, { 3.756, 23 }, { 3.758, 24 }, { 3.762, 25 }, { 3.767, 26 } },
-  { { 3.774, 27 }, { 3.78, 28 }, { 3.783, 29 }, { 3.786, 30 }, { 3.789, 31 }, { 3.794, 32 }, { 3.797, 33 }, { 3.8, 34 }, { 3.802, 35 }, { 3.805, 36 }, { 3.808, 37 }, { 3.811, 38 }, { 3.815, 39 } },
-  { { 3.818, 40 }, { 3.822, 41 }, { 3.825, 42 }, { 3.829, 43 }, { 3.833, 44 }, { 3.836, 45 }, { 3.84, 46 }, { 3.843, 47 }, { 3.847, 48 }, { 3.85, 49 }, { 3.854, 50 }, { 3.857, 51 }, { 3.86, 52 } },
-  { { 3.863, 53 }, { 3.866, 54 }, { 3.87, 55 }, { 3.874, 56 }, { 3.879, 57 }, { 3.888, 58 }, { 3.893, 59 }, { 3.897, 60 }, { 3.902, 61 }, { 3.906, 62 }, { 3.911, 63 }, { 3.918, 64 } },
+  { { 3.000,  0 }, { 3.093,  1 }, { 3.196,  2 }, { 3.301,  3 }, { 3.401,  4 }, { 3.477,  5 }, { 3.544,  6 }, { 3.601,  7 }, { 3.637,  8 }, { 3.664,  9 }, { 3.679, 10 }, { 3.683, 11 }, { 3.689, 12 }, { 3.692, 13 } },
+  { { 3.705, 14 }, { 3.710, 15 }, { 3.713, 16 }, { 3.715, 17 }, { 3.720, 18 }, { 3.731, 19 }, { 3.735, 20 }, { 3.744, 21 }, { 3.753, 22 }, { 3.756, 23 }, { 3.758, 24 }, { 3.762, 25 }, { 3.767, 26 } },
+  { { 3.774, 27 }, { 3.780, 28 }, { 3.783, 29 }, { 3.786, 30 }, { 3.789, 31 }, { 3.794, 32 }, { 3.797, 33 }, { 3.800, 34 }, { 3.802, 35 }, { 3.805, 36 }, { 3.808, 37 }, { 3.811, 38 }, { 3.815, 39 } },
+  { { 3.818, 40 }, { 3.822, 41 }, { 3.825, 42 }, { 3.829, 43 }, { 3.833, 44 }, { 3.836, 45 }, { 3.840, 46 }, { 3.843, 47 }, { 3.847, 48 }, { 3.850, 49 }, { 3.854, 50 }, { 3.857, 51 }, { 3.860, 52 } },
+  { { 3.863, 53 }, { 3.866, 54 }, { 3.870, 55 }, { 3.874, 56 }, { 3.879, 57 }, { 3.888, 58 }, { 3.893, 59 }, { 3.897, 60 }, { 3.902, 61 }, { 3.906, 62 }, { 3.911, 63 }, { 3.918, 64 } },
   { { 3.923, 65 }, { 3.928, 66 }, { 3.939, 67 }, { 3.943, 68 }, { 3.949, 69 }, { 3.955, 70 }, { 3.961, 71 }, { 3.968, 72 }, { 3.974, 73 }, { 3.981, 74 }, { 3.987, 75 }, { 3.994, 76 } },
   { { 4.001, 77 }, { 4.007, 78 }, { 4.014, 79 }, { 4.021, 80 }, { 4.029, 81 }, { 4.036, 82 }, { 4.044, 83 }, { 4.052, 84 }, { 4.062, 85 }, { 4.074, 86 }, { 4.085, 87 }, { 4.095, 88 } },
-  { { 4.105, 89 }, { 4.111, 90 }, { 4.116, 91 }, { 4.12, 92 }, { 4.125, 93 }, { 4.129, 94 }, { 4.135, 95 }, { 4.145, 96 }, { 4.176, 97 }, { 4.179, 98 }, { 4.193, 99 }, { 4.2, 100 } },
+  { { 4.105, 89 }, { 4.111, 90 }, { 4.116, 91 }, { 4.120, 92 }, { 4.125, 93 }, { 4.129, 94 }, { 4.135, 95 }, { 4.145, 96 }, { 4.176, 97 }, { 4.179, 98 }, { 4.193, 99 }, { 4.200, 100 } },
 }
+
+-- from: https://electric-scooter.guide/guides/electric-scooter-battery-voltage-chart/
+local _liionPercentListSplit = {
+  { { 2.800,  0 }, { 2.840,  1 }, { 2.880,  2 }, { 2.920,  3 }, { 2.960,  4 } },
+  { { 3.000,  5 }, { 3.040,  6 }, { 3.080,  7 }, { 3.096,  8 }, { 3.112,  9 } },
+  { { 3.128, 10 }, { 3.144, 11 }, { 3.160, 12 }, { 3.176, 13 }, { 3.192, 14 } },
+  { { 3.208, 15 }, { 3.224, 16 }, { 3.240, 17 }, { 3.256, 18 }, { 3.272, 19 } },
+  { { 3.288, 20 }, { 3.304, 21 }, { 3.320, 22 }, { 3.336, 23 }, { 3.352, 24 } },
+  { { 3.368, 25 }, { 3.384, 26 }, { 3.400, 27 }, { 3.416, 28 }, { 3.432, 29 } },
+  { { 3.448, 30 }, { 3.464, 31 }, { 3.480, 32 }, { 3.496, 33 }, { 3.504, 34 } },
+  { { 3.512, 35 }, { 3.520, 36 }, { 3.528, 37 }, { 3.536, 38 }, { 3.544, 39 } },
+  { { 3.552, 40 }, { 3.560, 41 }, { 3.568, 42 }, { 3.576, 43 }, { 3.584, 44 } },
+  { { 3.592, 45 }, { 3.600, 46 }, { 3.608, 47 }, { 3.616, 48 }, { 3.624, 49 } },
+  { { 3.632, 50 }, { 3.640, 51 }, { 3.648, 52 }, { 3.656, 53 }, { 3.664, 54 } },
+  { { 3.672, 55 }, { 3.680, 56 }, { 3.688, 57 }, { 3.696, 58 }, { 3.704, 59 } },
+  { { 3.712, 60 }, { 3.720, 61 }, { 3.728, 62 }, { 3.736, 63 }, { 3.744, 64 } },
+  { { 3.752, 65 }, { 3.760, 66 }, { 3.768, 67 }, { 3.776, 68 }, { 3.784, 69 } },
+  { { 3.792, 70 }, { 3.800, 71 }, { 3.810, 72 }, { 3.820, 73 }, { 3.830, 74 } },
+  { { 3.840, 75 }, { 3.850, 76 }, { 3.860, 77 }, { 3.870, 78 }, { 3.880, 79 } },
+  { { 3.890, 80 }, { 3.900, 81 }, { 3.910, 82 }, { 3.920, 83 }, { 3.930, 84 } },
+  { { 3.940, 85 }, { 3.950, 86 }, { 3.960, 87 }, { 3.970, 88 }, { 3.980, 89 } },
+  { { 3.990, 90 }, { 4.000, 91 }, { 4.010, 92 }, { 4.030, 93 }, { 4.050, 94 } },
+  { { 4.070, 95 }, { 4.090, 96 } },
+  { { 4.10, 100}, { 4.15,100 }, { 4.20, 100} },
+}
+
+
 
 --------------------------------------------------------------
 local function log(s)
-  --print("BattCheck: " .. s)
+  print("BattCheck: " .. s)
 end
 --------------------------------------------------------------
 
@@ -112,7 +140,6 @@ local function update(wgt, options)
   end
 
   wgt.options.LowestCell = wgt.options.LowestCell % 2 -- modulo due to bug that cause the value to be other than 0|1
-
 end
 
 local function create(zone, options)
@@ -127,10 +154,10 @@ local function create(zone, options)
     telemResetLowestMinRSSI = 101,
     no_telem_blink = 0,
     isDataAvailable = 0,
-    cellDataLive = { 0, 0, 0, 0, 0, 0 },
-    cellDataLivePercent = {0,0,0,0,0,0},
-    cellDataHistoryLowest = { 5, 5, 5, 5, 5, 5 },
-    cellDataHistoryLowestPercent = {5,5,5,5,5,5},
+    cellDataLive = {0,0,0,0,0,0,0,0},
+    cellDataLivePercent = {0,0,0,0,0,0,0,0},
+    cellDataHistoryLowest = {5,5,5,5,5,5,5,5},
+    cellDataHistoryLowestPercent = {5,5,5,5,5,5,5,5},
     cellDataHistoryCellLowest = 5,
     cellMax = 0,
     cellMin = 0,
@@ -154,10 +181,10 @@ end
 local function onTelemetryResetEvent(wgt)
   wgt.telemResetCount = wgt.telemResetCount + 1
 
-  wgt.cellDataLive = { 0, 0, 0, 0, 0, 0 }
-  wgt.cellDataLivePercent = {0,0,0,0,0,0}
-  wgt.cellDataHistoryLowest = { 5, 5, 5, 5, 5, 5 }
-  wgt.cellDataHistoryLowestPercent = {5,5,5,5,5,5}
+  wgt.cellDataLive = {0,0,0,0,0,0,0,0}
+  wgt.cellDataLivePercent = {0,0,0,0,0,0,0,0}
+  wgt.cellDataHistoryLowest = {5,5,5,5,5,5,5,5}
+  wgt.cellDataHistoryLowestPercent = {5,5,5,5,5,5,5,5}
   wgt.cellDataHistoryCellLowest = 5
 end
 
@@ -185,13 +212,11 @@ local function detectResetEvent(wgt)
     return
   end
 
-
   -- reset telemetry detected
   wgt.telemResetLowestMinRSSI = 101
 
   -- notify event
   onTelemetryResetEvent(wgt)
-
 end
 
 --- This function return the percentage remaining in a single Lipo cel
@@ -203,7 +228,12 @@ local function getCellPercent(wgt, cellValue)
   local result = 0;
   local t4 = getUsage();
 
-  for i1, v1 in ipairs(_lipoPercentListSplit) do
+  local _percentListSplit = _lipoPercentListSplit
+  if wgt.options.Lithium_Ion == 1 then
+    _percentListSplit = _liionPercentListSplit
+  end
+
+  for i1, v1 in ipairs(_percentListSplit) do
     --log(string.format("sub-list#: %s, head:%f, length: %d, last: %.3f", i1,v1[1][1], #v1, v1[#v1][1]))
     --is the cellVal < last-value-on-sub-list? (first-val:v1[1], last-val:v1[#v1])
     if (cellValue <= v1[#v1][1]) then
@@ -246,7 +276,6 @@ local function calculateBatteryData(wgt)
       if v < wgt.cellDataHistoryCellLowest then
         wgt.cellDataHistoryCellLowest = v
       end
-
     end
 
     -- calc highest of all cells
@@ -361,9 +390,10 @@ local function getRangeColor(value, green_value, red_value)
   end
 end
 
---- Zone size: 70x39 1/8th top bar
+--- Zone size: 70x39 top bar
 local function refreshZoneTiny(wgt)
-  local myString = string.format("%2.1fV", wgt.mainValue)
+  local myString = string.format("%2.2fV", wgt.mainValue)
+  -- write text
   lcd.drawText(wgt.zone.x + wgt.zone.w - 25, wgt.zone.y + 5, wgt.cellPercent .. "%", RIGHT + SMLSIZE + wgt.text_color + wgt.no_telem_blink)
   lcd.drawText(wgt.zone.x + wgt.zone.w - 25, wgt.zone.y + 20, myString, RIGHT + SMLSIZE + wgt.text_color + wgt.no_telem_blink)
 
@@ -377,20 +407,18 @@ end
 
 --- Zone size: 160x32 1/8th
 local function refreshZoneSmall(wgt)
-  local myBatt = { ["x"] = 0, ["y"] = 0, ["w"] = 155, ["h"] = 35, ["segments_w"] = 25, ["color"] = WHITE, ["cath_w"] = 6, ["cath_h"] = 20 }
+  local myBatt = { ["x"] = 5, ["y"] = 5, ["w"] = wgt.zone.w - 10, ["h"] = wgt.zone.h - 9, ["segments_w"] = 25, ["color"] = WHITE, ["cath_w"] = 6, ["cath_h"] = 20 }
 
   -- fill battery
   local fill_color = getPercentColor(wgt.cellPercent)
-  lcd.drawGauge(wgt.zone.x, wgt.zone.y, myBatt.w, myBatt.h, wgt.cellPercent, 100, fill_color)
+  lcd.drawGauge(myBatt.x, myBatt.y, myBatt.w, myBatt.h, wgt.cellPercent, 100, fill_color)
 
   -- draw battery
-  lcd.drawRectangle(wgt.zone.x + myBatt.x, wgt.zone.y + myBatt.y, myBatt.w, myBatt.h, WHITE, 2)
-
+  lcd.drawRectangle(myBatt.x, myBatt.y, myBatt.w, myBatt.h, WHITE, 2)
 
   -- write text
-  local topLine = string.format("%2.1fV      %2.0f%%", wgt.mainValue, wgt.cellPercent)
-  lcd.drawText(wgt.zone.x + 20, wgt.zone.y + 2, topLine, MIDSIZE + wgt.text_color + wgt.shadowed + wgt.no_telem_blink)
-
+  local topLine = string.format("%2.2fV   %2.0f%%", wgt.mainValue, wgt.cellPercent)
+  lcd.drawText(myBatt.x + 15, myBatt.y + 1, topLine, MIDSIZE + wgt.text_color + wgt.shadowed + wgt.no_telem_blink)
 end
 
 
@@ -400,13 +428,14 @@ local function refreshZoneMedium(wgt)
   local myBatt = { ["x"] = 0, ["y"] = 0, ["w"] = 85, ["h"] = 35, ["segments_w"] = 15, ["color"] = WHITE, ["cath_w"] = 6, ["cath_h"] = 20 }
 
   -- draw values
-  lcd.drawText(wgt.zone.x, wgt.zone.y + 35, string.format("%2.1fV", wgt.mainValue), DBLSIZE + wgt.text_color + wgt.shadowed + wgt.no_telem_blink)
+  lcd.drawText(wgt.zone.x, wgt.zone.y + 35, string.format("%2.2fV", wgt.mainValue), DBLSIZE + wgt.text_color + wgt.shadowed + wgt.no_telem_blink)
 
-  -- more info if 1/4 is high enough (without trim & slider)
+  -- more info if 1/4 is high enough (depend on  trim & slider)
   if wgt.zone.h > 80 then
-    --lcd.drawText(wgt.zone.x + 50     , wgt.zone.y + 70, string.format("%2.2fV"   , wgt.secondaryValue), SMLSIZE + wgt.text_color + wgt.no_telem_blink)
-    lcd.drawText(wgt.zone.x, wgt.zone.y + 70, string.format("dV %2.2fV", wgt.cellMax - wgt.cellMin), SMLSIZE + wgt.text_color + wgt.no_telem_blink)
-    lcd.drawText(wgt.zone.x, wgt.zone.y + 84, string.format("Min %2.2fV", wgt.cellDataHistoryCellLowest), SMLSIZE + wgt.text_color + wgt.no_telem_blink)
+    lcd.drawText(wgt.zone.x, wgt.zone.y + 65, string.format("Min %2.2fV", wgt.cellDataHistoryCellLowest), SMLSIZE + wgt.text_color + wgt.no_telem_blink)
+  end
+  if wgt.zone.h > 85 then
+      lcd.drawText(wgt.zone.x, wgt.zone.y + 79, string.format("dV %2.2fV", wgt.cellMax - wgt.cellMin), SMLSIZE + wgt.text_color + wgt.no_telem_blink)
   end
 
   -- fill battery
@@ -423,6 +452,8 @@ local function refreshZoneMedium(wgt)
 
     -- fill current cell
     local fill_color = getRangeColor(wgt.cellDataLive[i], wgt.cellMax, wgt.cellMax - 0.2)
+    print(fill_color)
+    log(string.format("fill_color: %d", fill_color))
     --lcd.drawFilledRectangle(wgt.zone.x + cellX     , cellY, 58, cellH, fill_color)
     lcd.drawFilledRectangle(wgt.zone.x + cellX     , cellY, cellW * wgt.cellDataLivePercent[i] / 100, cellH, fill_color)
 
@@ -430,7 +461,7 @@ local function refreshZoneMedium(wgt)
     --lcd.setColor(fill_color, getRangeColor(wgt.cellDataHistoryLowest[i], wgt.cellMax, wgt.cellMax - 0.2))
     lcd.drawFilledRectangle(wgt.zone.x + cellX + (cellW * wgt.cellDataHistoryLowestPercent[i])/100 -2, cellY, 2 , cellH, BLACK)
 
-    lcd.drawText           (wgt.zone.x + cellX + 10, cellY, string.format("%.2f", wgt.cellDataLive[i]), SMLSIZE + WHITE + wgt.shadowed + wgt.no_telem_blink)
+    lcd.drawText           (wgt.zone.x + cellX + 10, cellY -1 , string.format("%.2f", wgt.cellDataLive[i]), SMLSIZE + WHITE + wgt.shadowed + wgt.no_telem_blink)
     lcd.drawRectangle      (wgt.zone.x + cellX     , cellY, 59, cellH, WHITE , 1)
   end
 
@@ -445,17 +476,19 @@ end
 local function refreshZoneLarge(wgt)
   local myBatt = { ["x"] = 0, ["y"] = 18, ["w"] = 76, ["h"] = 121, ["segments_h"] = 30, ["color"] = WHITE, ["cath_w"] = 30, ["cath_h"] = 10 }
 
-  lcd.drawText(wgt.zone.x + wgt.zone.w, wgt.zone.y, wgt.cellPercent .. "%", RIGHT + DBLSIZE + wgt.text_color + wgt.shadowed)
-  lcd.drawText(wgt.zone.x + wgt.zone.w, wgt.zone.y + 30, string.format("%2.1fV", wgt.mainValue), RIGHT + DBLSIZE + wgt.text_color + wgt.shadowed)
-  lcd.drawText(wgt.zone.x + wgt.zone.w, wgt.zone.y + 70, string.format("%2.1fV %dS", wgt.secondaryValue, wgt.cellCount), RIGHT + SMLSIZE + wgt.text_color + wgt.shadowed)
+  lcd.drawText(wgt.zone.x + wgt.zone.w, wgt.zone.y + 0, string.format("%2.2fV", wgt.mainValue), RIGHT + DBLSIZE + wgt.text_color + wgt.shadowed)
+  lcd.drawText(wgt.zone.x + wgt.zone.w, wgt.zone.y + 30, wgt.cellPercent .. "%", RIGHT + DBLSIZE + wgt.text_color + wgt.shadowed)
+  lcd.drawText(wgt.zone.x + wgt.zone.w, wgt.zone.y + 70, string.format("%2.2fV %dS", wgt.secondaryValue, wgt.cellCount), RIGHT + SMLSIZE + wgt.text_color + wgt.shadowed)
 
   -- fill battery
   local fill_color = getPercentColor(wgt.cellPercent)
   lcd.drawFilledRectangle(wgt.zone.x + myBatt.x, wgt.zone.y + myBatt.y + myBatt.h + myBatt.cath_h - math.floor(wgt.cellPercent / 100 * myBatt.h), myBatt.w, math.floor(wgt.cellPercent / 100 * myBatt.h), fill_color)
   -- draw cells
-  local pos = { { x = 80, y = 90 }, { x = 138, y = 90 }, { x = 80, y = 109 }, { x = 138, y = 109 }, { x = 80, y = 128 }, { x = 138, y = 128 } }
+  local pos = { { x = 80, y = 90 }, { x = 138, y = 90 }, { x = 80, y = 109 }, { x = 138, y = 109 }, { x = 80, y = 128 }, { x = 138, y = 128 }, { x = 80, y = 147 }, { x = 138, y = 147 } }
   for i = 1, wgt.cellCount, 1 do
     local fill_color = getRangeColor(wgt.cellDataLive[i], wgt.cellMax, wgt.cellMax - 0.2)
+    print(fill_color)
+    log(string.format("fill_color: %d", fill_color))
     lcd.drawFilledRectangle(wgt.zone.x + pos[i].x, wgt.zone.y + pos[i].y, 58, 20, fill_color)
 
     lcd.drawText(wgt.zone.x + pos[i].x + 10, wgt.zone.y + pos[i].y, string.format("%.2f", wgt.cellDataLive[i]), WHITE + wgt.shadowed)
@@ -481,13 +514,12 @@ local function refreshAppModeImpl(wgt, x, w, y, h)
   lcd.drawFilledRectangle(x + myBatt.x, y + myBatt.y + myBatt.h + myBatt.cath_h - math.floor(wgt.cellPercent / 100 * myBatt.h), myBatt.w, math.floor(wgt.cellPercent / 100 * myBatt.h), fill_color)
 
   -- draw right text section
-  lcd.drawText(x + w, y + myBatt.y, wgt.cellPercent .. "%", RIGHT + DBLSIZE + wgt.text_color + wgt.shadowed + wgt.no_telem_blink)
-
-  lcd.drawText(x + w, y + myBatt.y + 30, string.format("%2.1fV", wgt.mainValue), RIGHT + DBLSIZE + wgt.text_color + wgt.shadowed + wgt.no_telem_blink)
-  lcd.drawText(x + w, y + myBatt.y + 105, string.format("%2.1fV %dS", wgt.secondaryValue, wgt.cellCount), RIGHT + SMLSIZE + wgt.text_color + wgt.shadowed + wgt.no_telem_blink)
+  lcd.drawText(x + w, y + myBatt.y + 0, string.format("%2.2fV", wgt.mainValue), RIGHT + DBLSIZE + wgt.text_color + wgt.shadowed + wgt.no_telem_blink)
+  lcd.drawText(x + w, y + myBatt.y + 30, wgt.cellPercent .. "%", RIGHT + DBLSIZE + wgt.text_color + wgt.shadowed + wgt.no_telem_blink)
+  lcd.drawText(x + w, y + myBatt.y + 105, string.format("%2.2fV %dS", wgt.secondaryValue, wgt.cellCount), RIGHT + SMLSIZE + wgt.text_color + wgt.shadowed + wgt.no_telem_blink)
 
   -- draw cells
-  local pos = { { x = 111, y = 38 }, { x = 164, y = 38 }, { x = 217, y = 38 }, { x = 111, y = 57 }, { x = 164, y = 57 }, { x = 217, y = 57 } }
+  local pos = { { x = 111, y = 38 }, { x = 164, y = 38 }, { x = 217, y = 38 }, { x = 111, y = 57 }, { x = 164, y = 57 }, { x = 217, y = 57 }, { x = 111, y = 77 }, { x = 164, y = 77 } }
   for i = 1, wgt.cellCount, 1 do
     local cell_color =  getRangeColor(wgt.cellDataLive[i], wgt.cellMax, wgt.cellMax - 0.2)
     lcd.drawFilledRectangle(x + pos[i].x, y + pos[i].y, 53, 20, cell_color)
@@ -495,7 +527,7 @@ local function refreshAppModeImpl(wgt, x, w, y, h)
     lcd.drawRectangle(x + pos[i].x, y + pos[i].y, 54, 20, WHITE, 1)
   end
   -- draw cells for lowest cells
-  local pos = { { x = 111, y = 110 }, { x = 164, y = 110 }, { x = 217, y = 110 }, { x = 111, y = 129 }, { x = 164, y = 129 }, { x = 217, y = 129 } }
+  local pos = { { x = 111, y = 120 }, { x = 164, y = 120 }, { x = 217, y = 120 }, { x = 111, y = 139 }, { x = 164, y = 139 }, { x = 217, y = 139 }, { x = 111, y = 159 }, { x = 164, y = 159 } }
   for i = 1, wgt.cellCount, 1 do
     local cell_color = getRangeColor(wgt.cellDataHistoryLowest[i], wgt.cellDataLive[i], wgt.cellDataLive[i] - 0.3)
     lcd.drawFilledRectangle(x + pos[i].x, y + pos[i].y, 53, 20, cell_color)
@@ -513,8 +545,8 @@ local function refreshAppModeImpl(wgt, x, w, y, h)
   -- draw middle rectangles
   lcd.drawRectangle(x + 110, y + 38, 161, 40, WHITE, 1)
   lcd.drawText(x + 220, y + 21, "Live data", RIGHT + SMLSIZE + INVERS + WHITE + wgt.shadowed)
-  lcd.drawRectangle(x + 110, y + 110, 161, 40, WHITE, 1)
-  lcd.drawText(x + 230, y + 93, "Lowest data", RIGHT + SMLSIZE + INVERS + WHITE + wgt.shadowed)
+  lcd.drawRectangle(x + 110, y + 120, 161, 40, WHITE, 1)
+  lcd.drawText(x + 230, y + 103, "Lowest data", RIGHT + SMLSIZE + INVERS + WHITE + wgt.shadowed)
   return
 end
 
@@ -586,12 +618,11 @@ local function refresh(wgt, event, touchState)
   local t4 = getUsage();
   if (event ~= nil) then
     refreshAppMode(wgt, event, touchState)
-  elseif wgt.zone.w > 380 and wgt.zone.h > 165 then   refreshZoneXLarge(wgt)
-  elseif wgt.zone.w > 180 and wgt.zone.h > 145 then   refreshZoneLarge(wgt)
-  elseif wgt.zone.w > 170 and wgt.zone.h > 65 then    refreshZoneMedium(wgt)
-  elseif wgt.zone.w > 150 and wgt.zone.h > 28 then    refreshZoneSmall(wgt)
-  elseif wgt.zone.w > 65 and wgt.zone.h > 35 then
-    refreshZoneTiny(wgt)
+  elseif wgt.zone.w > 380 and wgt.zone.h > 165 then refreshZoneXLarge(wgt)
+  elseif wgt.zone.w > 180 and wgt.zone.h > 145 then refreshZoneLarge(wgt)
+  elseif wgt.zone.w > 170 and wgt.zone.h >  65 then refreshZoneMedium(wgt)
+  elseif wgt.zone.w > 150 and wgt.zone.h >  28 then refreshZoneSmall(wgt)
+  elseif wgt.zone.w >  65 and wgt.zone.h >  35 then refreshZoneTiny(wgt)
   end
   --cpuProfilerAdd(wgt, 'main-loop-4', t4);
 
