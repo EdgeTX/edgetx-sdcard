@@ -27,7 +27,9 @@ jobs:
         uses: actions/upload-artifact@v2.2.3
         with:
           name: sdcard-latest
-          path: dist/*
+          path:  |
+            dist/*
+            sdcard.json
       
   upload-release:
     if: github.event_name != 'pull_request'
