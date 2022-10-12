@@ -1,3 +1,0 @@
-DLG model with "full house" wing with four servos.
-
-NOTE: I do own such a model myself, and therefore, I rely on people like YOU to let me know if there are any issues!
