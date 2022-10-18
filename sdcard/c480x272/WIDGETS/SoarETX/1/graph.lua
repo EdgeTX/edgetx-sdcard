@@ -2,8 +2,8 @@
 -- SoarETX graph of log data                                             --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Date:    2022-03-20                                                   --
--- Version: 1.0.0                                                        --
+-- Date:    2022-08-28                                                   --
+-- Version: 1.0.1                                                        --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
 --                                                                       --
@@ -49,7 +49,7 @@ local FMAX = 1E38
 local DEFAULT_PLOT =   "Alt"
 local FIRST_EXCLUDED = "Rud"
 do
-	local lang = getGeneralSettings().language	
+	local lang = getGeneralSettings().language
 	if lang == "CZ" then
 		FIRST_EXCLUDED = "Smer"
 	elseif lang == "DE" then
@@ -68,11 +68,15 @@ end
 -- Variables
 local gui
 local guiFile
-local guiNoFiles
+local guiPause
 local guiGraph
 local menu1
 local menu2
+local buildingTree
 local fileTree
+local fileCount
+local getNextFileName
+local fileName
 local data
 local refreshDates
 local lines
@@ -92,32 +96,55 @@ local function timeSerial(str)
 end
 
 local function buildFileTree()
-  fileTree = { }
-  local count = 0
-  
-  for fileName in dir("/LOGS") do
+	if not fileTree then
+		guiPause.title = "READING..."
+    gui = guiPause
+  	fileTree = { }
+		fileCount = 0
+		getNextFileName = dir("/LOGS")
+		fileName = getNextFileName()
+	end
+
+  while fileName do
+		-- If there are many files, then we may run out of CPU instructions
+		if getUsage() > 90 then
+			return
+		end
+
     if string.len(fileName) > 23 and string.sub(fileName, -4) == ".csv" then
       local dateStr = string.sub(fileName, -21, -12)
-      local nameStr = string.sub(fileName, -10, -9) .. ":" .. string.sub(fileName, -8, -7) .. ":" .. 
+      local nameStr = string.sub(fileName, -10, -9) .. ":" .. string.sub(fileName, -8, -7) .. ":" ..
                       string.sub(fileName, -6, -5) .. " " .. string.sub(fileName, 1, -23)
 
       if not fileTree[dateStr] then
         fileTree[dateStr] = { }
+				fileCount = fileCount + 1
       end
-      
+
       fileTree[dateStr][nameStr] = fileName
-      count = count + 1
     end
+
+		fileName = getNextFileName()
   end
-  
-  if count == 0 then
-    gui = guiNoFiles
+
+	if getUsage() > 20 then
+		return
+	end
+
+	getNextFileName = nil
+	fileName = nil
+
+  if fileCount == 0 then
+		guiPause.title = "NO   LOG   FILES"
+    gui = guiPause
     headers = nil
     data = { }
   else
     refreshDates()
     gui = guiFile
   end
+
+	buildingTree = false
 end
 
 local function readLines(fileName)
@@ -160,7 +187,7 @@ local function readLines(fileName)
       headers[i] = field
     end
   end
-  
+
   for i = 2, #headers do
     if string.sub(headers[i], 1, l) == DEFAULT_PLOT then
       plotIdx = i
@@ -188,7 +215,7 @@ end
 
 local function readData()
   local plotIdxLast = #data[1] + 1
-  
+
   for i = #data - 1, #lines do
     if getUsage() > 90 then
       return
@@ -231,14 +258,14 @@ end
 local function setupGUI(title)
   local gui = libGUI.newGUI()
   gui.title = title
-  
+
   function gui.fullScreenRefresh()
     lcd.clear(COLOR_THEME_SECONDARY3)
-    
+
     -- Top bar
     lcd.drawFilledRectangle(0, 0, LCD_W, HEADER, COLOR_THEME_SECONDARY1)
     lcd.drawText(10, 2, gui.title, bit32.bor(DBLSIZE, colors.primary2))
-    
+
     -- Extra drawing
     gui.drawMore()
   end
@@ -260,15 +287,16 @@ local function setupGUI(title)
       lcd.exitFullScreen()
     end
   end
-  
+
   return gui
 end
 
 -- GUI to show if there are no log files
-guiNoFiles = setupGUI("Graph")
+guiPause = setupGUI("Graph")
+guiPause.title = ""
 
-function guiNoFiles.drawMore()
-  lcd.drawText(LCD_W / 2, LCD_H / 2, "NO   LOG   FILES", XXLSIZE + CENTER + VCENTER + colors.primary1)
+function guiPause.drawMore()
+  lcd.drawText(LCD_W / 2, LCD_H / 2, guiPause.title, XXLSIZE + CENTER + VCENTER + colors.primary1)
 end
 
 -- GUI for selecting log file
@@ -346,7 +374,7 @@ do
       cursor = #data
     end
   end
-  
+
   -- Trap events with prompt when cursor is active
   local trapCursor = {
     run = function(event, touchState)
@@ -423,7 +451,7 @@ do
     -- Background
     lcd.drawFilledRectangle(LFT, TOP, PLOT_W, PLOT_H, colors.primary2)
     lcd.drawRectangle(LFT, TOP, PLOT_W, PLOT_H, COLOR_THEME_SECONDARY2)
-    
+
     if lines then
       local txt = "READING   DATA"
       local flags = DBLSIZE + CENTER + VCENTER + colors.primary1
@@ -436,7 +464,7 @@ do
       lcd.drawText(LFT + PLOT_W / 2, TOP + PLOT_H / 2, txt, flags)
       return
     end
-    
+
     -- Time scale
     xMin = data[2][1]
     local xRange = math.max(60, data[3][1] - xMin)
@@ -537,6 +565,7 @@ end -- Setup guiGraph
 -------------------- Background and Refresh functions ---------------------
 
 function widget.background()
+	buildingTree = true
   fileTree = nil
 end -- background()
 
@@ -548,12 +577,10 @@ function widget.refresh(event, touchState)
     widget.background()
     return
   end
-  
-  if not fileTree then
+
+  if buildingTree then
     buildFileTree()
-    return
   end
-  
+
   gui.run(event, touchState)
 end -- refresh(...)
-

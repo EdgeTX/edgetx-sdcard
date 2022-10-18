@@ -18,13 +18,16 @@ The contents of this repository are organised by color type and screen size, wit
     - Flysky Paladin EV (PL18EV)
 - **c320x480.zip** (320x480 pixel portrait orientation color screen radios)
     - Flysky Nirvana NV14
+    - Flysky Elysium EL18
 - **bw128x64.zip** (128x64 pixel black and white screen radios)
     - T-Lite / T-Pro
-    - TX12
+    - TX12 / TX12 mkII
     - ZORRO
     - QX7
     - X9 Lite
     - X-Lite
+    - BetaFPV LiteRadio3 Pro
+    - iFlight Commando 8
 - **bw212x64.zip** (212x64 pixel "wide screen" black and white screen radios)
     - X9D
     - X9D Plus

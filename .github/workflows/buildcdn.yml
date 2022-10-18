@@ -27,7 +27,9 @@ jobs:
         uses: actions/upload-artifact@v2.2.3
         with:
           name: sdcard-latest
-          path: dist/*
+          path:  |
+            dist/*
+            sdcard.json
       
   upload-release:
     if: github.event_name != 'pull_request'
@@ -46,8 +48,9 @@ jobs:
           prerelease: false
           title: "Latest"
           files: |
-            bw212x64.zip
-            bw128x64.zip
-            c320x480.zip
-            c480x272.zip
-            c480x320.zip
+            dist/bw212x64.zip
+            dist/bw128x64.zip
+            dist/c320x480.zip
+            dist/c480x272.zip
+            dist/c480x320.zip
+            sdcard.json
