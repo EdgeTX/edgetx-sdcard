@@ -119,25 +119,25 @@ local function getSignalValues()
         return v, -115, 20
     end
 
-    -- try UNI-ACSST firmware VFR
-    local fieldinfo = getFieldInfo("VFR")
-    if fieldinfo then
-        local v = getValue("VFR")
-        log("RSSI: " .. v)
-        lcd.drawText(3, 30, "Signal: VFR", 0)
-        return v, 0, 100
-    end
+    ---- try UNI-ACSST firmware VFR
+    --local fieldinfo = getFieldInfo("VFR")
+    --if fieldinfo then
+    --    local v = getValue("VFR")
+    --    log("RSSI: " .. v)
+    --    lcd.drawText(3, 30, "Signal: VFR", 0)
+    --    return v, 0, 100
+    --end
+    --
+    ---- try elrs RQLY
+    --local fieldinfo = getFieldInfo("RQLY")
+    --if fieldinfo then
+    --    local v = getValue("RQLY")
+    --    log("RQLY: " .. v)
+    --    lcd.drawText(3, 30, "Signal: RQLY", 0)
+    --    return v, 0, 100
+    --end
 
-    -- try elrs RQLY
-    local fieldinfo = getFieldInfo("RQLY")
-    if fieldinfo then
-        local v = getValue("RQLY")
-        log("RQLY: " .. v)
-        lcd.drawText(3, 30, "Signal: RQLY", 0)
-        return v, 0, 100
-    end
-
-    lcd.drawText(30, 3, "Signal: not found in RSSI/1RSS/2RSS/VFR", 0)
+    lcd.drawText(30, 3, "Signal: not found in RSSI/1RSS/2RSS", 0)
     return nil, 0, 0
 end
 
