@@ -2,8 +2,8 @@
 -- SoarETX F3K score keeper, loadable component                          --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Date:    2022-03-08                                                   --
--- Version: 1.0.0                                                        --
+-- Date:    2022-11-20                                                   --
+-- Version: 1.0.1                                                        --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
 --                                                                       --
@@ -631,7 +631,7 @@ function libGUI.widgetRefresh()
   for i = 1, taskScores do
     lcd.drawText(COL1, y, string.format("%i.", i), colors.primary1 + DBLSIZE)
     if i > #scores then
-      lcd.drawText(COL2, y, "  -   -   -", colors.primary1 + DBLSIZE)
+      lcd.drawText(COL2, y, "-  -  -", colors.primary1 + DBLSIZE)
     else
       lcd.drawTimer(COL2, y, scores[i], colors.primary1 + DBLSIZE)
     end
@@ -918,14 +918,14 @@ do -- Setup score keeper screen for F3K and Practice tasks
     
     local s = screenTask.timer(LEFT + 40, y, 60, HEIGHT, 0, nil)
     s.disabled = true
-    s.value = "  -   -   -"
+    s.value = "-  -  -"
     screenTask.scores[i] = s
 
     -- Modify timer's draw function to insert score value
     local draw = s.draw
     function s.draw(idx)
       if i > #scores then 
-        screenTask.scores[i].value = "  -   -   -"
+        screenTask.scores[i].value = "-  -  -"
       else
         screenTask.scores[i].value = scores[i]
       end
@@ -1124,7 +1124,7 @@ do -- Setup score browser screen
       lcd.drawText(x, y, j .. ".")
 
       if j > #record.scores then
-        lcd.drawText(x + 18, y, " -  -  -")
+        lcd.drawText(x + 18, y, "-  -  -")
       elseif record.unitStr == "s" then
         lcd.drawTimer(x + 18, y, record.scores[j])
       else
