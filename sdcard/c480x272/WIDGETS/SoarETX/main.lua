@@ -2,8 +2,8 @@
 -- SoarETX widget                                                        --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Date:    2022-02-08                                                   --
--- Version: 1.0.0                                                        --
+-- Date:    2022-11-21                                                   --
+-- Version: 1.0.1                                                        --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
 --                                                                       --
@@ -23,7 +23,51 @@ local options = {
   { "Version", VALUE, 1, 1, 99 },
   { "FileName", STRING, "" }
 }
+
 local soarGlobals
+
+-- Battery - moved here from battery.lua because of bugs in ETX not calling background() on topbar widgets
+local rxBatSrc
+local rxBatNxtWarn = 0
+local rxBatNxtCheck = 0
+
+function rxBatCheck()
+  local now = getTime()
+	
+	if now < rxBatNxtCheck then
+		return
+	end
+	
+	rxBatNxtCheck = now + 100
+  
+  -- Receiver battery
+  if not rxBatSrc then 
+    rxBatSrc = getFieldInfo("Cels")
+    if not rxBatSrc then rxBatSrc = getFieldInfo("RxBt") end
+    if not rxBatSrc then rxBatSrc = getFieldInfo("A1") end
+    if not rxBatSrc then rxBatSrc = getFieldInfo("A2") end
+  end
+  
+  if rxBatSrc then
+    soarGlobals.battery = getValue(rxBatSrc.id)
+    
+    if type(soarGlobals.battery) == "table" then
+      for i = 2, #soarGlobals.battery do
+        soarGlobals.battery[1] = math.min(soarGlobals.battery[1], soarGlobals.battery[i])
+      end
+      soarGlobals.battery = soarGlobals.battery[1]
+    end
+  end
+
+  -- Warn about low receiver battery
+	local rxBatMin = 0.1 * (soarGlobals.getParameter(soarGlobals.batteryParameter) + 100)
+  if now > rxBatNxtWarn and soarGlobals.battery > 0 and soarGlobals.battery < rxBatMin then
+    playHaptic(200, 0, 1)
+    playFile("lowbat.wav")
+    playNumber(10 * soarGlobals.battery + 0.5, 1, PREC1)
+    rxBatNxtWarn = now + 2000
+  end
+end -- rxBatCheck()
 
 -- Load a Lua component dynamically based on option values
 local function Load(widget)
@@ -109,6 +153,8 @@ local function refresh(widget, event, touchState)
 end
 
 local function background(widget)
+	rxBatCheck()
+
   if widget.background then
     widget.background()
   end
