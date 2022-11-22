@@ -2,7 +2,7 @@
 -- SoarETX widget                                                        --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Date:    2022-11-21                                                   --
+-- Date:    2022-11-22                                                   --
 -- Version: 1.0.1                                                        --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
@@ -27,7 +27,6 @@ local options = {
 local soarGlobals
 
 -- Battery - moved here from battery.lua because of bugs in ETX not calling background() on topbar widgets
-local rxBatSrc
 local rxBatNxtWarn = 0
 local rxBatNxtCheck = 0
 
@@ -40,13 +39,10 @@ function rxBatCheck()
 	
 	rxBatNxtCheck = now + 100
   
-  -- Receiver battery
-  if not rxBatSrc then 
-    rxBatSrc = getFieldInfo("Cels")
-    if not rxBatSrc then rxBatSrc = getFieldInfo("RxBt") end
-    if not rxBatSrc then rxBatSrc = getFieldInfo("A1") end
-    if not rxBatSrc then rxBatSrc = getFieldInfo("A2") end
-  end
+	local rxBatSrc = getFieldInfo("Cels")
+	if not rxBatSrc then rxBatSrc = getFieldInfo("RxBt") end
+	if not rxBatSrc then rxBatSrc = getFieldInfo("A1") end
+	if not rxBatSrc then rxBatSrc = getFieldInfo("A2") end
   
   if rxBatSrc then
     soarGlobals.battery = getValue(rxBatSrc.id)
