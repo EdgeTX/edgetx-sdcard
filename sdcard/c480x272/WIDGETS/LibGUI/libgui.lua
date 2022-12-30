@@ -2,8 +2,8 @@
 -- The dynamically loadable part of the shared Lua GUI library.          --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Date:    2022-05-05                                                   --
--- Version: 1.0.1                                                        --
+-- Date:    2022-11-20                                                   --
+-- Version: 1.0.2                                                        --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
 --                                                                       --
@@ -292,6 +292,10 @@ function lib.newGUI()
             event = EVT_TOUCH_TAP
           end
         end
+				-- ETX 2.8 rc 4 bug fix
+				if scrolling and event == EVT_VIRTUAL_ENTER_LONG then
+					return
+				end
         -- If we put a finger down on a menu item and immediately slide, then we can scroll
         if event == EVT_TOUCH_SLIDE then
           if not scrolling then

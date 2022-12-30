@@ -2,8 +2,8 @@
 -- SoarETX, loadable component                                           --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Date:    2022-02-17                                                   --
--- Version: 1.0.0                                                         --
+-- Date:    2022-11-21                                                   --
+-- Version: 1.0.1                                                         --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
 --                                                                       --
@@ -21,48 +21,7 @@
 
 local widget, soarGlobals =  ...
 
--- Battery variables
-local rxBatSrc
-local rxBatNxtWarn = 0
-
-local function getWarningLevel()
-  return 0.1 * (soarGlobals.getParameter(soarGlobals.batteryParameter) + 100)
-end
-
-function widget.background()
-  local now = getTime()
-  
-  -- Receiver battery
-  if not rxBatSrc then 
-    rxBatSrc = getFieldInfo("Cels")
-    if not rxBatSrc then rxBatSrc = getFieldInfo("RxBt") end
-    if not rxBatSrc then rxBatSrc = getFieldInfo("A1") end
-    if not rxBatSrc then rxBatSrc = getFieldInfo("A2") end
-  end
-  
-  if rxBatSrc then
-    soarGlobals.battery = getValue(rxBatSrc.id)
-    
-    if type(soarGlobals.battery) == "table" then
-      for i = 2, #soarGlobals.battery do
-        soarGlobals.battery[1] = math.min(soarGlobals.battery[1], soarGlobals.battery[i])
-      end
-      soarGlobals.battery = soarGlobals.battery[1]
-    end
-  end
-
-  -- Warn about low receiver battery or Rx off
-  if now > rxBatNxtWarn and soarGlobals.battery > 0 and soarGlobals.battery < getWarningLevel() then
-    playHaptic(200, 0, 1)
-    playFile("lowbat.wav")
-    playNumber(10 * soarGlobals.battery + 0.5, 1, PREC1)
-    rxBatNxtWarn = now + 2000
-  end
-end -- background()
-
 function widget.refresh(event, touchState)
-  widget.background()
-  
   if event then
     lcd.exitFullScreen()
   end
