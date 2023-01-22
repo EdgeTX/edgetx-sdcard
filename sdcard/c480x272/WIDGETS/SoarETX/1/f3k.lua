@@ -2,8 +2,8 @@
 -- SoarETX F3K score keeper, loadable component                          --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Date:    2022-11-20                                                   --
--- Version: 1.0.1                                                        --
+-- Date:    2023-01-23                                                   --
+-- Version: 1.0.2                                                        --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
 --                                                                       --
@@ -423,7 +423,7 @@ local function TargetTime()
     end
 	elseif targetType == 3 then -- 1234
     return Best1234Target(winTimer, scores, 4)
-	elseif targetType == 4 then -- Deuces
+	elseif targetType == 5 then -- Deuces
     if #scores == 0 then
       return math.max(0, math.floor(winTimer / 2))
     elseif #scores == 1 then
@@ -873,7 +873,7 @@ do -- Setup practice tasks menu
   local taskData = {
     { 0, -1, 5, false, 0, 2, false }, -- Just fly
     { 0, -1, 5, false, 2, 2, true },  -- QR
-    { 600, 2, 2, true, 4, 2, false }  -- Deuces
+    { 600, 2, 2, true, 5, 2, false }  -- Deuces
   }
   
   -- Call back function running when a menu item is selected
