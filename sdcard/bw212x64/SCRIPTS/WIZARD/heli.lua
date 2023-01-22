@@ -174,7 +174,7 @@ local function runSwitchConfig(event)
   fields[2][4]=1
   fields[3][4]=0
   if TypeFields[1][5]==1 then
-    lcd.drawText(23, 44, "Gyro Rate")
+    lcd.drawText(23, 44, "Tail Gain")
     fields[3][4]=1
   end
   local result = runFieldsPage(event)
@@ -451,37 +451,47 @@ local function runCreateModel(event)
   model.insertMix(ThrFields[1][5], 1,{name="Th1",weight=100,switch=tUp,multiplex=2,curveType=3,curveValue=2})
   model.insertMix(ThrFields[1][5], 2,{name="Th2",weight=100,switch=tUp-1,multiplex=2,curveType=3,curveValue=3})
   model.insertMix(ThrFields[1][5], 3,{name="Hld",weight=100,offset=-15,switch=hold+1,multiplex=2,curveType=3,curveValue=4})
-
+  model.setOutput(ThrFields[1][5],{name="Throt"})
+ 
   -- Ail
   if TypeFields[1][5] == 0 then
     model.insertMix(AilerFields[1][5], 0,{name="Ail",weight=100})
+    model.setOutput(AilerFields[1][5],{name="Ailer"})
   else
     model.insertMix(AilerFields[1][5], 0,{source=86,name="Ail",weight=100})
+    model.setOutput(AilerFields[1][5],{name="Ailer"})
   end
 
   -- Elev
   if TypeFields[1][5] == 0 then
     model.insertMix(EleFields[1][5], 0,{name="Ele",weight=100})
+    model.setOutput(EleFields[1][5],{name="Elev"})
   else
     model.insertMix(EleFields[1][5], 0,{source=85,name="Ele",weight=100})
+    model.setOutput(EleFields[1][5],{name="Elev"})
   end
 
   -- Rudder
   model.insertMix(RudFields[1][5], 0,{name="Rud",weight=100})
+  model.setOutput(RudFields[1][5],{name="Rud"})
 
   -- Gyro
   if TypeFields[1][5] == 0 then
     model.insertMix(4, 0,{source=84,name="Gyr",weight=25})
+    model.setOutput(4,{name="T.Gain"})
   else
     model.insertMix( 4, 0,{source=84,name="HH",weight=25})
     model.insertMix( 4, 1,{source=84,name="Rat",weight=-25,switch=gyRate-1,multiplex=2})
+    model.setOutput(4,{name="T.Gain"})
   end
 
   -- Pitch
   if TypeFields[1][5] == 0 then
     model.insertMix(5, 0,{source=77,name="Pch",weight=100})
+    model.setOutput(5,{name="Pitch"})
   else
     model.insertMix(5, 0,{source=87,name="Pch",weight=100})
+    model.setOutput(5,{name="Pitch"})
   end
 
   --Set Swash Parameters
