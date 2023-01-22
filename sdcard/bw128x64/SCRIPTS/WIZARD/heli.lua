@@ -169,7 +169,7 @@ local function runSwitchConfig(event)
   fields[2][4]=1
   fields[3][4]=0
   if TypeFields[1][5]==1 then
-    lcd.drawText(0, 54, "Gyro Rate")
+    lcd.drawText(0, 54, "Tail Gain")
     fields[3][4]=1
   end
   local result = runFieldsPage(event)
@@ -439,37 +439,47 @@ local function runCreateModel(event)
   model.insertMix(ThrFields[1][5], 1,{name="Th1",weight=100,switch=tUp,multiplex=2,curveType=3,curveValue=2})
   model.insertMix(ThrFields[1][5], 2,{name="Th2",weight=100,switch=tUp-1,multiplex=2,curveType=3,curveValue=3})
   model.insertMix(ThrFields[1][5], 3,{name="Hld",weight=100,offset=-15,switch=hold+1,multiplex=2,curveType=3,curveValue=4})
-
+  model.setOutput(ThrFields[1][5],{name="Thrt"})
+  
   -- Ail
   if TypeFields[1][5] == 0 then
     model.insertMix(AilerFields[1][5], 0,{name="Ail",weight=100})
+    model.setOutput(AilerFields[1][5],{name="Aile"})
   else
     model.insertMix(AilerFields[1][5], 0,{source=83,name="Ail",weight=100})
+    model.setOutput(AilerFields[1][5],{name="Aile"})
   end
 
   -- Elev
   if TypeFields[1][5] == 0 then
     model.insertMix(EleFields[1][5], 0,{name="Ele",weight=100})
+    model.setOutput(EleFields[1][5],{name="Elev"})
   else
     model.insertMix(EleFields[1][5], 0,{source=82,name="Ele",weight=100})
+    model.setOutput(EleFields[1][5],{name="Elev"})
   end
 
   -- Rudder
   model.insertMix(RudFields[1][5], 0,{name="Rud",weight=100})
+   model.setOutput(RudFields[1][5],{name="Rud"})
 
   -- Gyro
   if TypeFields[1][5] == 0 then
-    model.insertMix(4, 0,{source=81,name="Gyr",weight=25})
+    model.insertMix(4, 0,{source=81,name="T.Ga",weight=25})
+    model.setOutput(4,{name="T.Ga"})
   else
-    model.insertMix( 4, 0,{source=81,name="HH",weight=25})
-    model.insertMix( 4, 1,{source=81,name="Rat",weight=-25,switch=gyRate,multiplex=2})
+    model.insertMix( 4, 0,{source=81,name="HHold",weight=25})
+    model.insertMix( 4, 1,{source=81,name="Rate",weight=-25,switch=gyRate,multiplex=2})
+    model.setOutput(4,{name="T.Ga"})
   end
 
   -- Pitch
   if TypeFields[1][5] == 0 then
     model.insertMix(5, 0,{source=77,name="Pch",weight=100})
+    model.setOutput(5,{name="Ptch"})
   else
     model.insertMix(5, 0,{source=84,name="Pch",weight=100})
+    model.setOutput(5,{name="Ptch"})
   end
 
   --Set Swash Parameters
