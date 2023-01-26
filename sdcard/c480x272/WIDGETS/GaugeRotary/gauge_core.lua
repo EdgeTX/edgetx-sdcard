@@ -1,16 +1,23 @@
-local HighAsGreen, p2 = ...
+local m_log, HighAsGreen = ...
 
-local self = {}
-self.HighAsGreen = HighAsGreen
+local M = {}
+M.m_log = m_log
+M.HighAsGreen = HighAsGreen
+
+-- better font names
+local FONT_38 = XXLSIZE -- 38px
+local FONT_16 = DBLSIZE -- 16px
+local FONT_12 = MIDSIZE -- 12px
+local FONT_8 = 0 -- Default 8px
+local FONT_6 = SMLSIZE -- 6px
 
 --------------------------------------------------------------
-local function log(s)
-    --return;
-    print("Gauge_core: " .. s)
+local function log(fmt, ...)
+    m_log.info(fmt, ...)
 end
 --------------------------------------------------------------
 
-function self.drawArm(armX, armY, armR, percentageValue, color, isFull)
+function M.drawArm(armX, armY, armR, percentageValue, color, isFull)
     --min = 5.54
     --max = 0.8
 
@@ -38,7 +45,7 @@ function self.drawArm(armX, armY, armR, percentageValue, color, isFull)
 end
 
 -- This function returns green at gvalue, red at rvalue and graduate in between
-function self.getRangeColor(value, red_value, green_value)
+function M.getRangeColor(value, red_value, green_value)
     local range = math.abs(green_value - red_value)
     if range == 0 then
         return lcd.RGB(0, 0xdf, 0)
@@ -70,7 +77,16 @@ function self.getRangeColor(value, red_value, green_value)
     end
 end
 
-function self.drawGauge(centerX, centerY, centerR, isFull, percentageValue, percentageValueMin, percentageValueMax, txt1, value_fmt_min, value_fmt_max, txt2)
+
+function M.drawBadge(txtX, txtY, txt1, font_size)
+    local ts_w, ts_h = lcd.sizeText(txt1, font_size)
+    local r = ts_h / 2
+    lcd.drawFilledCircle(txtX , txtY + r, r, GREY)
+    lcd.drawFilledCircle(txtX + ts_w , txtY + r, r, GREY)
+    lcd.drawFilledRectangle(txtX, txtY , ts_w, ts_h, GREY)
+end
+
+function M.drawGauge(centerX, centerY, centerR, isFull, percentageValue, percentageValueMin, percentageValueMax, txt1, value_fmt_min, value_fmt_max, txt2)
     if value_fmt_min == nil then
         value_fmt_min = ""
     end
@@ -88,12 +104,12 @@ function self.drawGauge(centerX, centerY, centerR, isFull, percentageValue, perc
     local tickWidth = 9
     local armCenterR = centerR / 2.5
     local armR = centerR - 8
-    local txtSize = DBLSIZE
+    local txtSize = FONT_16
     if centerR < 65 then
-        txtSize = MIDSIZE
+        txtSize = FONT_12
     end
     if centerR < 30 then
-        txtSize = SMLSIZE
+        txtSize = FONT_6
     end
 
     -- main gauge background
@@ -126,12 +142,12 @@ function self.drawGauge(centerX, centerY, centerR, isFull, percentageValue, perc
     end
     for i = 0, to_tick, tick_step do
         --log("HighAsGreen: " .. self.HighAsGreen)
-        if (self.HighAsGreen == 1) then
-            local newColor = self.getRangeColor(i, 0, to_tick - 10)
+        if (M.HighAsGreen == 1) then
+            local newColor = M.getRangeColor(i, 0, to_tick - 10)
             lcd.setColor(CUSTOM_COLOR, newColor)
             --lcd.setColor(CUSTOM_COLOR, self.getRangeColor(i, 0, to_tick - 10))
         else
-            lcd.setColor(CUSTOM_COLOR, self.getRangeColor(i, to_tick - 10, 0))
+            lcd.setColor(CUSTOM_COLOR, M.getRangeColor(i, to_tick - 10, 0))
             --lcd.setColor(CUSTOM_COLOR, self.getRangeColor(i, 120 , 30))
         end
         lcd.drawAnnulus(centerX, centerY, centerR - fender - 3 - tickWidth, centerR - fender - 3, tick_offset + i, tick_offset + i + 7, CUSTOM_COLOR)
@@ -142,7 +158,7 @@ function self.drawGauge(centerX, centerY, centerR, isFull, percentageValue, perc
 
     local armColor = lcd.RGB(255, 255, 255)
     local armColorMin, armColorMax
-    if (self.HighAsGreen == 1) then
+    if (M.HighAsGreen == 1) then
         armColorMin = lcd.RGB(200, 0, 0)
         armColorMax = lcd.RGB(0, 200, 0)
     else
@@ -157,10 +173,10 @@ function self.drawGauge(centerX, centerY, centerR, isFull, percentageValue, perc
     --self.drawArm(centerX, centerY, armR, 100, armColorMin, isFull)
 
     if percentageValueMin ~= nil and percentageValueMax ~= nil then
-        self.drawArm(centerX, centerY, armR, percentageValueMin, armColorMin, isFull)
-        self.drawArm(centerX, centerY, armR, percentageValueMax, armColorMax, isFull)
+        M.drawArm(centerX, centerY, armR, percentageValueMin, armColorMin, isFull)
+        M.drawArm(centerX, centerY, armR, percentageValueMax, armColorMax, isFull)
     end
-    self.drawArm(centerX, centerY, armR, percentageValue, armColor, isFull)
+    M.drawArm(centerX, centerY, armR, percentageValue, armColor, isFull)
 
     -- hide the base of the arm
     lcd.drawFilledCircle(centerX, centerY, armCenterR, BLACK)
@@ -170,14 +186,18 @@ function self.drawGauge(centerX, centerY, centerR, isFull, percentageValue, perc
     )
 
     -- text in center
-    lcd.drawText(centerX + 0, centerY - 8, txt2, CENTER + SMLSIZE + WHITE) -- XXLSIZE/DBLSIZE/MIDSIZE/SMLSIZE
+    lcd.drawText(centerX + 0, centerY - 8, txt2, CENTER + FONT_6 + WHITE) -- FONT_38/FONT_16/FONT_12/FONT_6
 
-    lcd.drawText(centerX - armCenterR - 12, centerY + 20, value_fmt_min, CENTER + SMLSIZE + WHITE)
-    lcd.drawText(centerX + armCenterR + 12, centerY + 20, value_fmt_max, CENTER + SMLSIZE + WHITE)
+    --self.drawBadge(centerX - armCenterR - 12, centerY + 20, value_fmt_min, FONT_8)
+    lcd.drawText(centerX - armCenterR - 12, centerY + 20, value_fmt_min, CENTER + FONT_8 + armColorMin)
+
+    --self.drawBadge(centerX + armCenterR + 12, centerY + 20, value_fmt_min, FONT_8)
+    lcd.drawText(centerX + armCenterR + 12, centerY + 20, value_fmt_max, CENTER + FONT_8 + armColorMax)
 
     -- text below
     if isFull then
         --lcd.drawText(centerX + 8, centerY + 30, txt1, CENTER + txtSize + WHITE)
+        --self.drawBadge(centerX + 0, centerY + armCenterR +2, txt1, txtSize)
         lcd.drawText(centerX + 0, centerY + armCenterR + 2, txt1, CENTER + txtSize + WHITE)
     else
         -- no text below in flat mode
@@ -185,4 +205,4 @@ function self.drawGauge(centerX, centerY, centerR, isFull, percentageValue, perc
 
 end
 
-return self
+return M
