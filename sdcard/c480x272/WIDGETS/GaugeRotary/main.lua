@@ -380,7 +380,7 @@ local function refresh(wgt, event, touchState)
     end
 
     -- widget load (debugging)
-    lcd.drawText(wgt.zone.x + 10, wgt.zone.y, string.format("load: %d%%", getUsage()), FONT_6 + GREY) -- ???
+    --lcd.drawText(wgt.zone.x + 10, wgt.zone.y, string.format("load: %d%%", getUsage()), FONT_6 + GREY) -- ???
 end
 
 return { name = app_name, options = _options, create = create, update = update, refresh = refresh }
