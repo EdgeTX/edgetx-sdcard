@@ -141,14 +141,14 @@ function M.drawGauge(centerX, centerY, centerR, isFull, percentageValue, percent
         tick_step = 10 + 0.15 * (100 - centerR)
     end
     for i = 0, to_tick, tick_step do
-        --log("HighAsGreen: " .. self.HighAsGreen)
+        log("HighAsGreen: " .. M.HighAsGreen)
         if (M.HighAsGreen == 1) then
             local newColor = M.getRangeColor(i, 0, to_tick - 10)
             lcd.setColor(CUSTOM_COLOR, newColor)
-            --lcd.setColor(CUSTOM_COLOR, self.getRangeColor(i, 0, to_tick - 10))
+            --lcd.setColor(CUSTOM_COLOR, M.getRangeColor(i, 0, to_tick - 10))
         else
             lcd.setColor(CUSTOM_COLOR, M.getRangeColor(i, to_tick - 10, 0))
-            --lcd.setColor(CUSTOM_COLOR, self.getRangeColor(i, 120 , 30))
+            --lcd.setColor(CUSTOM_COLOR, M.getRangeColor(i, 120 , 30))
         end
         lcd.drawAnnulus(centerX, centerY, centerR - fender - 3 - tickWidth, centerR - fender - 3, tick_offset + i, tick_offset + i + 7, CUSTOM_COLOR)
         --lcd.drawAnnulus(centerX, centerY, centerR -fender -3 -tickWidth,     centerR -fender -3 , 250 +i, 250 +i +7, YELLOW)
@@ -166,11 +166,11 @@ function M.drawGauge(centerX, centerY, centerR, isFull, percentageValue, percent
         armColorMax = lcd.RGB(200, 0, 0)
     end
 
-    --self.drawArm(centerX, centerY, armR, 0, armColorMin, isFull)
-    --self.drawArm(centerX, centerY, armR, 10, armColorMin, isFull)
-    --self.drawArm(centerX, centerY, armR, 50, armColorMin, isFull)
-    --self.drawArm(centerX, centerY, armR, 90, armColorMin, isFull)
-    --self.drawArm(centerX, centerY, armR, 100, armColorMin, isFull)
+    --M.drawArm(centerX, centerY, armR, 0, armColorMin, isFull)
+    --M.drawArm(centerX, centerY, armR, 10, armColorMin, isFull)
+    --M.drawArm(centerX, centerY, armR, 50, armColorMin, isFull)
+    --M.drawArm(centerX, centerY, armR, 90, armColorMin, isFull)
+    --M.drawArm(centerX, centerY, armR, 100, armColorMin, isFull)
 
     if percentageValueMin ~= nil and percentageValueMax ~= nil then
         M.drawArm(centerX, centerY, armR, percentageValueMin, armColorMin, isFull)
@@ -188,16 +188,16 @@ function M.drawGauge(centerX, centerY, centerR, isFull, percentageValue, percent
     -- text in center
     lcd.drawText(centerX + 0, centerY - 8, txt2, CENTER + FONT_6 + WHITE) -- FONT_38/FONT_16/FONT_12/FONT_6
 
-    --self.drawBadge(centerX - armCenterR - 12, centerY + 20, value_fmt_min, FONT_8)
+    --M.drawBadge(centerX - armCenterR - 12, centerY + 20, value_fmt_min, FONT_8)
     lcd.drawText(centerX - armCenterR - 12, centerY + 20, value_fmt_min, CENTER + FONT_8 + armColorMin)
 
-    --self.drawBadge(centerX + armCenterR + 12, centerY + 20, value_fmt_min, FONT_8)
+    --M.drawBadge(centerX + armCenterR + 12, centerY + 20, value_fmt_min, FONT_8)
     lcd.drawText(centerX + armCenterR + 12, centerY + 20, value_fmt_max, CENTER + FONT_8 + armColorMax)
 
     -- text below
     if isFull then
         --lcd.drawText(centerX + 8, centerY + 30, txt1, CENTER + txtSize + WHITE)
-        --self.drawBadge(centerX + 0, centerY + armCenterR +2, txt1, txtSize)
+        --M.drawBadge(centerX + 0, centerY + armCenterR +2, txt1, txtSize)
         lcd.drawText(centerX + 0, centerY + armCenterR + 2, txt1, CENTER + txtSize + WHITE)
     else
         -- no text below in flat mode

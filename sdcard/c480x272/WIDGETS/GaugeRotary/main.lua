@@ -136,6 +136,7 @@ end
 
 local function update(wgt, options)
     wgt.options = options
+    wgt.gauge1 = wgt.GaugeClass(m_log, options.HighAsGreen)
     setAutoMinMax(wgt)
 end
 
@@ -153,7 +154,6 @@ local function create(zone, options)
     wgt.ToolsClass = loadScript("/WIDGETS/" .. app_name .. "/widget_tools.lua", "tcd")
     wgt.GaugeClass = loadScript("/WIDGETS/" .. app_name .. "/gauge_core.lua", "tcd")
 
-    wgt.gauge1 = wgt.GaugeClass(m_log, options.HighAsGreen)
     wgt.tools = wgt.ToolsClass(m_log, app_name)
 
     update(wgt, options)
