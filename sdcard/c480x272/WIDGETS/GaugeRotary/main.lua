@@ -84,8 +84,12 @@ local _options = {
     { "Precision", VALUE, 1, 0, 1 }
 }
 
-local UtilsLogClass = loadScript("/WIDGETS/" .. app_name .. "/utils_log.lua", "tcd")
-local m_log = UtilsLogClass(app_name, "/WIDGETS/" .. app_name)
+-- imports
+local LibLogClass = loadScript("/WIDGETS/" .. app_name .. "/lib_log.lua", "tcd")
+local WidgetToolsClass = loadScript("/WIDGETS/" .. app_name .. "/lib_widget_tools.lua", "tcd")
+local GaugeClass = loadScript("/WIDGETS/" .. app_name .. "/gauge_core.lua", "tcd")
+
+local m_log = LibLogClass(app_name, "/WIDGETS/" .. app_name)
 
 --------------------------------------------------------------
 local function log(...)
@@ -136,7 +140,7 @@ end
 
 local function update(wgt, options)
     wgt.options = options
-    wgt.gauge1 = wgt.GaugeClass(m_log, options.HighAsGreen)
+    wgt.gauge1 = GaugeClass(m_log, options.HighAsGreen)
     setAutoMinMax(wgt)
 end
 
@@ -150,11 +154,7 @@ local function create(zone, options)
         gauge1 = nil
     }
 
-    -- imports
-    wgt.ToolsClass = loadScript("/WIDGETS/" .. app_name .. "/widget_tools.lua", "tcd")
-    wgt.GaugeClass = loadScript("/WIDGETS/" .. app_name .. "/gauge_core.lua", "tcd")
-
-    wgt.tools = wgt.ToolsClass(m_log, app_name)
+    wgt.tools = WidgetToolsClass(m_log, app_name)
 
     update(wgt, options)
     return wgt
