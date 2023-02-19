@@ -141,7 +141,7 @@ function M.drawGauge(centerX, centerY, centerR, isFull, percentageValue, percent
         tick_step = 10 + 0.15 * (100 - centerR)
     end
     for i = 0, to_tick, tick_step do
-        log("HighAsGreen: " .. M.HighAsGreen)
+        --log("HighAsGreen: " .. M.HighAsGreen)
         if (M.HighAsGreen == 1) then
             local newColor = M.getRangeColor(i, 0, to_tick - 10)
             lcd.setColor(CUSTOM_COLOR, newColor)
@@ -188,16 +188,18 @@ function M.drawGauge(centerX, centerY, centerR, isFull, percentageValue, percent
     -- text in center
     lcd.drawText(centerX + 0, centerY - 8, txt2, CENTER + FONT_6 + WHITE) -- FONT_38/FONT_16/FONT_12/FONT_6
 
-    --M.drawBadge(centerX - armCenterR - 12, centerY + 20, value_fmt_min, FONT_8)
-    lcd.drawText(centerX - armCenterR - 12, centerY + 20, value_fmt_min, CENTER + FONT_8 + armColorMin)
+    -- text min
+    M.drawBadge(centerX - armCenterR - 50, centerY + 20, value_fmt_min, FONT_12)
+    lcd.drawText(centerX - armCenterR - 20, centerY + 20, value_fmt_min, CENTER + FONT_12 + armColorMin)
 
-    --M.drawBadge(centerX + armCenterR + 12, centerY + 20, value_fmt_min, FONT_8)
-    lcd.drawText(centerX + armCenterR + 12, centerY + 20, value_fmt_max, CENTER + FONT_8 + armColorMax)
+    -- text max
+    M.drawBadge(centerX + armCenterR - 5, centerY + 20, value_fmt_min, FONT_12)
+    lcd.drawText(centerX + armCenterR + 20, centerY + 20, value_fmt_max, CENTER + FONT_12 + armColorMax)
 
     -- text below
     if isFull then
         --lcd.drawText(centerX + 8, centerY + 30, txt1, CENTER + txtSize + WHITE)
-        --M.drawBadge(centerX + 0, centerY + armCenterR +2, txt1, txtSize)
+        M.drawBadge(centerX + 0, centerY + armCenterR +2, txt1, txtSize)
         lcd.drawText(centerX + 0, centerY + armCenterR + 2, txt1, CENTER + txtSize + WHITE)
     else
         -- no text below in flat mode
