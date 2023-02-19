@@ -8,17 +8,24 @@ M.tele_src_id = nil
 local getTime = getTime
 local lcd = lcd
 
+-- better font names
+local FONT_38 = XXLSIZE -- 38px
+local FONT_16 = DBLSIZE -- 16px
+local FONT_12 = MIDSIZE -- 12px
+local FONT_8 = 0 -- Default 8px
+local FONT_6 = SMLSIZE -- 6px
+
 ---------------------------------------------------------------------------------------------------
 
 local function log(fmt, ...)
-    --local num_arg = #{ ... }
-    --local msg
-    --if num_arg > 0 then
-    --    msg = string.format(fmt, ...)
-    --else
-    --    msg = fmt
-    --end
-    --print(M.app_name .. ": " .. msg)
+    local num_arg = #{ ... }
+    local msg
+    if num_arg > 0 then
+        msg = string.format(fmt, ...)
+    else
+        msg = fmt
+    end
+    print(M.app_name .. ": " .. msg)
 end
 ---------------------------------------------------------------------------------------------------
 
@@ -38,11 +45,11 @@ function M.unitIdToString(unitId)
         return ""
     end
 
-    log("idUnit: " .. unitId)
+    --log("idUnit: " .. unitId)
 
     if (unitId > 0 and unitId <= #UNIT_ID_TO_STRING) then
         local txtUnit = UNIT_ID_TO_STRING[unitId]
-        log("txtUnit: " .. txtUnit)
+        --log("txtUnit: " .. txtUnit)
         return txtUnit
     end
 
@@ -176,8 +183,6 @@ function M.getSensorPrecession(sensorName)
 
     for i=0, 30, 1 do
         local s2 = model.getSensor(i)
-
-
         --type (number) 0 = custom, 1 = calculated
         --name (string) Name
         --unit (number) See list of units in the appendix of the OpenTX Lua Reference Guide
@@ -186,7 +191,7 @@ function M.getSensorPrecession(sensorName)
         --instance (number) Only custom sensors
         --formula (number) Only calculated sensors. 0 = Add etc. see list of formula choices in Companion popup
 
-        log("getSensorPrecession: %d. name: %s, unit: %s , prec: %s , id: %s , instance: %s ", i, s2.name, s2.unit, s2.prec, s2.id, s2.instance)
+        --log("getSensorPrecession: %d. name: %s, unit: %s , prec: %s , id: %s , instance: %s ", i, s2.name, s2.unit, s2.prec, s2.id, s2.instance)
 
         if s2.name == sensorName then
             return s2.prec
@@ -195,6 +200,40 @@ function M.getSensorPrecession(sensorName)
 
     return -1
 end
+
+--function M.getSensors()
+--    local sensors = {}
+--    for i=0, 30, 1 do
+--        local s1 = {}
+--        local s2 = model.getSensor(i)
+--
+--        --type (number) 0 = custom, 1 = calculated
+--        s1.type = s2.type
+--        --name (string) Name
+--        s1.name = s2.name
+--        --unit (number) See list of units in the appendix of the OpenTX Lua Reference Guide
+--        s1.unit = s2.unit
+--        --prec (number) Number of decimals
+--        s1.prec = s2.prec
+--        --id (number) Only custom sensors
+--        s1.id = s2.id
+--        --instance (number) Only custom sensors
+--        s1.instance = s2.instance
+--        --formula (number) Only calculated sensors. 0 = Add etc. see list of formula choices in Companion popup
+--        s1.formula = s2.formula
+--
+--        s1.appendix
+--
+--        log("getSensorPrecession: %d. name: %s, unit: %s , prec: %s , id: %s , instance: %s ", i, s2.name, s2.unit, s2.prec, s2.id, s2.instance)
+--
+--        if s2.name == sensorName then
+--            return s2.prec
+--        end
+--    end
+--
+--    return -1
+--end
+
 ---------------------------------------------------------------------------------------------------
 -- workaround for bug in getFiledInfo()  -- ???? why?
 function M.cleanInvalidCharFromGetFiledInfo(sourceName)
@@ -208,6 +247,38 @@ function M.cleanInvalidCharFromGetFiledInfo(sourceName)
 
     return sourceName
 end
+------------------------------------------------------------------------------------------------------
+
+function M.lcdSizeTextFixed(txt, font_size)
+    local ts_w, ts_h = lcd.sizeText(txt, font_size)
+
+    local v_offset = 0
+    if font_size == FONT_38 then
+        v_offset = -11
+    elseif font_size == FONT_16 then
+        v_offset = -5
+    elseif font_size == FONT_12 then
+        v_offset = -4
+    elseif font_size == FONT_8 then
+        v_offset = -3
+    elseif font_size == FONT_6 then
+        v_offset = 0
+    end
+    return ts_w, ts_h, v_offset
+end
+
+------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------
+
+function M.drawBadgedText(txt, txtX, txtY, font_size, text_color, background_color)
+    local ts_w, ts_h = lcd.sizeText(txt, font_size)
+    local r = ts_h / 2
+    lcd.drawFilledCircle(txtX , txtY + r, r, background_color)
+    lcd.drawFilledCircle(txtX + ts_w , txtY + r, r, background_color)
+    lcd.drawFilledRectangle(txtX, txtY , ts_w, ts_h, background_color)
+    lcd.drawText(txtX, txtY, txt, font_size + text_color)
+end
+
 ------------------------------------------------------------------------------------------------------
 
 return M
