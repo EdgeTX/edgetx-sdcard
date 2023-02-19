@@ -23,7 +23,7 @@
 
 -- Offer Shmuely
 -- Date: 2022
--- ver: 0.5
+-- ver: 0.6
 
 local app_name = "Value2"
 
@@ -55,8 +55,8 @@ end
 
 local options = {
     { "Source", SOURCE, DEFAULT_SOURCE },
-    { "TextColor", COLOR, YELLOW },
-    --{ "Prefix", STRING, "" }
+    { "TextColor", COLOR, COLOR_THEME_PRIMARY1 },
+    { "Postfix", STRING, "" }
 }
 
 --------------------------------------------------------------
@@ -144,7 +144,8 @@ local function prettyPrintNone(val, precession)
     end
 
     if val == -1 then
-        return "---"
+        --return "---"
+        val = 0
     end
 
     if precession == 0 then
@@ -235,7 +236,8 @@ local function refresh_app_mode(wgt, event, touchState)
     local dy = (zone_h - ts_h) / 3
 
     -- draw header
-    lcd.drawText(10, 0, wgt.source_name, FONT_16 + wgt.options.TextColor)
+    local header_txt = wgt.source_name .. " " .. wgt.options.Postfix
+    lcd.drawText(10, 0, header_txt, FONT_16 + wgt.options.TextColor)
 
     -- draw value
     if (wgt.tools.isTelemetryAvailable() == true) then
@@ -261,9 +263,10 @@ local function refresh_widget_with_telem(wgt)
     local last_y = 0
 
     -- draw header
-    local font_size_header, ts_h_w, ts_h_h, v_offset = getFontSizePrint(wgt, wgt.source_name, wgt.zone.w, wgt.zone.h / 4)
+    local header_txt = wgt.source_name .. " " .. wgt.options.Postfix
+    local font_size_header, ts_h_w, ts_h_h, v_offset = getFontSizePrint(wgt, header_txt, wgt.zone.w, wgt.zone.h / 4)
     log("val: font_size_header: %d, ts_h_h: %d, lastY: %d", wgt.zone.y, ts_h_h, last_y)
-    lcd.drawText(wgt.zone.x, wgt.zone.y + last_y + v_offset, wgt.source_name, font_size_header + wgt.options.TextColor)
+    lcd.drawText(wgt.zone.x, wgt.zone.y + last_y + v_offset, header_txt, font_size_header + wgt.options.TextColor)
     --lcd.drawRectangle(wgt.zone.x, wgt.zone.y + last_y, ts_h_w, ts_h_h, BLUE)
     last_y = last_y + ts_h_h
 
@@ -306,9 +309,10 @@ local function refresh_widget_no_telem(wgt)
     lcd.setColor(CUSTOM_COLOR, lcd.RGB(0xA4A5A4))
 
     -- draw header
-    local font_size_header, ts_h_w, ts_h_h, v_offset = getFontSizePrint(wgt, wgt.source_name, wgt.zone.w, wgt.zone.h / 4)
+    local header_txt = wgt.source_name .. " " .. wgt.options.Postfix
+    local font_size_header, ts_h_w, ts_h_h, v_offset = getFontSizePrint(wgt, header_txt, wgt.zone.w, wgt.zone.h / 4)
     log("val: font_size_header: %d, ts_h_h: %d, lastY: %d", wgt.zone.y, ts_h_h, last_y)
-    lcd.drawText(wgt.zone.x, wgt.zone.y + last_y + v_offset, wgt.source_name, font_size_header + CUSTOM_COLOR)
+    lcd.drawText(wgt.zone.x, wgt.zone.y + last_y + v_offset, header_txt, font_size_header + CUSTOM_COLOR)
     --lcd.drawRectangle(wgt.zone.x, wgt.zone.y + last_y, ts_h_w, ts_h_h, BLUE)
     last_y = last_y + ts_h_h
 
