@@ -15,6 +15,7 @@
 ---- # GNU General Public License for more details.                          #
 ---- #                                                                       #
 ---- #########################################################################
+
 -- Horus Widget that count number of flights
 -- Offer Shmuely
 -- Date: 2022
