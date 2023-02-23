@@ -4,17 +4,18 @@ local BackgroundImg = Bitmap.open("/SCRIPTS/WIZARD/img/background.png")
 local planeIcon = Bitmap.open("/SCRIPTS/WIZARD/img/icons/plane.png")
 local gliderIcon = Bitmap.open("/SCRIPTS/WIZARD/img/icons/glider.png")
 local multirotorIcon = Bitmap.open("/SCRIPTS/WIZARD/img/icons/multirotor.png")
+local helicopterIcon = Bitmap.open("/SCRIPTS/WIZARD/img/icons/helicopter.png")
 
 local w, h
 local selWizard = 1
-local numOfWizards = 3
+local numOfWizards = 4
 
 local iconWidth = 85
 local iconHeight = 130
 local margin = 40
 
-local iconX = {38, 198, 358}
-local iconY = {100, 100, 100}
+local iconX = {38, 140, 242, 344}
+local iconY = {100, 100, 100,100}
 
 local touchX
 local touchY
@@ -29,6 +30,7 @@ local function drawPage()
     lcd.drawBitmap(planeIcon, iconX[1], iconY[1])
     lcd.drawBitmap(gliderIcon, iconX[2], iconY[2])
     lcd.drawBitmap(multirotorIcon, iconX[3], iconY[3])
+    lcd.drawBitmap(helicopterIcon, iconX[4], iconY[4])
 
     lcd.drawRectangle(iconX[selWizard] - 2, iconY[selWizard] - 1, iconWidth + 4,
                       iconHeight + 4, RED, 2)
@@ -43,6 +45,8 @@ local function launchWizard()
         return "/SCRIPTS/WIZARD/glider.lua"
     elseif (selWizard == 3) then
         return "/SCRIPTS/WIZARD/multirotor.lua"
+    elseif (selWizard == 4) then
+        return "/SCRIPTS/WIZARD/helicopter.lua"
     end
 end
 
@@ -86,6 +90,11 @@ local function run(event, touchState)
         elseif (touchX > iconX[3]) and (touchX < (iconX[3] + iconWidth)) then
             if (touchY > iconY[3]) and (touchY < (iconY[3] + iconHeight)) then
                 selWizard = 3
+                return launchWizard()
+            end
+         elseif (touchX > iconX[4]) and (touchX < (iconX[4] + iconWidth)) then
+            if (touchY > iconY[4]) and (touchY < (iconY[4] + iconHeight)) then
+                selWizard = 4
                 return launchWizard()
             end
         end
