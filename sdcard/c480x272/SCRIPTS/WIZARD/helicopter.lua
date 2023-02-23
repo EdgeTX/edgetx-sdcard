@@ -26,7 +26,7 @@ local pages = {}
 local fields = {}
 local switches = {"SA", "SB", "SC", "SD", "SE", "SF", "SG"}
 local switchValues = {[0]=2, 5, 8, 11, 14, 17, 19}
-local Text_Color= lcd.setColor(TEXT_COLOR, BLACK)
+local Text_Color= lcd.setColor(CUSTOM_COLOR, BLACK)
 -- load common Bitmaps
 local BackgroundImg = Bitmap.open("img/background.png")
 local ImgPageUp = Bitmap.open("img/pageup.png")
@@ -579,7 +579,7 @@ local function createModel(event)
        model.setSwashRing({type=4,collectiveSource=89,aileronSource=90,elevatorSource=88,collectiveWeight=35,aileronWeight=35,elevatorWeight=60})
     end
     lcd.drawText(70, 90, "Model successfully created !")
-    lcd.drawText(100, 130, "Press RTN to exit", TEXT_COLOR)
+    lcd.drawText(100, 130, "Press RTN to exit", Text_Color)
     return 2
   end
 
