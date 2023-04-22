@@ -1,6 +1,7 @@
-local app_name, p2 = ...
+local m_log, app_name = ...
 
 local M = {}
+M.m_log = m_log
 M.app_name = app_name
 M.tele_src_name = nil
 M.tele_src_id = nil
@@ -16,16 +17,8 @@ local FONT_8 = 0 -- Default 8px
 local FONT_6 = SMLSIZE -- 6px
 
 ---------------------------------------------------------------------------------------------------
-
 local function log(fmt, ...)
-    local num_arg = #{ ... }
-    local msg
-    if num_arg > 0 then
-        msg = string.format(fmt, ...)
-    else
-        msg = fmt
-    end
-    print(M.app_name .. ": " .. msg)
+    m_log.info(fmt, ...)
 end
 ---------------------------------------------------------------------------------------------------
 
@@ -77,7 +70,7 @@ function M.periodicHasPassed(t)
     end
 
     local elapsed = getTime() - t.startTime;
-    log(string.format('elapsed: %d (t.durationMili: %d)', elapsed, t.durationMili))
+    --log('elapsed: %d (t.durationMili: %d)', elapsed, t.durationMili)
     local elapsedMili = elapsed * 10;
     if (elapsedMili < t.durationMili) then
         return false;
@@ -87,16 +80,15 @@ end
 
 function M.periodicGetElapsedTime(t)
     local elapsed = getTime() - t.startTime;
-    log(string.format("elapsed: %d",elapsed));
     local elapsedMili = elapsed * 10;
-    log(string.format("elapsedMili: %d",elapsedMili));
+    --log("elapsedMili: %d",elapsedMili);
     return elapsedMili;
 end
 
 function M.periodicReset(t)
     t.startTime = getTime();
-    log(string.format("periodicReset()"));
-    periodicGetElapsedTime(t)
+    log("periodicReset()");
+    M.periodicGetElapsedTime(t)
 end
 
 function M.getDurationMili(t)
@@ -247,6 +239,7 @@ function M.cleanInvalidCharFromGetFiledInfo(sourceName)
 
     return sourceName
 end
+
 ------------------------------------------------------------------------------------------------------
 
 function M.lcdSizeTextFixed(txt, font_size)
@@ -267,7 +260,6 @@ function M.lcdSizeTextFixed(txt, font_size)
     return ts_w, ts_h, v_offset
 end
 
-------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------
 
 function M.drawBadgedText(txt, txtX, txtY, font_size, text_color, background_color)
