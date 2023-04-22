@@ -1,4 +1,4 @@
--- TNS|__Flights History v0.01|TNE
+-- TNS|Flights History v0.1|TNE
 
 ---- #########################################################################
 ---- #                                                                       #
@@ -18,7 +18,7 @@
 -- This script display the flights history as kept using the "Flights" widget
 -- Author: Offer Shmuely
 -- Date: 2023
-local ver = "0.01"
+local ver = "1.0"
 
 -- to get help:
 -- change in lib_log.lua to "ENABLE_LOG_FILE=true"

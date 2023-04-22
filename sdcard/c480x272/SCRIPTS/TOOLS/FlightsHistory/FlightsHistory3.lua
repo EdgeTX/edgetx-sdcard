@@ -21,7 +21,7 @@ local M = {}
 -- Original Author: Herman Kruisman (RealTadango) (original version: https://raw.githubusercontent.com/RealTadango/FrSky/master/OpenTX/LView/LView.lua)
 -- Current Author: Offer Shmuely
 -- Date: 2023
-local ver = "0.01"
+local ver = "1.0"
 
 function M.getVer()
     return ver
