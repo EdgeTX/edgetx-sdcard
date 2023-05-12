@@ -61,7 +61,7 @@ end
 local options = {
     { "Source", SOURCE, DEFAULT_SOURCE },
     { "TextColor", COLOR, COLOR_THEME_PRIMARY1 },
-    { "Postfix", STRING, "" }
+    { "Suffix", STRING, "" }
 }
 
 --------------------------------------------------------------
@@ -241,7 +241,7 @@ local function refresh_app_mode(wgt, event, touchState)
     local dy = (zone_h - ts_h) / 3
 
     -- draw header
-    local header_txt = wgt.source_name .. " " .. wgt.options.Postfix
+    local header_txt = wgt.source_name .. " " .. wgt.options.Suffix
     lcd.drawText(10, 0, header_txt, FONT_16 + wgt.options.TextColor)
 
     -- draw value
@@ -268,7 +268,7 @@ local function refresh_widget_with_telem(wgt)
     local last_y = 0
 
     -- draw header
-    local header_txt = wgt.source_name .. " " .. wgt.options.Postfix
+    local header_txt = wgt.source_name .. " " .. wgt.options.Suffix
     local font_size_header, ts_h_w, ts_h_h, v_offset = getFontSize(wgt, header_txt, wgt.zone.w, wgt.zone.h / 4)
     log("val: font_size_header: %d, ts_h_h: %d, lastY: %d", wgt.zone.y, ts_h_h, last_y)
     lcd.drawText(wgt.zone.x, wgt.zone.y + last_y + v_offset, header_txt, font_size_header + wgt.options.TextColor)
@@ -314,7 +314,7 @@ local function refresh_widget_no_telem(wgt)
     lcd.setColor(CUSTOM_COLOR, lcd.RGB(0xA4A5A4))
 
     -- draw header
-    local header_txt = wgt.source_name .. " " .. wgt.options.Postfix
+    local header_txt = wgt.source_name .. " " .. wgt.options.Suffix
     local font_size_header, ts_h_w, ts_h_h, v_offset = getFontSize(wgt, header_txt, wgt.zone.w, wgt.zone.h / 4)
     log("val: font_size_header: %d, ts_h_h: %d, lastY: %d", wgt.zone.y, ts_h_h, last_y)
     lcd.drawText(wgt.zone.x, wgt.zone.y + last_y + v_offset, header_txt, font_size_header + CUSTOM_COLOR)
@@ -372,7 +372,7 @@ local function refresh(wgt, event, touchState)
     end
 
     -- widget load (debugging)
-    --lcd.drawText(wgt.zone.x + 10, wgt.zone.y, string.format("load: %d%%", getUsage()), FONT_6 + GREY) -- ???
+    -- lcd.drawText(wgt.zone.x + wgt.zone.w, wgt.zone.y, string.format("load: %d%%", getUsage()), FONT_6 + GREY + RIGHT) -- ???
 end
 
 return { name = app_name, options = options, create = create, update = update, background = background, refresh = refresh }
