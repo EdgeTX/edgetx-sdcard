@@ -107,6 +107,11 @@ local function run(event, touchState)
                 selWizard = 4
                 return launchWizard()
             end
+        elseif (touchX > iconX[5]) and (touchX < (iconX[5] + iconWidth)) then
+            if (touchY > iconY[5]) and (touchY < (iconY[5] + iconHeight)) then
+                selWizard = 5
+                return launchWizard()
+            end
         end
     elseif (event == EVT_MENU_LONG) then
         -- exit script
