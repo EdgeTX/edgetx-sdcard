@@ -38,6 +38,9 @@ local COL_Y = 2
 local COL_TYPE = 3
 local COL_VISIBLE = 4
 local COL_VALUE = 5
+local COL_VALUES = 6
+local COL_MIN = 6
+local COL_MAX = 7
 
 local STICK_NUMBER_AIL = 3
 local STICK_NUMBER_ELE = 1
@@ -49,11 +52,11 @@ local function addField(fields, step)
     local field = fields[current]
     local min, max
     if field[COL_TYPE] == VALUE then
-        min = field[6]
-        max = field[7]
+        min = field[COL_MIN]
+        max = field[COL_MAX]
     elseif field[COL_TYPE] == COMBO then
         min = 0
-        max = #(field[6]) - 1
+        max = #(field[COL_VALUES]) - 1
     end
     if (step < 0 and field[COL_VALUE] > min) or (step > 0 and field[COL_VALUE] < max) then
         field[COL_VALUE] = field[COL_VALUE] + step
@@ -98,8 +101,8 @@ local function redrawFieldsPage(fields, event)
             if field[COL_TYPE] == VALUE then
                 lcd.drawNumber(field[COL_X], field[COL_Y], field[COL_VALUE], LEFT + attr)
             elseif field[COL_TYPE] == COMBO then
-                if field[COL_VALUE] >= 0 and field[COL_VALUE] < #(field[6]) then
-                    lcd.drawText(field[COL_X], field[COL_Y], field[6][1 + field[COL_VALUE]], attr)
+                if field[COL_VALUE] >= 0 and field[COL_VALUE] < #(field[COL_VALUES]) then
+                    lcd.drawText(field[COL_X], field[COL_Y], field[COL_VALUES][1 + field[COL_VALUE]], attr)
                 end
             end
         end
@@ -125,15 +128,15 @@ local function runFieldsPage(fields, event)
         end
     elseif edit then
         if event == EVT_VIRTUAL_INC or event == EVT_VIRTUAL_INC_REPT then
-            addField(fields, 1)
+            addField(1)
         elseif event == EVT_VIRTUAL_DEC or event == EVT_VIRTUAL_DEC_REPT then
-            addField(fields, -1)
+            addField(-1)
         end
     else
         if event == EVT_VIRTUAL_NEXT then
-            selectField(fields, 1)
+            selectField(1)
         elseif event == EVT_VIRTUAL_PREV then
-            selectField(fields, -1)
+            selectField(-1)
         end
     end
     redrawFieldsPage(fields, event)
@@ -254,7 +257,7 @@ local function drawNextLine(text, chNum, text2)
         lcd.drawText(242, lineIndex, ": " .. text2, COLOR_THEME_PRIMARY1)
     end
     lineIndex = lineIndex + 22
-    end
+end
 
 local ConfigSummaryFields = {
     { 110, 250, COMBO, 1, 0, { "No, I need to change something", "Yes, all is well, create the plane !" } },
@@ -276,7 +279,7 @@ local function runConfigSummary(event)
     -- ail
     drawNextLine("Ail/Ele Right channel", ElevronFields[1][COL_VALUE])
     drawNextLine("Ail/Ele Left channel", ElevronFields[2][COL_VALUE])
-    drawNextLine("Expo", ElevronFields[3][COL_VALUE])
+    drawNextLine("Expo", nil, ElevronFields[3][COL_VALUE])
 
     -- motors
     if (MotorFields[1][COL_VALUE] == 1) then
@@ -285,7 +288,7 @@ local function runConfigSummary(event)
 
     -- arm switch
     if (MotorFields[3][COL_VALUE] == 1) then
-        local switchName = MotorFields[4][6][1 + MotorFields[4][COL_VALUE]]
+        local switchName = MotorFields[4][COL_VALUES][1 + MotorFields[4][COL_VALUE]]
         --drawNextLine("Arm switch", MotorFields[4][COL_VALUE])
         drawNextLine("Arm switch", nil, switchName)
     end
@@ -351,7 +354,7 @@ local function createModel(event)
     addMix(ElevronFields[2][COL_VALUE], MIXSRC_FIRST_INPUT + defaultChannel(STICK_NUMBER_AIL), "ail-L", 50)
 
     -- special function for arm switch
-    local switchName = MotorFields[4][6][1 + MotorFields[4][COL_VALUE]]
+    local switchName = MotorFields[4][COL_VALUES][1 + MotorFields[4][COL_VALUE]]
     local switchIndex = getSwitchIndex(switchName .. CHAR_DOWN)
     local channelIndex = MotorFields[2][COL_VALUE]
 
@@ -407,7 +410,7 @@ local function run(event, touchState)
         selectPage(-1)
     elseif event == EVT_TOUCH_FIRST and (touchState.x >= LCD_W - 40 and touchState.y >= 100 and touchState.y <= 160) then
         print(string.format("(%s) %s - %s", page, touchState.x, touchState.y))
-        if page ~= (#pages-2) then
+        if page ~= (#pages - 2) then
             selectPage(1)
         end
     end
