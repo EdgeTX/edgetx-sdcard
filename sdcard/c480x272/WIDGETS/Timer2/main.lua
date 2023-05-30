@@ -1,7 +1,7 @@
 -- A Timer version that fill better the widget area
 -- Offer Shmuely
--- Date: 2022
--- ver: 0.7
+-- Date: 2021-2023
+-- ver: 0.8
 
 local options = {
   { "TextColor", COLOR, YELLOW },
@@ -121,7 +121,7 @@ local function refresh(wgt, event, touchState)
 
   -- calculate timer info
   local timerInfo = getTimerHeader(wgt, t1)
-  timer_info_w, timer_info_h = lcd.sizeText(timerInfo, SMLSIZE)
+  local timer_info_w, timer_info_h = lcd.sizeText(timerInfo, SMLSIZE)
 
   -- calculate timer time
   local time_str, isNegative = formatTime(wgt, t1)
@@ -129,14 +129,16 @@ local function refresh(wgt, event, touchState)
   local zone_w = wgt.zone.w
   local zone_h = wgt.zone.h
 
+  local textColor
   if isNegative == true then
     textColor = RED
   else
     textColor = wgt.options.TextColor
   end
 
-  font_size_header = SMLSIZE
-  if (event ~= nil) then -- full screen
+  local font_size_header = SMLSIZE
+  if (event ~= nil) then
+    -- app mode (full screen)
     font_size = XXLSIZE
     font_size_header = DBLSIZE
     zone_w = 460
