@@ -205,8 +205,8 @@ end
 -- fields format : {[1]x, [2]y, [3]COMBO, [4]visible, [5]default, [6]{values}}
 -- fields format : {[1]x, [2]y, [3]VALUE, [4]visible, [5]default, [6]min, [7]max}
 local ElevronFields = {
-    { 170, 92, COMBO, 1, 0, { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8" } }, -- Ail/Ele Right channel
-    { 170, 122, COMBO, 1, 1, { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8" } }, -- Ail/Ele LEFT channel
+    { 170,  92, COMBO, 1, defaultChannel(STICK_NUMBER_AIL)  , { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8" } }, -- Ail/Ele Right channel
+    { 170, 122, COMBO, 1, defaultChannel(STICK_NUMBER_AIL)+1, { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8" } }, -- Ail/Ele LEFT channel
     { 170, 152, VALUE, 1, 30, 0, 100 }, -- expo
 }
 
