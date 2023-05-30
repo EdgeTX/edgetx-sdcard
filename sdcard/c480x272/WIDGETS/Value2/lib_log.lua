@@ -1,6 +1,6 @@
 local app_name, script_dir = ...
 
-local ENABLE_LOG_TO_CONSOLE = true
+local ENABLE_LOG_TO_CONSOLE = false
 local ENABLE_LOG_TO_FILE    = false
 
 
@@ -30,7 +30,7 @@ local log = {
         error = 5,
         fatal = 6,
         no_logs = 99
-    },
+    }
 }
 log.current_level = log.levels["info"] -- trace|debug|info|warn|error|fatal
 

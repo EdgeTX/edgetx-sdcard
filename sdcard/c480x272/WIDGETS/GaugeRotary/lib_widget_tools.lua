@@ -90,7 +90,7 @@ end
 function M.periodicReset(t)
     t.startTime = getTime();
     log("periodicReset()");
-    periodicGetElapsedTime(t)
+    M.periodicGetElapsedTime(t)
 end
 
 function M.getDurationMili(t)
@@ -241,6 +241,7 @@ function M.cleanInvalidCharFromGetFiledInfo(sourceName)
 
     return sourceName
 end
+
 ------------------------------------------------------------------------------------------------------
 
 function M.lcdSizeTextFixed(txt, font_size)
@@ -262,15 +263,36 @@ function M.lcdSizeTextFixed(txt, font_size)
 end
 
 ------------------------------------------------------------------------------------------------------
-------------------------------------------------------------------------------------------------------
 
-function M.drawBadgedText(txt, txtX, txtY, font_size, text_color, background_color)
-    local ts_w, ts_h = lcd.sizeText(txt, font_size)
+function M.drawBadgedText(txt, txtX, txtY, font_size, text_color, bg_color)
+    local ts_w, ts_h, v_offset = M.lcdSizeTextFixed(txt, font_size)
+    ts_h = ts_h + v_offset * 2
     local r = ts_h / 2
-    lcd.drawFilledCircle(txtX , txtY + r, r, background_color)
-    lcd.drawFilledCircle(txtX + ts_w , txtY + r, r, background_color)
-    lcd.drawFilledRectangle(txtX, txtY , ts_w, ts_h, background_color)
-    lcd.drawText(txtX, txtY, txt, font_size + text_color)
+    lcd.drawFilledCircle(txtX , txtY + r, r, bg_color)
+    lcd.drawFilledCircle(txtX + ts_w , txtY + r, r, bg_color)
+    lcd.drawFilledRectangle(txtX, txtY , ts_w, ts_h, bg_color)
+
+    lcd.drawText(txtX, txtY + v_offset, txt, font_size + text_color)
+
+    --lcd.drawRectangle(txtX, txtY , ts_w, ts_h, RED) -- dbg
+end
+
+function M.drawBadgedTextCenter(txt, txtX, txtY, font_size, text_color, bg_color)
+    local ts_w, ts_h, v_offset = M.lcdSizeTextFixed(txt, font_size)
+    ts_h = ts_h + v_offset * 2
+    local r = ts_h / 2
+    local x = txtX - ts_w/2
+    local y = txtY - ts_h/2
+    lcd.drawFilledCircle(x + r * 0.3, y + r, r, bg_color)
+    lcd.drawFilledCircle(x - r * 0.3 + ts_w , y + r, r, bg_color)
+    lcd.drawFilledRectangle(x, y, ts_w, ts_h, bg_color)
+
+    lcd.drawText(x, y + v_offset, txt, font_size + text_color)
+
+    -- dbg
+    --lcd.drawRectangle(x, y , ts_w, ts_h, RED) -- dbg
+    --lcd.drawLine(txtX-30, txtY, txtX+30, txtY, SOLID, RED) -- dbg
+    --lcd.drawLine(txtX, txtY-20, txtX, txtY+20, SOLID, RED) -- dbg
 end
 
 ------------------------------------------------------------------------------------------------------

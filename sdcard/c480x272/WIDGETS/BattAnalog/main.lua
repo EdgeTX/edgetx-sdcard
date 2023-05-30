@@ -1,20 +1,22 @@
----- #########################################################################
----- #                                                                       #
----- # Telemetry Widget script for FrSky Horus/RadioMaster TX16s             #
----- # Copyright (C) EdgeTX                                                  #
------#                                                                       #
----- # License GPLv2: http://www.gnu.org/licenses/gpl-2.0.html               #
----- #                                                                       #
----- # This program is free software; you can redistribute it and/or modify  #
----- # it under the terms of the GNU General Public License version 2 as     #
----- # published by the Free Software Foundation.                            #
----- #                                                                       #
----- # This program is distributed in the hope that it will be useful        #
----- # but WITHOUT ANY WARRANTY; without even the implied warranty of        #
----- # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         #
----- # GNU General Public License for more details.                          #
----- #                                                                       #
----- #########################################################################
+--[[
+#########################################################################
+#                                                                       #
+# Telemetry Widget script for FrSky Horus/RadioMaster TX16s             #
+# Copyright "Offer Shmuely"                                             #
+#                                                                       #
+# License GPLv2: http://www.gnu.org/licenses/gpl-2.0.html               #
+#                                                                       #
+# This program is free software; you can redistribute it and/or modify  #
+# it under the terms of the GNU General Public License version 2 as     #
+# published by the Free Software Foundation.                            #
+#                                                                       #
+# This program is distributed in the hope that it will be useful        #
+# but WITHOUT ANY WARRANTY; without even the implied warranty of        #
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         #
+# GNU General Public License for more details.                          #
+#                                                                       #
+#########################################################################
+
 
 -- This widget display a graphical representation of a Lipo/Li-ion (not other types) battery level,
 -- it will automatically detect the cell amount of the battery.
@@ -27,11 +29,16 @@
 --   * radio-master 168
 --   * OMP m2 heli
 
+]]
 
 -- Widget to display the levels of Lipo battery from single analog source
--- Offer Shmuely
--- Date: 2022
--- ver: 0.4
+-- Author : Offer Shmuely
+-- Date: 2021-2023
+-- ver: 0.5
+
+local app_name = "BattAnalog"
+
+local CELL_DETECTION_TIME = 8
 
 local _options = {
     { "Sensor"            , SOURCE, 0      }, -- default to 'A1'
@@ -91,6 +98,8 @@ local function update(wgt, options)
     end
 
     wgt.options = options
+    wgt.periodic1 = wgt.tools.periodicInit()
+    wgt.cell_detected = false
 
     -- use default if user did not set, So widget is operational on "select widget"
     if wgt.options.Sensor == 0 then
@@ -110,6 +119,8 @@ local function update(wgt, options)
             log(string.format("source_name: %s", source_name))
             wgt.options.source_name = source_name
         end
+    else
+        wgt.options.source_name = wgt.options.Sensor
     end
 
     wgt.options.Show_Total_Voltage = wgt.options.Show_Total_Voltage % 2 -- modulo due to bug that cause the value to be other than 0|1
@@ -132,11 +143,16 @@ local function create(zone, options)
         vMin = 0,
         vTotalLive = 0,
         vPercent = 0,
-        cellCount = 0,
+        cellCount = 1,
+        cell_detected = false,
         vCellLive = 0,
         mainValue = 0,
         secondaryValue = 0
     }
+
+    -- imports
+    wgt.ToolsClass = loadScript("/WIDGETS/" .. app_name .. "/lib_widget_tools.lua", "tcd")
+    wgt.tools = wgt.ToolsClass(app_name)
 
     update(wgt, options)
     return wgt
@@ -144,44 +160,16 @@ end
 
 -- clear old telemetry data upon reset event
 local function onTelemetryResetEvent(wgt)
+    log("telemetry reset event detected.")
     wgt.telemResetCount = wgt.telemResetCount + 1
 
     wgt.vTotalLive = 0
     wgt.vCellLive = 0
     wgt.vMin = 99
     wgt.vMax = 0
-    wgt.cellCount = 0
-end
-
-
--- workaround to detect telemetry-reset event, until a proper implementation on the lua interface will be created
--- this workaround assume that:
---   RSSI- is always going down
---   RSSI- is reset on the C++ side when a telemetry-reset is pressed by user
---   widget is calling this func on each refresh/background
--- on event detection, the function onTelemetryResetEvent() will be trigger
---
-local function detectResetEvent(wgt)
-
-    local currMinRSSI = getValue('RSSI-')
-    if (currMinRSSI == nil) then
-        return
-    end
-    if (currMinRSSI == wgt.telemResetLowestMinRSSI) then
-        return
-    end
-
-    if (currMinRSSI < wgt.telemResetLowestMinRSSI) then
-        -- rssi just got lower, record it
-        wgt.telemResetLowestMinRSSI = currMinRSSI
-        return
-    end
-
-    -- reset telemetry detected
-    wgt.telemResetLowestMinRSSI = 101
-
-    -- notify event
-    onTelemetryResetEvent(wgt)
+    wgt.cellCount = 1
+    wgt.cell_detected = false
+    --wgt.tools.periodicStart(wgt.periodic1, CELL_DETECTION_TIME * 1000)
 end
 
 --- This function return the percentage remaining in a single Lipo cel
@@ -227,6 +215,7 @@ local function getCellPercent(wgt, cellValue)
     return result
 end
 
+-- Only invoke this function once.
 local function calcCellCount(wgt, singleVoltage)
     if singleVoltage     < 4.3  then return 1
     elseif singleVoltage < 8.6  then return 2
@@ -245,6 +234,7 @@ local function calcCellCount(wgt, singleVoltage)
     log("no match found" .. singleVoltage)
     return 1
 end
+
 
 --- This function returns a table with cels values
 local function calculateBatteryData(wgt)
@@ -279,13 +269,24 @@ local function calculateBatteryData(wgt)
         return
     end
 
-    local newCellCount = calcCellCount(wgt, v)
-    log("newCellCount: " .. newCellCount)
+    if (wgt.cell_detected == true) then
+        log("permanent cellCount: " .. wgt.cellCount)
+    else
+        local newCellCount = calcCellCount(wgt, v)
+        if (wgt.tools.periodicHasPassed(wgt.periodic1)) then
+            wgt.cell_detected = true
+            wgt.cellCount = newCellCount
+        else
+            local duration_passed = wgt.tools.periodicGetElapsedTime(wgt.periodic1)
+            log(string.format("detecting cells: %ss, %d/%d msec", newCellCount, duration_passed, wgt.tools.getDurationMili(wgt.periodic1)))
 
-    -- this is necessary for simu where cell-count can change
-    if newCellCount ~= wgt.cellCount then
-        wgt.vMin = 99
-        wgt.vMax = 0
+            -- this is necessary for simu where cell-count can change
+            if newCellCount ~= wgt.cellCount then
+                wgt.vMin = 99
+                wgt.vMax = 0
+            end
+            wgt.cellCount = newCellCount
+        end
     end
 
     -- calc highest of all cells
@@ -293,7 +294,6 @@ local function calculateBatteryData(wgt)
         wgt.vMax = v
     end
 
-    wgt.cellCount = newCellCount
     wgt.vTotalLive = v
     wgt.vCellLive = wgt.vTotalLive / wgt.cellCount
     wgt.vPercent = getCellPercent(wgt, wgt.vCellLive)
@@ -320,6 +320,10 @@ local function calculateBatteryData(wgt)
     end
 
     wgt.isDataAvailable = true
+    if wgt.cell_detected == true then
+        wgt.tools.periodicStart(wgt.periodic1, CELL_DETECTION_TIME * 1000)
+    end
+
 
 end
 
@@ -484,6 +488,10 @@ end
 
 --- Zone size: 460x252 - app mode (full screen)
 local function refreshAppMode(wgt, event, touchState)
+    if (touchState and touchState.tapCount == 2) or (event and event == EVT_VIRTUAL_EXIT) then
+        lcd.exitFullScreen()
+    end
+
     local x = 0
     local y = 0
     local w = LCD_W
@@ -511,11 +519,10 @@ end
 
 -- This function allow recording of lowest cells when widget is in background
 local function background(wgt)
-    if (wgt == nil) then
-        return
-    end
+    if (wgt == nil) then return end
 
-    detectResetEvent(wgt)
+    wgt.tools.detectResetEvent(wgt, onTelemetryResetEvent)
+
     calculateBatteryData(wgt)
 end
 
@@ -527,8 +534,8 @@ local function refresh(wgt, event, touchState)
     if (wgt.zone == nil)    then return end
     if (wgt.options.Show_Total_Voltage == nil) then return end
 
-    detectResetEvent(wgt)
-    calculateBatteryData(wgt)
+    background(wgt)
+
     if wgt.isDataAvailable then
         wgt.no_telem_blink = 0
         wgt.text_color = wgt.options.Color
@@ -538,8 +545,11 @@ local function refresh(wgt, event, touchState)
     end
 
     if (event ~= nil) then
-      refreshAppMode(wgt, event, touchState)
-    elseif wgt.zone.w > 380 and wgt.zone.h > 165 then refreshZoneXLarge(wgt)
+        refreshAppMode(wgt, event, touchState)
+        return
+    end
+
+    if     wgt.zone.w > 380 and wgt.zone.h > 165 then refreshZoneXLarge(wgt)
     elseif wgt.zone.w > 180 and wgt.zone.h > 145 then refreshZoneLarge(wgt)
     elseif wgt.zone.w > 170 and wgt.zone.h >  65 then refreshZoneMedium(wgt)
     elseif wgt.zone.w > 150 and wgt.zone.h >  28 then refreshZoneSmall(wgt)
@@ -548,4 +558,4 @@ local function refresh(wgt, event, touchState)
 
 end
 
-return { name = "BattAnalog", options = _options, create = create, update = update, background = background, refresh = refresh }
+return { name = app_name, options = _options, create = create, update = update, background = background, refresh = refresh }
