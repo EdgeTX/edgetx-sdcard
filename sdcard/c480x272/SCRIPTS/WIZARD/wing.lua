@@ -345,10 +345,10 @@ local function createModel(event)
     end
 
     -- Ailerons
-    addMix(ElevronFields[1][COL_VALUE], MIXSRC_FIRST_INPUT + defaultChannel(STICK_NUMBER_ELE), "ele-R", -50)
-    addMix(ElevronFields[1][COL_VALUE], MIXSRC_FIRST_INPUT + defaultChannel(STICK_NUMBER_AIL), "ail-R", 50)
-    addMix(ElevronFields[2][COL_VALUE], MIXSRC_FIRST_INPUT + defaultChannel(STICK_NUMBER_ELE), "ele-L", -50)
-    addMix(ElevronFields[2][COL_VALUE], MIXSRC_FIRST_INPUT + defaultChannel(STICK_NUMBER_AIL), "ail-L", -50)
+    addMix(ElevronFields[1][COL_VALUE], MIXSRC_FIRST_INPUT + defaultChannel(STICK_NUMBER_ELE), "ele-R", 50)
+    addMix(ElevronFields[1][COL_VALUE], MIXSRC_FIRST_INPUT + defaultChannel(STICK_NUMBER_AIL), "ail-R", -50)
+    addMix(ElevronFields[2][COL_VALUE], MIXSRC_FIRST_INPUT + defaultChannel(STICK_NUMBER_ELE), "ele-L", 50)
+    addMix(ElevronFields[2][COL_VALUE], MIXSRC_FIRST_INPUT + defaultChannel(STICK_NUMBER_AIL), "ail-L", 50)
 
     -- special function for arm switch
     local switchName = MotorFields[4][6][1 + MotorFields[4][COL_VALUE]]
