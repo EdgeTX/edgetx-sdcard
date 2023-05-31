@@ -17,6 +17,7 @@
 
 -- Author: Offer Shmuely
 -- Date: 2023
+-- version: 1.0
 
 local VALUE = 0
 local COMBO = 1
@@ -128,15 +129,15 @@ local function runFieldsPage(fields, event)
         end
     elseif edit then
         if event == EVT_VIRTUAL_INC or event == EVT_VIRTUAL_INC_REPT then
-            addField(1)
+            addField(fields, 1)
         elseif event == EVT_VIRTUAL_DEC or event == EVT_VIRTUAL_DEC_REPT then
-            addField(-1)
+            addField(fields, -1)
         end
     else
         if event == EVT_VIRTUAL_NEXT then
-            selectField(1)
+            selectField(fields, 1)
         elseif event == EVT_VIRTUAL_PREV then
-            selectField(-1)
+            selectField(fields, -1)
         end
     end
     redrawFieldsPage(fields, event)
