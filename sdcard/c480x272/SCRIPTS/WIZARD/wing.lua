@@ -196,7 +196,6 @@ local function runMotorConfig(event)
             lcd.drawFilledRectangle(160, 160, 60, 25, TEXT_BGCOLOR)
             MotorFields[4][COL_VISIBLE] = 1
         end
-
     end
 
     local result = runFieldsPage(MotorFields, event)
@@ -290,7 +289,6 @@ local function runConfigSummary(event)
     -- arm switch
     if (MotorFields[3][COL_VALUE] == 1) then
         local switchName = MotorFields[4][COL_VALUES][1 + MotorFields[4][COL_VALUE]]
-        --drawNextLine("Arm switch", MotorFields[4][COL_VALUE])
         drawNextLine("Arm switch", nil, switchName)
     end
 
@@ -340,8 +338,8 @@ local function createModel(event)
     model.deleteMixes()
 
     -- expo
-    addExpo(0, 30)
-    addExpo(1, 30)
+    addExpo(0, ElevronFields[3][COL_VALUE])
+    addExpo(1, ElevronFields[3][COL_VALUE])
 
     -- motor
     if (MotorFields[1][COL_VALUE] == 1) then
