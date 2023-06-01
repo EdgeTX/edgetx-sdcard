@@ -1,6 +1,21 @@
+semver: 2.9.0
 header: 
    name: "Plane"
-   bitmap: ""
+   bitmap: "plane.jpg"
+   labels: ""
+timers: 
+   0:
+      start: 0
+      swtch: "NONE"
+      value: 0
+      mode: THR
+      countdownBeep: 0
+      minuteBeep: 1
+      persistent: 0
+      countdownStart: 0
+      showElapsed: 0
+      extraHaptic: 0
+      name: ""
 telemetryProtocol: 0
 thrTrim: 0
 noGlobalFunctions: 0
@@ -13,146 +28,138 @@ extendedLimits: 0
 extendedTrims: 0
 throttleReversed: 0
 enableCustomThrottleWarning: 0
+disableTelemetryWarning: 0
+showInstanceIds: 0
 customThrottleWarningPosition: 0
 beepANACenter: 0
-mixData: 
- -
-   weight: 100
-   destCh: 0
-   srcRaw: I0
-   carryTrim: 0
-   mixWarn: 0
-   mltpx: ADD
-   offset: 0
-   swtch: "NONE"
-   flightModes: 000000000
-   delayUp: 0
-   delayDown: 0
-   speedUp: 0
-   speedDown: 0
-   name: ""
- -
-   weight: 100
-   destCh: 1
-   srcRaw: I1
-   carryTrim: 0
-   mixWarn: 0
-   mltpx: ADD
-   offset: 0
-   swtch: "NONE"
-   flightModes: 000000000
-   delayUp: 0
-   delayDown: 0
-   speedUp: 0
-   speedDown: 0
-   name: ""
- -
-   weight: 100
-   destCh: 2
-   srcRaw: I2
-   carryTrim: 0
-   mixWarn: 0
-   mltpx: ADD
-   offset: 0
-   swtch: "NONE"
-   flightModes: 000000000
-   delayUp: 0
-   delayDown: 0
-   speedUp: 0
-   speedDown: 0
-   name: ""
- -
-   weight: 100
-   destCh: 3
-   srcRaw: I3
-   carryTrim: 0
-   mixWarn: 0
-   mltpx: ADD
-   offset: 0
-   swtch: "NONE"
-   flightModes: 000000000
-   delayUp: 0
-   delayDown: 0
-   speedUp: 0
-   speedDown: 0
-   name: ""
-expoData: 
- -
-   mode: 3
-   scale: 0
-   srcRaw: Rud
-   carryTrim: 0
-   chn: 0
-   swtch: "NONE"
-   flightModes: 000000000
-   weight: 100
-   name: ""
-   offset: 0
-   curve: 
-      type: 1
-      value: 0
- -
-   mode: 3
-   scale: 0
-   srcRaw: Ele
-   carryTrim: 0
-   chn: 1
-   swtch: "NONE"
-   flightModes: 000000000
-   weight: 100
-   name: ""
-   offset: 0
-   curve: 
-      type: 1
-      value: 0
- -
-   mode: 3
-   scale: 0
-   srcRaw: Thr
-   carryTrim: 0
-   chn: 2
-   swtch: "NONE"
-   flightModes: 000000000
-   weight: 100
-   name: ""
-   offset: 0
-   curve: 
-      type: 1
-      value: 0
- -
-   mode: 3
-   scale: 0
-   srcRaw: Ail
-   carryTrim: 0
-   chn: 3
-   swtch: "NONE"
-   flightModes: 000000000
-   weight: 100
-   name: ""
-   offset: 0
-   curve: 
-      type: 1
-      value: 0
+logicalSw: 
+   0:
+      func: FUNC_VNEG
+      def: "tele(0),365"
+      andsw: "NONE"
+      delay: 0
+      duration: 0
+customFn: 
+   0:
+      swtch: "SF2"
+      func: OVERRIDE_CHANNEL
+      def: "2,-100,1"
+   1:
+      swtch: "L1"
+      func: PLAY_VALUE
+      def: "tele(0),7"
 thrTraceSrc: Thr
 switchWarningState: AuBuCuDuEuFuGuHu
 rssiSource: none
+rfAlarms: 
+   warning: 45
+   critical: 42
 thrTrimSw: 0
 potsWarnMode: WARN_OFF
 jitterFilter: GLOBAL
-inputNames: 
-   0:
-      val: "Rud"
-   1:
-      val: "Ele"
-   2:
-      val: "Thr"
-   3:
-      val: "Ail"
 potsWarnEnabled: 0
+telemetrySensors: 
+   0:
+      id1: 
+         id: 0
+      id2: 
+         formula: FORMULA_CELL
+      label: "cell"
+      subId: 0
+      type: TYPE_CALCULATED
+      unit: 1
+      prec: 2
+      autoOffset: 0
+      filter: 0
+      logs: 0
+      persistent: 0
+      onlyPositive: 0
+      cfg: 
+         cell: 
+            source: 6
+            index: 0
+   5:
+      id1: 
+         id: 768
+      id2: 
+         instance: 1
+      label: "Cels"
+      subId: 0
+      type: TYPE_CUSTOM
+      unit: 38
+      prec: 2
+      autoOffset: 0
+      filter: 0
+      logs: 1
+      persistent: 0
+      onlyPositive: 0
+      cfg: 
+         param: 0
 screenData: 
    0:
       LayoutId: "Layout2P1"
       layoutData: 
+         zones: 
+            0:
+               widgetName: "ModelBmp"
+               widgetData: 
+                  options: 
+                     0:
+                        type: Color
+                        value: 
+                           color: 0x000000
+                     2:
+                        type: Bool
+                        value: 
+                           boolValue: 0
+                     3:
+                        type: Color
+                        value: 
+                           color: 0x000000
+                     4:
+                        type: Bool
+                        value: 
+                           boolValue: 1
+            1:
+               widgetName: "Timer2"
+               widgetData: 
+                  options: 
+                     0:
+                        type: Color
+                        value: 
+                           color: 0xF8FC00
+                     1:
+                        type: Signed
+                        value: 
+                           signedValue: 1
+                     2:
+                        type: Bool
+                        value: 
+                           boolValue: 0
+            2:
+               widgetName: "BattCheck"
+               widgetData: 
+                  options: 
+                     0:
+                        type: Source
+                        value: 
+                           source: NONE
+                     1:
+                        type: Color
+                        value: 
+                           color: 0xF8FC00
+                     2:
+                        type: Bool
+                        value: 
+                           boolValue: 0
+                     3:
+                        type: Bool
+                        value: 
+                           boolValue: 1
+                     4:
+                        type: Bool
+                        value: 
+                           boolValue: 0
          options: 
             0:
                type: Bool
@@ -161,11 +168,11 @@ screenData:
             1:
                type: Bool
                value: 
-                  boolValue: 1
+                  boolValue: 0
             2:
                type: Bool
                value: 
-                  boolValue: 1
+                  boolValue: 0
             3:
                type: Bool
                value: 
@@ -174,5 +181,51 @@ screenData:
                type: Bool
                value: 
                   boolValue: 0
+topbarData: 
+   zones: 
+      2:
+         widgetName: "Flights"
+         widgetData: 
+            options: 
+               0:
+                  type: Source
+                  value: 
+                     source: SF
+               1:
+                  type: Source
+                  value: 
+                     source: ch(2)
+               2:
+                  type: Signed
+                  value: 
+                     signedValue: 30
+               3:
+                  type: Color
+                  value: 
+                     color: 0xF8E440
+               4:
+                  type: Bool
+                  value: 
+                     boolValue: 0
+      3:
+         widgetName: "BattAnalog"
+         widgetData: 
+            options: 
+               0:
+                  type: Source
+                  value: 
+                     source: TX_VOLTAGE
+               1:
+                  type: Color
+                  value: 
+                     color: 0xF8FC00
+               2:
+                  type: Bool
+                  value: 
+                     boolValue: 1
+               3:
+                  type: Bool
+                  value: 
+                     boolValue: 1
 view: 0
 modelRegistrationID: ""
