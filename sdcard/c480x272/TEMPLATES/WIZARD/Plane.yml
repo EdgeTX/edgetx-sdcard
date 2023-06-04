@@ -5,7 +5,7 @@ header:
    labels: ""
 timers: 
    0:
-      start: 0
+      start: 360
       swtch: "NONE"
       value: 0
       mode: THR
