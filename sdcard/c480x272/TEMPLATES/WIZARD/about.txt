@@ -1,2 +1,2 @@
-Simple model templates based on official wizard's
-(use Lua Wizard scripts to configure the models)
+Official model templates wizard's
+(use Lua Wizard scripts to create new models)
