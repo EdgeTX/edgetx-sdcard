@@ -22,7 +22,7 @@
 local VALUE = 0
 local COMBO = 1
 
-local edit = false
+local is_edit = false
 local page = 1
 local current = 1
 local pages = {}
@@ -38,6 +38,17 @@ local STICK_NUMBER_AIL = 3
 local STICK_NUMBER_ELE = 1
 local STICK_NUMBER_THR = 2
 local STICK_NUMBER_RUD = 0
+
+local defaultChannel_AIL = defaultChannel(STICK_NUMBER_AIL)+1
+local defaultChannel_ELE = defaultChannel(STICK_NUMBER_ELE)+1
+local defaultChannel_THR = defaultChannel(STICK_NUMBER_THR)+1
+local defaultChannel_RUD = defaultChannel(STICK_NUMBER_RUD)+1
+
+local defaultChannel_0_AIL = defaultChannel(STICK_NUMBER_AIL)
+local defaultChannel_0_ELE = defaultChannel(STICK_NUMBER_ELE)
+local defaultChannel_0_THR = defaultChannel(STICK_NUMBER_THR)
+local defaultChannel_0_RUD = defaultChannel(STICK_NUMBER_RUD)
+
 
 -- Change display attribute to current field
 local function addField(fields, step)
@@ -61,7 +72,7 @@ local function selectPage(step)
         return
     end
     page = 1 + ((page + step - 1 + #pages) % #pages)
-    edit = false
+    is_edit = false
     current = 1
     print(string.format("page: (%s)", page))
 
@@ -77,9 +88,62 @@ local function selectField(fields, step)
     print(string.format("selectField-end: current: %s", current))
 end
 
+-- better font names
+local FONT_38 = XXLSIZE -- 38px
+local FONT_16 = DBLSIZE -- 16px
+local FONT_12 = MIDSIZE -- 12px
+local FONT_8 = 0 -- Default 8px
+local FONT_6 = SMLSIZE -- 6px
+
+local function lcdSizeTextFixed(txt, font_size)
+    local ts_w, ts_h = lcd.sizeText(txt, font_size)
+
+    local v_offset = 0
+    if font_size == FONT_38 then
+        v_offset = -11
+    elseif font_size == FONT_16 then
+        v_offset = -5
+    elseif font_size == FONT_12 then
+        v_offset = -4
+    elseif font_size == FONT_8 then
+        v_offset = -3
+    elseif font_size == FONT_6 then
+        v_offset = 0
+    end
+    return ts_w, ts_h, v_offset
+end
+
+
+local function drawBadgedText(txt, field, font_size, is_selected, is_edit)
+    local ts_w, ts_h, v_offset = lcdSizeTextFixed(txt, font_size)
+    ts_h = 10 + ts_h + v_offset * 2
+    local r = ts_h / 2
+
+    if (field.w > 0) then
+        ts_w = field.w
+    else
+        if (ts_w < 30) then
+            ts_w = 30
+        end
+    end
+    local bg_color = WHITE
+    if (is_selected) then
+        bg_color = GREEN
+    end
+    lcd.drawFilledCircle(field.x , field.y + r, r, bg_color)
+    lcd.drawFilledCircle(field.x + ts_w , field.y + r, r, bg_color)
+    lcd.drawFilledRectangle(field.x, field.y , ts_w, ts_h, bg_color)
+    local attr = 0
+    if (is_selected and is_edit) then
+        attr = attr + BLINK
+    end
+
+    lcd.drawText(field.x, field.y + v_offset + 5, txt, font_size + BLACK + attr)
+end
+
+
 -- Redraw the current page
 local function redrawFieldsPage(fields, event)
-
     for index = 1, 10, 1 do
         local field = fields[index]
         if field == nil then
@@ -87,15 +151,17 @@ local function redrawFieldsPage(fields, event)
         end
 
         -- print(string.format("redrawFieldsPage [%s] field.x=%s, y=%s, is_visible=%s", field.id, field.x, field.y, field.is_visible))
-        local attr = current == (index) and ((edit == true and BLINK or 0) + INVERS) or 0
+        local attr = current == (index) and ((is_edit == true and BLINK or 0) + INVERS) or 0
+        local is_selected = (current == (index))
         attr = attr + COLOR_THEME_PRIMARY1
-
         if field.is_visible == 1 then
             if field.type == VALUE then
-                lcd.drawNumber(field.x, field.y, field.value, LEFT + attr)
+                --lcd.drawNumber(field.x, field.y, field.value, LEFT + attr)
+                drawBadgedText(field.value, field, FONT_8, is_selected, is_edit)
             elseif field.type == COMBO then
                 if field.value >= 0 and field.value < #(field.avail_values) then
-                    lcd.drawText(field.x, field.y, field.avail_values[1 + field.value], attr)
+                    --lcd.drawText(field.x, field.y, field.avail_values[1 + field.value], attr)
+                    drawBadgedText(field.avail_values[1 + field.value], field, FONT_8, is_selected, is_edit)
                 end
             end
         end
@@ -114,12 +180,12 @@ local function runFieldsPage(fields, event)
     elseif event == EVT_VIRTUAL_ENTER then
         -- toggle editing/selecting current field
         if fields[current].value ~= nil then
-            edit = not edit
-            if edit == false then
+            is_edit = not is_edit
+            if is_edit == false then
                 updateField(fields[current])
             end
         end
-    elseif edit then
+    elseif is_edit then
         if event == EVT_VIRTUAL_INC or event == EVT_VIRTUAL_INC_REPT then
             addField(fields, 1)
         elseif event == EVT_VIRTUAL_DEC or event == EVT_VIRTUAL_DEC_REPT then
@@ -146,6 +212,7 @@ local function setFieldsVisible(fields, ...)
     end
 end
 
+
 -- draws one letter mark
 local function drawMark(x, y, name)
     lcd.drawBitmap(ImgMarkBg, x, y)
@@ -158,19 +225,18 @@ local function drawTitle(txt)
 end
 
 
-
 local MotorFields = {
-    have_a_motor  = {id='have_a_motor' , x=170, y=50 , type=COMBO, is_visible=1, value=1                                , avail_values={ "No", "Yes" } },
-    motor_channel = {id='motor_channel', x=170, y=80 , type=COMBO, is_visible=1, value=defaultChannel(STICK_NUMBER_THR) , avail_values={ "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8" } },
-    is_arm_switch = {id='is_arm_switch', x=170, y=130, type=COMBO, is_visible=1, value=1                                , avail_values={ "No", "Yes" } },
-    arm_channel   = {id='arm_channel'  , x=170, y=160, type=COMBO, is_visible=1, value=5                                , avail_values={ "SA", "SB", "SC", "SD", "SE", "SF", "SG", "SH" } },
+    is_motor   = { id='is_motor'  , x=170, y=50 , w=0, type=COMBO, is_visible=1, value=1                   , avail_values={ "No", "Yes" } },
+    motor_ch   = { id='motor_ch'  , x=170, y=90 , w=0, type=COMBO, is_visible=1, value=defaultChannel_0_THR, avail_values={ "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8" } },
+    is_arm     = { id='is_arm'    , x=170, y=130, w=0, type=COMBO, is_visible=1, value=1                   , avail_values={ "No", "Yes" } },
+    arm_switch = { id='arm_switch', x=230, y=130, w=0, type=COMBO, is_visible=1, value=5                   , avail_values={ "SA", "SB", "SC", "SD", "SE", "SF", "SG", "SH" } },
     page = {}
 }
 MotorFields.page = {
-    MotorFields.have_a_motor,
-    MotorFields.motor_channel,
-    MotorFields.is_arm_switch,
-    MotorFields.arm_channel
+    MotorFields.is_motor,
+    MotorFields.motor_ch,
+    MotorFields.is_arm,
+    MotorFields.arm_switch
 }
 
 local ImgEngine
@@ -186,26 +252,22 @@ local function runMotorConfig(event)
 
     drawTitle("Motor Settings")
 
-    lcd.drawText(40, 50, "Have a motor?", COLOR_THEME_PRIMARY1)
-    lcd.drawFilledRectangle(160, 45, 60, 25, TEXT_BGCOLOR)
-    print(string.format("111=%s", MotorFields.have_a_motor.x))
+    lcd.drawText(40, MotorFields.is_motor.y, "Have a motor?", COLOR_THEME_PRIMARY1)
+    print(string.format("111=%s", MotorFields.is_motor.x))
 
-    MotorFields.motor_channel.is_visible = 0
-    MotorFields.is_arm_switch.is_visible = 0
-    MotorFields.arm_channel.is_visible = 0
-    if MotorFields.have_a_motor.value == 1 then
-        lcd.drawText(40, 80, "Motor channel", COLOR_THEME_PRIMARY1)
-        lcd.drawFilledRectangle(160, 80, 60, 25, TEXT_BGCOLOR)
-        MotorFields.motor_channel.is_visible = 1
+    MotorFields.motor_ch.is_visible = 0
+    MotorFields.is_arm.is_visible = 0
+    MotorFields.arm_switch.is_visible = 0
+    if MotorFields.is_motor.value == 1 then
+        lcd.drawText(40, MotorFields.motor_ch.y, "Motor channel", COLOR_THEME_PRIMARY1)
+        MotorFields.motor_ch.is_visible = 1
 
-        lcd.drawText(40, 130, "Arm switch?", COLOR_THEME_PRIMARY1)
-        lcd.drawFilledRectangle(160, 130, 60, 25, TEXT_BGCOLOR)
-        MotorFields.is_arm_switch.is_visible = 1
-        MotorFields.arm_channel.is_visible = 0
-        if MotorFields.is_arm_switch.value == 1 then
-            lcd.drawText(40, 160, "Arm switch", COLOR_THEME_PRIMARY1)
-            lcd.drawFilledRectangle(160, 160, 60, 25, TEXT_BGCOLOR)
-            MotorFields.arm_channel.is_visible = 1
+        lcd.drawText(40, MotorFields.is_arm.y, "Safety Switch", COLOR_THEME_PRIMARY1)
+        MotorFields.is_arm.is_visible = 1
+        if MotorFields.is_arm.value == 1 then
+            MotorFields.arm_switch.is_visible = 1
+        else
+            MotorFields.arm_switch.is_visible = 0
         end
     end
 
@@ -216,20 +278,24 @@ end
 -- fields format : {[1]x, [2]y, [3]COMBO, [4]visible, [5]default, [6]{values}}
 -- fields format : {[1]x, [2]y, [3]VALUE, [4]visible, [5]default, [6]min, [7]max}
 local ElevronFields = {
-    ail_ch_r = {id='ail_ch_r', x=170, y=92 , type=COMBO, is_visible=1, value=defaultChannel(STICK_NUMBER_AIL)  , avail_values={ "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8" } }, -- Ail1 chan
-    ail_ch_l = {id='ail_ch_l', x=170, y=122, type=COMBO, is_visible=1, value=defaultChannel(STICK_NUMBER_AIL)+1, avail_values={ "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8" } }, -- Ail2 chan
-    expo = {name='expo', x=170,y=152, type=VALUE, is_visible=1, value=30, min=0, max=100 }, -- expo
+    ail_ch_r     = {id='ail_ch_r'    , x=180, y=80 , w=0, type=COMBO, is_visible=1, value=defaultChannel_0_AIL  , avail_values={ "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8" } }, -- Ail1 chan
+    ail_ch_l     = {id='ail_ch_l'    , x=180, y=110, w=0, type=COMBO, is_visible=1, value=defaultChannel_0_AIL+1, avail_values={ "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8" } }, -- Ail2 chan
+    expo         = {id='expo'        , x=180, y=150, w=0, type=VALUE, is_visible=1, value=30, min=0, max=100 }  , -- expo
+    is_dual_rate = {id='is_dual_rate', x=180, y=180, w=0, type=COMBO, is_visible=1, value=1                     , avail_values={ "No", "Yes" } },
+    dr_switch    = {id='dr_switch'   , x=180, y=210, w=0, type=COMBO, is_visible=1, value=2                     , avail_values={ "SA", "SB", "SC", "SD", "SE", "SF", "SG", "SH" } },
     page={}
 }
 ElevronFields.page = {
     ElevronFields.ail_ch_r,
     ElevronFields.ail_ch_l,
     ElevronFields.expo,
+    ElevronFields.is_dual_rate,
+    ElevronFields.dr_switch,
 }
 local ImgAilR
 local ImgAilL
 
-local function runAilConfig(event)
+local function runElevronConfig(event)
     lcd.clear()
     if ImgAilR == nil then
         ImgAilR = Bitmap.open("img/wing/rail.png")
@@ -240,27 +306,23 @@ local function runAilConfig(event)
     lcd.drawBitmap(ImgPageDn, 455, 95)
     lcd.drawBitmap(ImgPlane, 230, 150)
 
-    drawTitle("Aileron Setup")
+    drawTitle("Elevron Setup")
 
-    --lcd.drawBitmap(ImgAilR, 324, 123)
-    --lcd.drawBitmap(ImgAilL, 275, 210)
-    --drawMark(362, 132, "R")
-    --drawMark(302, 227, "L")
+    lcd.drawText(40, 50, "Ailerons channels", COLOR_THEME_PRIMARY1)
 
-    lcd.drawText(40, 60, "Ailerons channels", COLOR_THEME_PRIMARY1)
-
-    lcd.drawFilledRectangle(160, 90, 60, 25, TEXT_BGCOLOR)
-    lcd.drawText(40, 92, "Right Channel", COLOR_THEME_PRIMARY1)
-    lcd.drawFilledRectangle(160, 120, 60, 25, TEXT_BGCOLOR)
-    lcd.drawText(40, 122, "Left Channel", COLOR_THEME_PRIMARY1)
+    lcd.drawText(40, 80, "Right Channel", COLOR_THEME_PRIMARY1)
+    lcd.drawText(40, 110, "Left Channel", COLOR_THEME_PRIMARY1)
 
     lcd.drawText(40, 150, "Expo", COLOR_THEME_PRIMARY1)
-    lcd.drawFilledRectangle(160, 150, 60, 25, TEXT_BGCOLOR)
 
-    --print(string.format("defaultChannel(STICK_NUMBER_RUD)=%d", defaultChannel(STICK_NUMBER_RUD)))
-    --print(string.format("defaultChannel(STICK_NUMBER_ELE)=%d", defaultChannel(STICK_NUMBER_ELE)))
-    --print(string.format("defaultChannel(STICK_NUMBER_THR)=%d", defaultChannel(STICK_NUMBER_THR)))
-    --print(string.format("defaultChannel(STICK_NUMBER_AIL)=%d", defaultChannel(STICK_NUMBER_AIL)))
+    lcd.drawText(40, ElevronFields.is_dual_rate.y, "Dual-Rate?", COLOR_THEME_PRIMARY1)
+    if ElevronFields.is_dual_rate.value == 1 then
+        lcd.drawText(40, ElevronFields.is_dual_rate.y, "Dual-Rate?", COLOR_THEME_PRIMARY1)
+        lcd.drawText(40, ElevronFields.dr_switch.y, "Dual-Rate switch", COLOR_THEME_PRIMARY1)
+        ElevronFields.dr_switch.is_visible = 1
+    else
+        ElevronFields.dr_switch.is_visible = 0
+    end
 
     local result = runFieldsPage(ElevronFields.page, event)
     return result
@@ -274,11 +336,11 @@ local function drawNextLine(text, chNum, text2)
     else
         lcd.drawText(242, lineIndex, ": " .. text2, COLOR_THEME_PRIMARY1)
     end
-    lineIndex = lineIndex + 22
+    lineIndex = lineIndex + 20
 end
 
 local ConfigSummaryFields = {
-    ack= {name='ack', x=110, y=250, type=COMBO, is_visible=1, value=0, avail_values={ "No, I need to change something", "Yes, all is well, create the plane !" } },
+    ack= {id='ack', x=110, y=250, w=0, type=COMBO, is_visible=1, value=0, avail_values={ "No, I need to change something", "Yes, all is well, create the plane !" } },
 }
 ConfigSummaryFields.page = {
     ConfigSummaryFields.ack
@@ -306,19 +368,19 @@ local function runConfigSummary(event)
     drawNextLine("Expo", nil, ElevronFields.expo.value)
 
     -- motors
-    if (MotorFields.have_a_motor.value == 1) then
-        drawNextLine("Motor channel", MotorFields.motor_channel.value)
+    if (MotorFields.is_motor.value == 1) then
+        drawNextLine("Motor channel", MotorFields.motor_ch.value)
     end
 
     -- arm switch
-    if (MotorFields.is_arm_switch.value == 1) then
-        local switchName = MotorFields.arm_channel.avail_values[1 + MotorFields.arm_channel.value]
+    if (MotorFields.is_arm.value == 1) then
+        local switchName = MotorFields.arm_switch.avail_values[1 + MotorFields.arm_switch.value]
         drawNextLine("Arm switch", nil, switchName)
     end
 
     local result = runFieldsPage(ConfigSummaryFields.page, event)
 
-    if (ConfigSummaryFields.ack.value == 1 and edit == false) then
+    if (ConfigSummaryFields.ack.value == 1 and is_edit == false) then
         selectPage(1)
     end
     return result
@@ -338,20 +400,21 @@ local function addMix(channel, input, name, weight, index)
     model.insertMix(channel, index, mix)
 end
 
--- add expo
-local function addExpo(channel, expoWeight)
+local function updateInputLine(channel, lineNo, expoWeight, weight, switch_name_position)
     local inInfo = model.getInput(channel, 0)
-    --print(string.format("curveType=%s", inInfo.curveType))
-    --print(string.format("curveValue=%s", inInfo.curveValue))
 
+    -- expo
     inInfo.curveType = 1
     inInfo.curveValue = expoWeight
-    model.insertInput(channel, 0, inInfo)
-    --print(string.format("curveType=%s", inInfo.curveType))
-    --print(string.format("curveValue=%s", inInfo.curveValue))
+    inInfo.weight = weight
+    if (switch_name_position ~= nil) then
+        local switchIndex = getSwitchIndex(switch_name_position)
+        inInfo.switch = switchIndex
+    end
 
     -- delete the old line
-    model.deleteInput(channel, 1)
+    model.deleteInput(channel, lineNo)
+    model.insertInput(channel, lineNo, inInfo)
 end
 
 local function createModel(event)
@@ -363,12 +426,25 @@ local function createModel(event)
     model.deleteMixes()
 
     -- expo
-    addExpo(0, ElevronFields.expo.value)
-    addExpo(1, ElevronFields.expo.value)
+    local expoVal = ElevronFields.expo.value
+    local is_dual_rate = (ElevronFields.is_dual_rate.value == 1)
+    if (is_dual_rate) then
+        updateInputLine(defaultChannel_0_AIL, 0, expoVal, 100,"SC" .. CHAR_UP)
+        updateInputLine(defaultChannel_0_AIL, 1, expoVal, 75, "SC-")
+        updateInputLine(defaultChannel_0_AIL, 2, expoVal, 50, "SC" .. CHAR_DOWN)
+
+        updateInputLine(defaultChannel_0_ELE, 0, expoVal, 100,"SC" .. CHAR_UP)
+        updateInputLine(defaultChannel_0_ELE, 1, expoVal, 75, "SC-")
+        updateInputLine(defaultChannel_0_ELE, 2, expoVal, 50, "SC" .. CHAR_DOWN)
+    else
+        updateInputLine(defaultChannel_0_AIL, 0, expoVal, 100, nil)
+        updateInputLine(defaultChannel_0_ELE, 0, expoVal, 100, nil)
+    end
+
 
     -- motor
-    if (MotorFields.have_a_motor.value == 1) then
-        addMix(MotorFields.motor_channel.value, MIXSRC_FIRST_INPUT + defaultChannel(STICK_NUMBER_THR), "Motor")
+    if (MotorFields.is_motor.value == 1) then
+        addMix(MotorFields.motor_ch.value, MIXSRC_FIRST_INPUT + defaultChannel_0_THR, "Motor")
     end
 
     -- Ailerons
@@ -378,9 +454,9 @@ local function createModel(event)
     addMix(ElevronFields.ail_ch_l.value, MIXSRC_FIRST_INPUT + defaultChannel(STICK_NUMBER_AIL), "ail-L", 50)
 
     -- special function for arm switch
-    local switchName = MotorFields.arm_channel.avail_values[1 + MotorFields.arm_channel.value]
+    local switchName = MotorFields.arm_switch.avail_values[1 + MotorFields.arm_switch.value]
     local switchIndex = getSwitchIndex(switchName .. CHAR_DOWN)
-    local channelIndex = MotorFields.motor_channel.value
+    local channelIndex = MotorFields.motor_ch.value
 
     model.setCustomFunction(FUNC_OVERRIDE_CHANNEL, {
         switch = switchIndex,
@@ -408,10 +484,10 @@ end
 -- Init
 local function init()
     current = 1
-    edit = false
+    is_edit = false
     pages = {
         runMotorConfig,
-        runAilConfig,
+        runElevronConfig,
         runConfigSummary,
         createModel,
         onEnd
