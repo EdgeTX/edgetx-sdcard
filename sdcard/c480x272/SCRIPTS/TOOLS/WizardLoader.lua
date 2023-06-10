@@ -1,29 +1,21 @@
--- TNS|Wizard Loader|TNE
+local toolName = "TNS|Wizard Loader|TNE"
 
 local BackgroundImg = Bitmap.open("/SCRIPTS/WIZARD/img/background.png")
 local planeIcon = Bitmap.open("/SCRIPTS/WIZARD/img/icons/plane.png")
 local gliderIcon = Bitmap.open("/SCRIPTS/WIZARD/img/icons/glider.png")
 local multirotorIcon = Bitmap.open("/SCRIPTS/WIZARD/img/icons/multirotor.png")
 local helicopterIcon = Bitmap.open("/SCRIPTS/WIZARD/img/icons/helicopter.png")
-local wingIcon = Bitmap.open("/SCRIPTS/WIZARD/img/icons/wing.png")
 
 local w, h
 local selWizard = 1
-local numOfWizards = 5
+local numOfWizards = 4
 
 local iconWidth = 85
-local iconWidthSpace = 10
 local iconHeight = 130
 local margin = 40
 
-local iconX = {
-    iconWidthSpace * 1 + iconWidth * 0,
-    iconWidthSpace * 2 + iconWidth * 1,
-    iconWidthSpace * 3 + iconWidth * 2,
-    iconWidthSpace * 4 + iconWidth * 3,
-    iconWidthSpace * 5 + iconWidth * 4
-}
-local iconY = {100, 100, 100,100, 100}
+local iconX = {38, 140, 242, 344}
+local iconY = {100, 100, 100,100}
 
 local touchX
 local touchY
@@ -39,9 +31,9 @@ local function drawPage()
     lcd.drawBitmap(gliderIcon, iconX[2], iconY[2])
     lcd.drawBitmap(multirotorIcon, iconX[3], iconY[3])
     lcd.drawBitmap(helicopterIcon, iconX[4], iconY[4])
-    lcd.drawBitmap(wingIcon, iconX[5], iconY[5])
 
-    lcd.drawRectangle(iconX[selWizard] - 2, iconY[selWizard] - 1, iconWidth + 4, iconHeight + 4, RED, 2)
+    lcd.drawRectangle(iconX[selWizard] - 2, iconY[selWizard] - 1, iconWidth + 4,
+                      iconHeight + 4, RED, 2)
 end
 
 local function launchWizard()
@@ -55,8 +47,6 @@ local function launchWizard()
         return "/SCRIPTS/WIZARD/multirotor.lua"
     elseif (selWizard == 4) then
         return "/SCRIPTS/WIZARD/helicopter.lua"
-    elseif (selWizard == 5) then
-        return "/SCRIPTS/WIZARD/wing.lua"
     end
 end
 
@@ -105,11 +95,6 @@ local function run(event, touchState)
          elseif (touchX > iconX[4]) and (touchX < (iconX[4] + iconWidth)) then
             if (touchY > iconY[4]) and (touchY < (iconY[4] + iconHeight)) then
                 selWizard = 4
-                return launchWizard()
-            end
-        elseif (touchX > iconX[5]) and (touchX < (iconX[5] + iconWidth)) then
-            if (touchY > iconY[5]) and (touchY < (iconY[5] + iconHeight)) then
-                selWizard = 5
                 return launchWizard()
             end
         end
