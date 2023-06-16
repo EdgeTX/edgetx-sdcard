@@ -1,2 +1,0 @@
-Official model templates wizard's
-(use Lua Wizard scripts to create new models)

@@ -27,7 +27,7 @@ local page = 1
 local current = 1
 local pages = {}
 
-chdir("/TEMPLATES/WIZARD")
+chdir("/TEMPLATES/1.Wizard")
 
 -- load common Bitmaps
 local ImgMarkBg = Bitmap.open("img/mark_bg.png")
@@ -379,6 +379,8 @@ local function runConfigSummary(event)
         local switchName = MotorFields.arm_switch.avail_values[1 + MotorFields.arm_switch.value]
         drawNextLine("Arm switch", nil, switchName)
     end
+
+    drawNextLine("Dual Rate", nil, ElevronFields.is_dual_rate.avail_values[1 + ElevronFields.is_dual_rate.value])
 
     local result = runFieldsPage(ConfigSummaryFields.page, event)
 
