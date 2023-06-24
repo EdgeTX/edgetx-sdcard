@@ -328,9 +328,9 @@ local function runAilConfig(event)
 end
 
 local FlapsFields = {
-    flap_type = { id = 'flap_type', x = 50 , y = 70 , w = 200, type = COMBO, is_visible = 1, value = 0, avail_values = { "No", "Yes, on one channel", "Yes, on two channels" } },
-    flap_ch_a = { id = 'flap_ch_a', x = 100, y = 120, w = 0  , type = COMBO, is_visible = 1, value = 6, avail_values = { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8", "CH9", "CH10" } },
-    flap_ch_b = { id = 'flap_ch_b', x = 100, y = 160, w = 0  , type = COMBO, is_visible = 1, value = 7, avail_values = { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8", "CH9", "CH10" } },
+    flap_type = { id = 'flap_type', x = 50 , y = 70 , w = 200, type = COMBO, is_visible = 1, value = 0  , avail_values = { "No", "Yes, on one channel", "Yes, on two channels" } },
+    flap_ch_a = { id = 'flap_ch_a', x = 100, y = 120, w = 0  , type = COMBO, is_visible = 1, value = 8-1, avail_values = { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8", "CH9", "CH10" } },
+    flap_ch_b = { id = 'flap_ch_b', x = 100, y = 160, w = 0  , type = COMBO, is_visible = 1, value = 9-1, avail_values = { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8", "CH9", "CH10" } },
 }
 FlapsFields.page = {
     FlapsFields.flap_type,
@@ -376,10 +376,10 @@ local function runFlapsConfig(event)
 end
 
 local TailFields = {
-    tail_type = { id = 'tail_type', x = 60, y = 65, w = 0, type = COMBO, is_visible = 1, value = 1, avail_values = { "1 channel for Elevator, no Rudder", "One channel for Elevator, one for Rudder", "Two channels for Elevator, one for Rudder", "V Tail" } },
-    ch_a = { id = 'ch_a', x = 100, y = 120, w = 0, type = COMBO, is_visible = 1, value = defaultChannel_0_ELE, avail_values = { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8", "CH9", "CH10" } }, --ele
-    ch_b = { id = 'ch_b', x = 100, y = 160, w = 0, type = COMBO, is_visible = 1, value = defaultChannel_0_RUD, avail_values = { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8", "CH9", "CH10" } }, --rud
-    ch_c = { id = 'ch_c', x = 100, y = 200, w = 0, type = COMBO, is_visible = 0, value = 5                   , avail_values = { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8", "CH9", "CH10" } }, --ele2
+    tail_type = { id = 'tail_type', x = 60 , y = 65 , w = 0, type = COMBO, is_visible = 1, value = 1                   , avail_values = { "1 channel for Elevator, no Rudder", "One channel for Elevator, one for Rudder", "Two channels for Elevator, one for Rudder", "V Tail" } },
+    ch_a      = { id = 'ch_a'     , x = 100, y = 120, w = 0, type = COMBO, is_visible = 1, value = defaultChannel_0_ELE, avail_values = { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8", "CH9", "CH10" } }, --ele
+    ch_b      = { id = 'ch_b'     , x = 100, y = 160, w = 0, type = COMBO, is_visible = 1, value = defaultChannel_0_RUD, avail_values = { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8", "CH9", "CH10" } }, --rud
+    ch_c      = { id = 'ch_c'     , x = 100, y = 200, w = 0, type = COMBO, is_visible = 0, value = 6-1                 , avail_values = { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8", "CH9", "CH10" } }, --ele2
     page = {}
 }
 TailFields.page = {
@@ -448,9 +448,9 @@ local function runTailConfig(event)
 end
 
 local GearFields = {
-    is_gear = { id = 'is_gear', x = 170, y = 100, w = 0, type = COMBO, is_visible = 1, value = 0, avail_values = { "No", "Yes" } },
-    switch  = { id = 'switch' , x = 170, y = 140, w = 0, type = COMBO, is_visible = 1, value = 3, avail_values = { "SA", "SB", "SC", "SD", "SE", "SF", "SG", "SH" } },
-    channel = { id = 'channel', x = 170, y = 180, w = 0, type = COMBO, is_visible = 1, value = 7, avail_values = { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8", "CH9", "CH10" } }, --ele
+    is_gear = { id = 'is_gear', x = 170, y = 100, w = 0, type = COMBO, is_visible = 1, value = 0  , avail_values = { "No", "Yes" } },
+    switch  = { id = 'switch' , x = 170, y = 140, w = 0, type = COMBO, is_visible = 1, value = 3  , avail_values = { "SA", "SB", "SC", "SD", "SE", "SF", "SG", "SH" } },
+    channel = { id = 'channel', x = 170, y = 180, w = 0, type = COMBO, is_visible = 1, value = 7-1, avail_values = { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8", "CH9", "CH10" } }, --ele
     page = {}
 }
 GearFields.page = {
@@ -493,13 +493,13 @@ local AdditionalSettingsFields = {
     --{ 170, 52, VALUE, 1, 30, 0, 100 }, -- model name
     expo         = { id = 'expo'        , x = 140, y = 60 , w = 0, type = VALUE, is_visible = 1, value = 30, min = 0, max = 100 }, -- expo
     is_dual_rate = { id = 'is_dual_rate', x = 140, y = 100, w = 0, type = COMBO, is_visible = 1, value = 1 , avail_values = { "No", "Yes" } },
-    switch       = { id = 'switch'      , x = 260, y = 100, w = 0, type = COMBO, is_visible = 1, value = 2, avail_values = { "SA", "SB", "SC", "SD", "SE", "SF", "SG", "SH" } },
+    dr_switch    = { id = 'dr_switch'   , x = 260, y = 100, w = 0, type = COMBO, is_visible = 1, value = 2, avail_values = { "SA", "SB", "SC", "SD", "SE", "SF", "SG", "SH" } },
     page = {}
 }
 AdditionalSettingsFields.page = {
     AdditionalSettingsFields.expo,
     AdditionalSettingsFields.is_dual_rate,
-    AdditionalSettingsFields.switch,
+    AdditionalSettingsFields.dr_switch,
 }
 local function runAdditionalSettings(event)
     lcd.clear()
@@ -513,10 +513,10 @@ local function runAdditionalSettings(event)
 
     lcd.drawText(40, AdditionalSettingsFields.is_dual_rate.y, "Dual-Rate?", COLOR_THEME_PRIMARY1)
     if AdditionalSettingsFields.is_dual_rate.value == 1 then
-        lcd.drawText(200, AdditionalSettingsFields.is_dual_rate.y, "switch", COLOR_THEME_PRIMARY1)
-        AdditionalSettingsFields.switch.is_visible = 1
+        lcd.drawText(200, AdditionalSettingsFields.is_dual_rate.y, "dr_switch", COLOR_THEME_PRIMARY1)
+        AdditionalSettingsFields.dr_switch.is_visible = 1
     else
-        AdditionalSettingsFields.switch.is_visible = 0
+        AdditionalSettingsFields.dr_switch.is_visible = 0
     end
 
     local result = runFieldsPage(AdditionalSettingsFields.page, event)
@@ -669,14 +669,15 @@ local function createModel(event)
         updateInputLine(defaultChannel_0_ELE, 1, expoVal, 75 , "SC-")
         updateInputLine(defaultChannel_0_ELE, 2, expoVal, 50 , "SC" .. CHAR_DOWN)
 
-        updateInputLine(defaultChannel_0_RUD, 0, expoVal, 100, "SC" .. CHAR_UP)
-        updateInputLine(defaultChannel_0_RUD, 1, expoVal, 75, "SC-")
-        updateInputLine(defaultChannel_0_RUD, 2, expoVal, 50, "SC" .. CHAR_DOWN)
+        --updateInputLine(defaultChannel_0_RUD, 0, expoVal, 100, nil )
+        --updateInputLine(defaultChannel_0_RUD, 1, expoVal, 75, "SC-")
+        --updateInputLine(defaultChannel_0_RUD, 2, expoVal, 50, "SC" .. CHAR_DOWN)
     else
         updateInputLine(defaultChannel_0_AIL, 0, expoVal, 100, nil)
         updateInputLine(defaultChannel_0_ELE, 0, expoVal, 100, nil)
-        updateInputLine(defaultChannel_0_RUD, 0, expoVal, 100, nil)
     end
+
+    updateInputLine(defaultChannel_0_RUD, 0, expoVal, 100, nil)
 
 
     -- motor
