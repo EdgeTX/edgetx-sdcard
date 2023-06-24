@@ -669,15 +669,14 @@ local function createModel(event)
         updateInputLine(defaultChannel_0_ELE, 1, expoVal, 75 , "SC-")
         updateInputLine(defaultChannel_0_ELE, 2, expoVal, 50 , "SC" .. CHAR_DOWN)
 
-        --updateInputLine(defaultChannel_0_RUD, 0, expoVal, 100, nil )
-        --updateInputLine(defaultChannel_0_RUD, 1, expoVal, 75, "SC-")
-        --updateInputLine(defaultChannel_0_RUD, 2, expoVal, 50, "SC" .. CHAR_DOWN)
+        updateInputLine(defaultChannel_0_RUD, 0, expoVal, 100, nil)
     else
         updateInputLine(defaultChannel_0_AIL, 0, expoVal, 100, nil)
         updateInputLine(defaultChannel_0_ELE, 0, expoVal, 100, nil)
     end
 
     updateInputLine(defaultChannel_0_RUD, 0, expoVal, 100, nil)
+
 
 
     -- motor
