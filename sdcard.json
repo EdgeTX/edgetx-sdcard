@@ -27,6 +27,7 @@
     ["RadioMaster Boxer", "boxer-", "bw128x64"],
     ["RadioMaster T8", "t8-", "bw128x64"],
     ["RadioMaster TX12", "tx12-", "bw128x64"],
+    ["RadioMaster TX12MK2", "tx12mk2-", "bw128x64"],
     ["RadioMaster TX16S", "tx16s-", "c480x272"],
     ["RadioMaster Zorro", "zorro-", "bw128x64"]
   ]

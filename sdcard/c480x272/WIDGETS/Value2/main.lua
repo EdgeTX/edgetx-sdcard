@@ -1,29 +1,34 @@
----- #########################################################################
----- #                                                                       #
----- # Telemetry Widget script for FrSky Horus/RadioMaster TX16s             #
----- # Copyright (C) EdgeTX                                                  #
------#                                                                       #
----- # License GPLv2: http://www.gnu.org/licenses/gpl-2.0.html               #
----- #                                                                       #
----- # This program is free software; you can redistribute it and/or modify  #
----- # it under the terms of the GNU General Public License version 2 as     #
----- # published by the Free Software Foundation.                            #
----- #                                                                       #
----- # This program is distributed in the hope that it will be useful        #
----- # but WITHOUT ANY WARRANTY; without even the implied warranty of        #
----- # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         #
----- # GNU General Public License for more details.                          #
----- #                                                                       #
----- #########################################################################
+--[[
+#########################################################################
+#                                                                       #
+# Telemetry Widget script for FrSky Horus/RadioMaster TX16s             #
+# Copyright "Offer Shmuely"                                             #
+#                                                                       #
+# License GPLv2: http://www.gnu.org/licenses/gpl-2.0.html               #
+#                                                                       #
+# This program is free software; you can redistribute it and/or modify  #
+# it under the terms of the GNU General Public License version 2 as     #
+# published by the Free Software Foundation.                            #
+#                                                                       #
+# This program is distributed in the hope that it will be useful        #
+# but WITHOUT ANY WARRANTY; without even the implied warranty of        #
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         #
+# GNU General Public License for more details.                          #
+#                                                                       #
+#########################################################################
+
 
 -- Widget to show a telemetry Value in smart way
 --   it fill better the widget area
 --   it show the min/max values of the field
 --   it detect end of flight (by telemetry) and favor the min/max of the unused current value
 
--- Offer Shmuely
--- Date: 2022
--- ver: 0.6
+]]
+
+
+-- Author : Offer Shmuely
+-- Date: 2021-2023
+-- ver: 0.7
 
 local app_name = "Value2"
 
@@ -56,7 +61,7 @@ end
 local options = {
     { "Source", SOURCE, DEFAULT_SOURCE },
     { "TextColor", COLOR, COLOR_THEME_PRIMARY1 },
-    { "Postfix", STRING, "" }
+    { "Suffix", STRING, "" }
 }
 
 --------------------------------------------------------------
@@ -236,7 +241,7 @@ local function refresh_app_mode(wgt, event, touchState)
     local dy = (zone_h - ts_h) / 3
 
     -- draw header
-    local header_txt = wgt.source_name .. " " .. wgt.options.Postfix
+    local header_txt = wgt.source_name .. " " .. wgt.options.Suffix
     lcd.drawText(10, 0, header_txt, FONT_16 + wgt.options.TextColor)
 
     -- draw value
@@ -263,8 +268,8 @@ local function refresh_widget_with_telem(wgt)
     local last_y = 0
 
     -- draw header
-    local header_txt = wgt.source_name .. " " .. wgt.options.Postfix
-    local font_size_header, ts_h_w, ts_h_h, v_offset = getFontSizePrint(wgt, header_txt, wgt.zone.w, wgt.zone.h / 4)
+    local header_txt = wgt.source_name .. " " .. wgt.options.Suffix
+    local font_size_header, ts_h_w, ts_h_h, v_offset = getFontSize(wgt, header_txt, wgt.zone.w, wgt.zone.h / 4)
     log("val: font_size_header: %d, ts_h_h: %d, lastY: %d", wgt.zone.y, ts_h_h, last_y)
     lcd.drawText(wgt.zone.x, wgt.zone.y + last_y + v_offset, header_txt, font_size_header + wgt.options.TextColor)
     --lcd.drawRectangle(wgt.zone.x, wgt.zone.y + last_y, ts_h_w, ts_h_h, BLUE)
@@ -309,35 +314,44 @@ local function refresh_widget_no_telem(wgt)
     lcd.setColor(CUSTOM_COLOR, lcd.RGB(0xA4A5A4))
 
     -- draw header
-    local header_txt = wgt.source_name .. " " .. wgt.options.Postfix
-    local font_size_header, ts_h_w, ts_h_h, v_offset = getFontSizePrint(wgt, header_txt, wgt.zone.w, wgt.zone.h / 4)
+    local header_txt = wgt.source_name .. " " .. wgt.options.Suffix
+    local font_size_header, ts_h_w, ts_h_h, v_offset = getFontSize(wgt, header_txt, wgt.zone.w, wgt.zone.h / 4)
     log("val: font_size_header: %d, ts_h_h: %d, lastY: %d", wgt.zone.y, ts_h_h, last_y)
     lcd.drawText(wgt.zone.x, wgt.zone.y + last_y + v_offset, header_txt, font_size_header + CUSTOM_COLOR)
     --lcd.drawRectangle(wgt.zone.x, wgt.zone.y + last_y, ts_h_w, ts_h_h, BLUE)
     last_y = last_y + ts_h_h
 
-    -- draw min max
+    -- draw min max calc
     local ts_mm_w =0
     local ts_mm_h = 0
+    local font_size_mm = 0
+    local v_offset = 0
+    local val_str_mm = ""
     if (wgt.last_value_min ~= -1 and wgt.last_value_max ~= -1) and (wgt.zone.h > 50) then
-        local val_str_mm = string.format("%s..%s %s", prettyPrintNone(wgt.last_value_min, wgt.precession), prettyPrintNone(wgt.last_value_max, wgt.precession), wgt.unit)
-        local font_size_mm = getFontSize(wgt, val_str_mm, wgt.zone.w, wgt.zone.h - last_y)
-        ts_mm_w, ts_mm_h = wgt.tools.lcdSizeTextFixed(val_str_mm, font_size_mm)
-        local dx = (wgt.zone.w - ts_mm_w) / 2
-
-        if (ts_mm_h <= wgt.zone.h - last_y) and (ts_mm_w <= wgt.zone.w) then
-            --wgt.tools.drawBadgedText(val_str_mm, wgt.zone.x + dx - 5, wgt.zone.h - ts_mm_h, font_size_mm, wgt.options.TextColor, CUSTOM_COLOR)
-            wgt.tools.drawBadgedText(val_str_mm, wgt.zone.x + dx - 5, wgt.zone.h - ts_mm_h, font_size_mm, wgt.options.TextColor, CUSTOM_COLOR)
-            --log("wgt.zone.y: %d, wgt.zone.h: %d, ts_mm_h: %d", wgt.zone.y,wgt.zone.h,ts_mm_h)
-        end
+        val_str_mm = string.format("%s..%s %s", prettyPrintNone(wgt.last_value_min, wgt.precession), prettyPrintNone(wgt.last_value_max, wgt.precession), wgt.unit)
+        font_size_mm, ts_mm_w, ts_mm_h, v_offset = getFontSize(wgt, val_str_mm, wgt.zone.w, wgt.zone.h - last_y)
+        --local dx = (wgt.zone.w - ts_mm_w) / 2
+        --if (ts_mm_h <= wgt.zone.h - last_y) and (ts_mm_w <= wgt.zone.w) then
+        --    wgt.tools.drawBadgedText(val_str_mm, wgt.zone.x + dx - 5, wgt.zone.h - ts_mm_h, font_size_mm, wgt.options.TextColor, CUSTOM_COLOR)
+        --    --log("wgt.zone.y: %d, wgt.zone.h: %d, ts_mm_h: %d", wgt.zone.y,wgt.zone.h,ts_mm_h)
+        --end
     end
 
     -- draw value
     local str_v = string.format("%s %s", prettyPrintNone(wgt.last_value, wgt.precession), wgt.unit)
     local font_size_v, ts_v_w, ts_v_h, v_offset = getFontSize(wgt, str_v, wgt.zone.w, wgt.zone.h - ts_h_h - ts_mm_h)
-    lcd.drawText(wgt.zone.x, wgt.zone.y + ts_h_h + v_offset, str_v, font_size_v + CUSTOM_COLOR)
-    --lcd.drawRectangle(wgt.zone.x, wgt.zone.y + ts_h_h, ts_v_w, ts_v_h, BLUE)
+    lcd.drawText(wgt.zone.x, wgt.zone.y + last_y + v_offset, str_v, font_size_v + CUSTOM_COLOR)
+    --lcd.drawRectangle(wgt.zone.x, wgt.zone.y + last_y, ts_v_w, ts_v_h, BLUE)
     last_y = last_y + ts_v_h
+
+    -- draw min max
+    local dx = (wgt.zone.w - ts_mm_w) / 2
+    if (wgt.last_value_min ~= -1 and wgt.last_value_max ~= -1) and (wgt.zone.h > 50) then
+        if (ts_mm_h <= wgt.zone.h - last_y) and (ts_mm_w <= wgt.zone.w) then
+            wgt.tools.drawBadgedText(val_str_mm, wgt.zone.x + dx - 5, wgt.zone.y + last_y, font_size_mm, wgt.options.TextColor, CUSTOM_COLOR)
+            --log("wgt.zone.y: %d, wgt.zone.h: %d, ts_mm_h: %d", wgt.zone.y,wgt.zone.h,ts_mm_h)
+        end
+    end
 
 end
 
@@ -358,7 +372,7 @@ local function refresh(wgt, event, touchState)
     end
 
     -- widget load (debugging)
-    --lcd.drawText(wgt.zone.x + 10, wgt.zone.y, string.format("load: %d%%", getUsage()), FONT_6 + GREY) -- ???
+    -- lcd.drawText(wgt.zone.x + wgt.zone.w, wgt.zone.y, string.format("load: %d%%", getUsage()), FONT_6 + GREY + RIGHT) -- ???
 end
 
 return { name = app_name, options = options, create = create, update = update, background = background, refresh = refresh }
