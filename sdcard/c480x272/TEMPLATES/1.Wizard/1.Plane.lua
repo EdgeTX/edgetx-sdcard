@@ -673,9 +673,8 @@ local function createModel(event)
     else
         updateInputLine(defaultChannel_0_AIL, 0, expoVal, 100, nil)
         updateInputLine(defaultChannel_0_ELE, 0, expoVal, 100, nil)
+        updateInputLine(defaultChannel_0_RUD, 0, expoVal, 100, nil)
     end
-
-    updateInputLine(defaultChannel_0_RUD, 0, expoVal, 100, nil)
 
 
 
