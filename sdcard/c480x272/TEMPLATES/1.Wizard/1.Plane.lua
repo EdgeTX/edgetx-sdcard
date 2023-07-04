@@ -493,7 +493,7 @@ local AdditionalSettingsFields = {
     --{ 170, 52, VALUE, 1, 30, 0, 100 }, -- model name
     expo         = { id = 'expo'        , x = 140, y = 60 , w = 0, type = VALUE, is_visible = 1, value = 30, min = 0, max = 100 }, -- expo
     is_dual_rate = { id = 'is_dual_rate', x = 140, y = 100, w = 0, type = COMBO, is_visible = 1, value = 1 , avail_values = { "No", "Yes" } },
-    dr_switch    = { id = 'dr_switch'   , x = 260, y = 100, w = 0, type = COMBO, is_visible = 1, value = 2, avail_values = { "SA", "SB", "SC", "SD", "SE", "SF", "SG", "SH" } },
+    dr_switch    = { id = 'dr_switch'   , x = 270, y = 100, w = 0, type = COMBO, is_visible = 1, value = 2, avail_values = { "SA", "SB", "SC", "SD", "SE", "SF", "SG", "SH" } },
     page = {}
 }
 AdditionalSettingsFields.page = {
@@ -513,7 +513,7 @@ local function runAdditionalSettings(event)
 
     lcd.drawText(40, AdditionalSettingsFields.is_dual_rate.y, "Dual-Rate?", COLOR_THEME_PRIMARY1)
     if AdditionalSettingsFields.is_dual_rate.value == 1 then
-        lcd.drawText(200, AdditionalSettingsFields.is_dual_rate.y, "dr_switch", COLOR_THEME_PRIMARY1)
+        lcd.drawText(205, AdditionalSettingsFields.is_dual_rate.y, "Switch", COLOR_THEME_PRIMARY1)
         AdditionalSettingsFields.dr_switch.is_visible = 1
     else
         AdditionalSettingsFields.dr_switch.is_visible = 0
