@@ -200,8 +200,8 @@ local function calculate_model_summary_list()
 
     m_tables.table_clear(model_summary_list)
     for k, v in pairs(model_flight_count) do
-        local inf = string.format("%-17s - %d flights", k, v)
-        --local inf = string.format("%d - %s", v, k)
+        --local inf = string.format("%-17s - %d flights", k, v)
+        local inf = string.format("%03d - %s", v, k)
         log("model_flight_count: %s", inf)
         model_summary_list[#model_summary_list +1] = inf
     end
