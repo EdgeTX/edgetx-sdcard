@@ -17,10 +17,11 @@
 
 chdir("/SCRIPTS/TOOLS/FrSky_S8R_S6R")
 
-local version = "v2.01"
+local version = "v2.05"
 
 local VALUE = 0
 local COMBO = 1
+local HEADER = 2
 
 local COLUMN_2 = 300
 
@@ -57,30 +58,35 @@ local settingsFields = {
     {"CH5 mode", COMBO, 0xA8, nil, { "CH5 as AIL2", "CH5 as AUX1" } },
     {"CH6 mode", COMBO, 0xA9, nil, { "CH6 as ELE2", "CH6 as AUX2" } },
 
-    {"Main stabilization gain: AIL", VALUE, 0x85, nil, 0, 200, "%"},
-    {"Main stabilization gain: ELE", VALUE, 0x86, nil, 0, 200, "%"},
-    {"Main stabilization gain: RUD", VALUE, 0x87, nil, 0, 200, "%"},
+    {"Main stabilization", HEADER},
+    {"    gain: AIL", VALUE, 0x85, nil, 0, 200, "%"},
+    {"    gain: ELE", VALUE, 0x86, nil, 0, 200, "%"},
+    {"    gain: RUD", VALUE, 0x87, nil, 0, 200, "%"},
 
-    {"Directions: AIL", COMBO, 0x82, nil, { "Normal", "Inverted" }, { 255, 0 } },
-    {"Directions: ELE", COMBO, 0x83, nil, { "Normal", "Inverted" }, { 255, 0 } },
-    {"Directions: RUD", COMBO, 0x84, nil, { "Normal", "Inverted" }, { 255, 0 } },
-    {"Directions: AIL2", COMBO, 0x9A, nil, { "Normal", "Inverted" }, { 255, 0 } },
-    {"Directions: ELE2", COMBO, 0x9B, nil, { "Normal", "Inverted" }, { 255, 0 } },
+    {"Directions", HEADER},
+    {"    Directions: AIL", COMBO, 0x82, nil, { "Normal", "Inverted" }, { 255, 0 } },
+    {"    Directions: ELE", COMBO, 0x83, nil, { "Normal", "Inverted" }, { 255, 0 } },
+    {"    Directions: RUD", COMBO, 0x84, nil, { "Normal", "Inverted" }, { 255, 0 } },
+    {"    Directions: AIL2", COMBO, 0x9A, nil, { "Normal", "Inverted" }, { 255, 0 } },
+    {"    Directions: ELE2", COMBO, 0x9B, nil, { "Normal", "Inverted" }, { 255, 0 } },
 
-    {"Auto Level: gain AIL", VALUE, 0x88, nil, 0, 200, "%"},
-    {"Auto Level: gain ELE", VALUE, 0x89, nil, 0, 200, "%"},
-    {"Auto Level: offset AIL", VALUE, 0x91, nil, -20, 20, "%", 0x6C},
-    {"Auto Level: offset ELE", VALUE, 0x92, nil, -20, 20, "%", 0x6C},
+    {"Auto Level:", HEADER},
+    {"    gain AIL", VALUE, 0x88, nil, 0, 200, "%"},
+    {"    gain ELE", VALUE, 0x89, nil, 0, 200, "%"},
+    {"    offset AIL", VALUE, 0x91, nil, -20, 20, "%", 0x6C},
+    {"    offset ELE", VALUE, 0x92, nil, -20, 20, "%", 0x6C},
 
-    {"Hover: gain ELE", VALUE, 0x8C, nil, 0, 200, "%"},
-    {"Hover: gain RUD", VALUE, 0x8D, nil, 0, 200, "%"},
-    {"Hover: offset ELE", VALUE, 0x95, nil, -20, 20, "%", 0x6C},
-    {"Hover: offset RUD", VALUE, 0x96, nil, -20, 20, "%", 0x6C},
+    {"Hover:", HEADER},
+    {"    gain ELE", VALUE, 0x8C, nil, 0, 200, "%"},
+    {"    gain RUD", VALUE, 0x8D, nil, 0, 200, "%"},
+    {"    offset ELE", VALUE, 0x95, nil, -20, 20, "%", 0x6C},
+    {"    offset RUD", VALUE, 0x96, nil, -20, 20, "%", 0x6C},
 
-    {"Knife Edge: gain AIL", VALUE, 0x8E, nil, 0, 200, "%"},
-    {"Knife Edge: gain RUD", VALUE, 0x90, nil, 0, 200, "%"},
-    {"Knife Edge: offset AIL", VALUE, 0x97, nil, -20, 20, "%", 0x6C},
-    {"Knife Edge: offset RUD", VALUE, 0x99, nil, -20, 20, "%", 0x6C},
+    {"Knife Edge:", HEADER},
+    {"    gain AIL", VALUE, 0x8E, nil, 0, 200, "%"},
+    {"    gain RUD", VALUE, 0x90, nil, 0, 200, "%"},
+    {"    offset AIL", VALUE, 0x97, nil, -20, 20, "%", 0x6C},
+    {"    offset RUD", VALUE, 0x99, nil, -20, 20, "%", 0x6C},
 }
 
 local calibrationFields = {
@@ -95,12 +101,12 @@ local function is_simulator()
 end
 
 local function drawScreenTitle(title, page, pages)
-    if math.fmod(math.floor(getTime() / 100), 10) == 0 then
-        title = version
-    end
+    --if math.fmod(math.floor(getTime() / 100), 10) == 0 then
+    --    title = version
+    --end
     if LCD_W == 480 then
         lcd.drawFilledRectangle(0, 0, LCD_W, 30, TITLE_BGCOLOR)
-        lcd.drawText(1, 5, title, MENU_TITLE_COLOR)
+        lcd.drawText(50, 5, title.. " - "..version, MENU_TITLE_COLOR)
         lcd.drawText(LCD_W - 40, 5, page .. "/" .. pages, MENU_TITLE_COLOR)
     else
         lcd.drawScreenTitle(title, page, pages)
@@ -117,6 +123,9 @@ local function addField(step)
     elseif field[2] == COMBO then
         min = 0
         max = #(field[5]) - 1
+    elseif field[2] == HEADER then
+        min = 0
+        max = 0
     end
     if (step < 0 and field[4] > min) or (step > 0 and field[4] < max) then
         field[4] = field[4] + step
@@ -133,7 +142,20 @@ end
 
 -- Select the next or previous editable field
 local function selectField(step)
-    current = 1 + ((current + step - 1 + #fields) % #fields)
+    --local old_current = current
+    --current = 1 + ((current + step - 1 + #fields) % #fields)
+    if step < 0 and current+step >= 1 then
+        current = current + step
+        --print("current-a: "..old_current.."-->"..current)
+    elseif step > 0 and current+step <= #fields then
+        current = current + step
+        --print("current-b: "..old_current.."-->"..current)
+    end
+
+    if fields[current][2] == HEADER then
+        current = 1 + ((current + step - 1 + #fields) % #fields)
+    end
+
     if current > numberPerPage + pageOffset then
         pageOffset = current - numberPerPage
     elseif current <= pageOffset then
@@ -143,9 +165,10 @@ end
 
 local function drawProgressBar()
     if LCD_W == 480 then
-        local width = (300 * refreshIndex) / #fields
-        lcd.drawRectangle(100, 10, 300, 6)
-        lcd.drawFilledRectangle(102, 12, width, 2)
+        local width = (100 * refreshIndex) / #fields
+        --print(string.format("111 - width: %s, refreshIndex: %s/%s",width, refreshIndex, #fields))
+        lcd.drawRectangle(330, 12, 100, 8, GREY)
+        lcd.drawFilledRectangle(332, 14, width, 4, GREY)
     else
         local width = (60 * refreshIndex) / #fields
         lcd.drawRectangle(45, 1, 60, 6)
@@ -154,9 +177,9 @@ local function drawProgressBar()
 end
 
 -- Redraw the current page
-local function redrawFieldsPage(event)
+local function redrawFieldsPage(event, touchState)
     lcd.clear()
-    drawScreenTitle("S8R/S6R RX", page, #pages)
+    drawScreenTitle("FrSky S8R/S6R Gyro setup", page, #pages)
 
     if refreshIndex < #fields then
         drawProgressBar()
@@ -170,7 +193,6 @@ local function redrawFieldsPage(event)
 
         local attr = current == (pageOffset + index) and ((edit == true and BLINK or 0) + INVERS) or 0
 
-
         -- debugging in simulator
         if is_simulator() and field[4] == nil then
             if field[2] == VALUE then
@@ -180,9 +202,13 @@ local function redrawFieldsPage(event)
             end
         end
 
+        if field[2] == HEADER then
+            attr = attr + BOLD
+        end
+
         lcd.drawText(10, margin + spacing * index, field[1], attr)
 
-        if field[4] == nil then
+        if field[4] == nil and field[2] ~= HEADER then
             lcd.drawText(280, margin + spacing * index, "---", attr)
         else
             if field[2] == VALUE then
@@ -212,6 +238,11 @@ local function refreshNext()
             modifications[1] = nil
         elseif refreshIndex < #fields then
             local field = fields[refreshIndex + 1]
+            if field[2] == HEADER then
+                refreshIndex = refreshIndex + 1
+                field = fields[refreshIndex + 1]
+            end
+
             if field[4] == nil then
                 if telemetryRead(field[3]) == true then
                     refreshState = 1
