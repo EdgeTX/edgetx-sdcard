@@ -42,7 +42,7 @@ local margin = 1
 local spacing = 8
 local numberPerPage = 7
 local counter = 0
-
+local touch_d0 = 0
 
 local configFields = {
     { "Wing type", COMBO, 0x80, nil, { "Normal", "Delta", "VTail" } },
@@ -320,7 +320,7 @@ local function updateField(field)
 end
 
 -- Main
-local function runFieldsPage(event)
+local function runFieldsPage(event, touchState)
     if event == EVT_VIRTUAL_EXIT then -- exit script
         return 2
     elseif event == EVT_VIRTUAL_ENTER then -- toggle editing/selecting current field
@@ -341,15 +341,31 @@ local function runFieldsPage(event)
             selectField(1)
         elseif event == EVT_VIRTUAL_PREV then
             selectField(-1)
+        elseif event == EVT_TOUCH_FIRST then
+            touch_d0 = 0
+        elseif event == EVT_TOUCH_SLIDE and page==2 then
+            local d = math.floor((touchState.startY - touchState.y) / 20 + 0.5)
+            if d < touch_d0 then
+                if pageOffset > 0 then
+                    pageOffset = pageOffset -1
+                end
+                touch_d0 = d
+            elseif d > touch_d0 then
+                if pageOffset < #settingsFields - numberPerPage then
+                    pageOffset = pageOffset +1
+                end
+                touch_d0 = d
+            end
         end
+
     end
-    redrawFieldsPage(event)
+    redrawFieldsPage(event, touchState)
     return 0
 end
 
-local function runConfigPage(event)
+local function runConfigPage(event, touchState)
     fields = configFields
-    local result = runFieldsPage(event)
+    local result = runFieldsPage(event, touchState)
     if LCD_W == 128 then
         local mountText = { "Label is facing the sky", "Label is facing ground", "Label is left when", "Label is right when" }
         if fields[2][4] ~= nil then
@@ -384,9 +400,9 @@ local function runConfigPage(event)
     return result
 end
 
-local function runSettingsPage(event)
+local function runSettingsPage(event, touchState)
     fields = settingsFields
-    return runFieldsPage(event)
+    return runFieldsPage(event, touchState)
 end
 
 -- Init
@@ -406,7 +422,7 @@ local function init()
 end
 
 -- Main
-local function run(event)
+local function run(event, touchState)
     if event == nil then
         error("Cannot be run as a model script!")
         return 2
@@ -417,7 +433,7 @@ local function run(event)
         selectPage(-1)
     end
 
-    local result = pages[page](event)
+    local result = pages[page](event, touchState)
     refreshNext()
 
     return result
