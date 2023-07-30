@@ -6,11 +6,7 @@ M.app_name = app_name
 M.m_tables = m_tables
 M.m_utils = m_utils
 
---local m_tables = require("./FlightsViewer/utils_table")
---local m_log = require("./FlightsViewer/lib_log")
---local m_utils = require("FlightsViewer/utils")
-
-M.idx_file_name = "/app_data/flights/flights-history.csv"
+--M.idx_file_name = "/app_data/flights/flights-history.csv"
 M.idx_file_name = "/flights-history.csv"
 
 M.log_files_index_info = {}
