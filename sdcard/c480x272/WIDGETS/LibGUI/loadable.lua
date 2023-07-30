@@ -60,7 +60,7 @@ function custom.draw(focused)
 end
 
 function custom.onEvent(event, touchState)
-  if event == EVT_VIRTUAL_ENTER then
+  if (touchState and touchState.tapCount == 2) or (event and event == EVT_VIRTUAL_EXIT) then
     lcd.exitFullScreen()
   end
 end
@@ -95,7 +95,7 @@ local dropDownItems = { }
 local lastSwitch = getSwitchIndex(CHAR_TRIM .. "Rl") - 1
 
 for i, s in switches(-lastSwitch, lastSwitch) do
-  if i ~= 0 then 
+  if i ~= 0 then
     local j = #dropDownIndices + 1
     dropDownIndices[j] = i
     dropDownItems[j] = s
@@ -201,7 +201,7 @@ function gui.fullScreenRefresh()
   -- Draw header
   lcd.drawFilledRectangle(0, 0, LCD_W, HEADER, COLOR_THEME_SECONDARY1)
   lcd.drawText(COL1, HEADER / 2, "LibGUI   Demo", VCENTER + DBLSIZE + libGUI.colors.primary2)
-  
+
   -- Border
   if toggleButton.value then
     lcd.drawRectangle(0, HEADER, LCD_W, LCD_H - HEADER, libGUI.colors.edit, 5)
