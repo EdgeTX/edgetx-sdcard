@@ -4,7 +4,6 @@ local M = {}
 M.m_log = m_log
 M.app_name = app_name
 
---local m_log = require("./FlightsViewer/lib_log")
 
 function M.tprint(t, s)
     for k, v in pairs(t) do
@@ -19,7 +18,7 @@ function M.tprint(t, s)
             if type(v) ~= 'string' then
                 vfmt = tostring(v)
             end
-            print(type(t) .. (s or '') .. kfmt .. ' = ' .. vfmt)
+            M.m_log.info(type(t) .. (s or '') .. kfmt .. ' = ' .. vfmt)
         end
     end
 end
@@ -32,8 +31,7 @@ function M.table_clear(tbl)
 end
 
 function M.table_print(prefix, tbl)
-    M.m_log.info("-------------")
-    M.m_log.info("table_print(%s)", prefix)
+    M.m_log.info(">>> table_print (%s)", prefix)
     for i = 1, #tbl, 1 do
         local val = tbl[i]
         if type(val) ~= "table" then
@@ -47,7 +45,7 @@ function M.table_print(prefix, tbl)
             end
         end
     end
-    M.m_log.info("------------- table_print end")
+    M.m_log.info("<<< table_print end (%s) ", prefix)
 end
 
 function M.compare_file_names(a, b)
@@ -65,19 +63,19 @@ function M.list_ordered_insert(lst, newVal, cmp, firstValAt)
         -- remove duplication
         --M.m_log.info("list_ordered_insert - %s ? %s",  newVal, lst[i] )
         if newVal == lst[i] then
-            --print_table("list_ordered_insert - duplicated", lst)
+            --M.table_print("list_ordered_insert - duplicated", lst)
             return
         end
 
         if cmp(newVal, lst[i]) == true then
             table.insert(lst, i, newVal)
-            --print_table("list_ordered_insert - inserted", lst)
+            --M.table_print("list_ordered_insert - inserted", lst)
             return
         end
-        --print_table("list_ordered_insert-loop", lst)
+        --M.table_print("list_ordered_insert-loop", lst)
     end
     table.insert(lst, newVal)
-    --print_table("list_ordered_insert-inserted-to-end", lst)
+    --M.table_print("list_ordered_insert-inserted-to-end", lst)
 end
 
 

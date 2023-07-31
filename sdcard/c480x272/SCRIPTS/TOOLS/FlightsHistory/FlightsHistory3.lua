@@ -1,4 +1,4 @@
-local m_log1,m_utils,m_tables,m_index_file,m_libgui  = ...
+local m_log,m_utils,m_tables,m_index_file,m_libgui  = ...
 
 local M = {}
 
@@ -21,17 +21,17 @@ local M = {}
 -- Original Author: Herman Kruisman (RealTadango) (original version: https://raw.githubusercontent.com/RealTadango/FrSky/master/OpenTX/LView/LView.lua)
 -- Current Author: Offer Shmuely
 -- Date: 2023
-local ver = "1.0"
+local ver = "1.1"
 
 function M.getVer()
     return ver
 end
 
-local m_log2 = require("FlightsHistory/lib_log")
-local m_log = m_log2
+--local m_log2 = require("lib_log")
+--local m_log = m_log2
 local _, rv = getVersion()
 if string.sub(rv, -5) ~= "-simu" then
-    m_log = m_log1
+    --m_log = m_log1
     --m_lib_file_parser = require("FlightsHistory/lib_file_parser")
     --m_utils = require("FlightsHistory/lib_utils")
     --m_tables = require("FlightsHistory/lib_tables")
@@ -89,6 +89,12 @@ local function compare_names(a, b)
     return a < b
 end
 
+local function compare_date_first(a1, b1)
+    local a = string.sub(a1, 0, 16)
+    local b = string.sub(b1, 0, 16)
+    return (a > b)
+end
+
 -- read log file list
 local function read_history_file()
     if (#log_file_list_raw > 0) then
@@ -141,7 +147,7 @@ local function filter_log_file_list(filter_model_name, need_update)
 
         if is_model_name_ok then
             log("filter_log_file_list: [%s] - OK (%s)", log_file_info.file_name, filter_model_name)
-            table.insert(log_file_list_filtered, log_file_info.flight_date)
+            m_tables.list_ordered_insert(log_file_list_filtered, log_file_info.flight_date, compare_date_first, 1)
         else
             log("filter_log_file_list: [%s] - FILTERED-OUT (filters:%s) (model_name_ok:%s)", log_file_info.file_name, filter_model_name, is_model_name_ok)
         end
@@ -161,6 +167,7 @@ local function filter_log_file_list(filter_model_name, need_update)
             -- get duration
             local f_info = m_index_file.getFileDataInfo(log_file_list_filtered[i])
             log_file_list_filtered2[#log_file_list_filtered2 +1] = f_info.desc
+            m_tables.list_ordered_insert(log_file_list_filtered2, f_info.desc, compare_date_first, 1)
         end
         --m_tables.table_print("prepare friendly names", log_file_list_filtered2)
     end
@@ -193,8 +200,8 @@ local function calculate_model_summary_list()
 
     m_tables.table_clear(model_summary_list)
     for k, v in pairs(model_flight_count) do
-        local inf = string.format("%-17s - %d flights", k, v)
-        --local inf = string.format("%d - %s", v, k)
+        --local inf = string.format("%-17s - %d flights", k, v)
+        local inf = string.format("%03d - %s", v, k)
         log("model_flight_count: %s", inf)
         model_summary_list[#model_summary_list +1] = inf
     end
