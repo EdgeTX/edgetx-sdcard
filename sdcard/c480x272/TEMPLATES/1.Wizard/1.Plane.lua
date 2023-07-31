@@ -1,7 +1,7 @@
 ---- #########################################################################
 ---- #                                                                       #
 ---- # Copyright (C) OpenTX                                                  #
------#                                                                       #
+---- #                                                                       #
 ---- # License GPLv2: http://www.gnu.org/licenses/gpl-2.0.html               #
 ---- #                                                                       #
 ---- # This program is free software; you can redistribute it and/or modify  #
@@ -21,6 +21,7 @@
 
 local VALUE = 0
 local COMBO = 1
+local HEADER = 2
 
 local is_edit = false
 local page = 1
@@ -62,6 +63,9 @@ local function addField(fields, step)
     elseif field.type == COMBO then
         min = 0
         max = #(field.avail_values) - 1
+    elseif field.type == HEADER then
+        min = 0
+        max = 0
     end
     if (step < 0 and field.value > min) or (step > 0 and field.value < max) then
         field.value = field.value + step
@@ -86,6 +90,12 @@ local function selectField(fields, step)
     repeat
         print(string.format("selectField: current: %s (vis: %s)", current, fields[current].is_visible))
         current = 1 + ((current + step - 1 + #fields) % #fields)
+    if fields[current].type == HEADER then
+        current = 1 + ((current + step - 1 + #fields) % #fields)
+    end
+
+
+
     until fields[current].is_visible == 1
     print(string.format("selectField-end: current: %s", current))
 end
@@ -164,6 +174,8 @@ local function redrawFieldsPage(fields, event)
                     --lcd.drawText(field.x, field.y, field.avail_values[1 + field.value], attr)
                     drawBadgedText(field.avail_values[1 + field.value], field, FONT_8, is_selected, is_edit)
                 end
+            elseif field.type == HEADER then
+                lcd.drawText(field.x, field.y, field.value, FONT_8 + BLACK + attr + BOLD)
             end
         end
     end
@@ -744,7 +756,7 @@ local function onEnd(event)
     lcd.drawBitmap(ImgSummary, 300, 60)
 
     lcd.drawText(70, 90, "Model successfully created !", COLOR_THEME_PRIMARY1)
-    lcd.drawText(100, 130, "Press RTN to exit", COLOR_THEME_PRIMARY1)
+    lcd.drawText(100, 130, "Hold [RTN] to exit.", COLOR_THEME_PRIMARY1)
     return 0
 end
 

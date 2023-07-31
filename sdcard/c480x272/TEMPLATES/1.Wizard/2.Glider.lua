@@ -453,7 +453,7 @@ local function onEnd(event)
   lcd.drawBitmap(ImgSummary, 300, 60)
 
   lcd.drawText(70, 90, "Model successfully created !", COLOR_THEME_PRIMARY1)
-  lcd.drawText(100, 130, "Press RTN to exit", COLOR_THEME_PRIMARY1)
+  lcd.drawText(100, 130, "Hold [RTN] to exit.", COLOR_THEME_PRIMARY1)
   return 0
 end
 
