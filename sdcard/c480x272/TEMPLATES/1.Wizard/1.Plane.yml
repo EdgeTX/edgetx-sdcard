@@ -58,130 +58,8 @@ thrTrimSw: 0
 potsWarnMode: WARN_OFF
 jitterFilter: GLOBAL
 potsWarnEnabled: 0
-telemetrySensors: 
+screenData:
    0:
-      id1: 
-         id: 0
-      id2: 
-         formula: FORMULA_CELL
-      label: "cell"
-      subId: 0
-      type: TYPE_CALCULATED
-      unit: 1
-      prec: 2
-      autoOffset: 0
-      filter: 0
-      logs: 0
-      persistent: 0
-      onlyPositive: 0
-      cfg: 
-         cell: 
-            source: 6
-            index: 0
-   5:
-      id1: 
-         id: 768
-      id2: 
-         instance: 1
-      label: "Cels"
-      subId: 0
-      type: TYPE_CUSTOM
-      unit: 38
-      prec: 2
-      autoOffset: 0
-      filter: 0
-      logs: 1
-      persistent: 0
-      onlyPositive: 0
-      cfg: 
-         param: 0
-screenData: 
-   0:
-      LayoutId: "Layout2P1"
-      layoutData: 
-         zones: 
-            0:
-               widgetName: "ModelBmp"
-               widgetData: 
-                  options: 
-                     0:
-                        type: Color
-                        value: 
-                           color: 0x000000
-                     2:
-                        type: Bool
-                        value: 
-                           boolValue: 0
-                     3:
-                        type: Color
-                        value: 
-                           color: 0x000000
-                     4:
-                        type: Bool
-                        value: 
-                           boolValue: 1
-            1:
-               widgetName: "Timer2"
-               widgetData: 
-                  options: 
-                     0:
-                        type: Color
-                        value: 
-                           color: 0xF8FC00
-                     1:
-                        type: Signed
-                        value: 
-                           signedValue: 1
-                     2:
-                        type: Bool
-                        value: 
-                           boolValue: 0
-            2:
-               widgetName: "BattCheck"
-               widgetData: 
-                  options: 
-                     0:
-                        type: Source
-                        value: 
-                           source: NONE
-                     1:
-                        type: Color
-                        value: 
-                           color: 0xF8FC00
-                     2:
-                        type: Bool
-                        value: 
-                           boolValue: 0
-                     3:
-                        type: Bool
-                        value: 
-                           boolValue: 1
-                     4:
-                        type: Bool
-                        value: 
-                           boolValue: 0
-         options: 
-            0:
-               type: Bool
-               value: 
-                  boolValue: 1
-            1:
-               type: Bool
-               value: 
-                  boolValue: 0
-            2:
-               type: Bool
-               value: 
-                  boolValue: 0
-            3:
-               type: Bool
-               value: 
-                  boolValue: 1
-            4:
-               type: Bool
-               value: 
-                  boolValue: 0
-   1:
       LayoutId: "Layout2P1"
       layoutData: 
          zones: 
@@ -262,7 +140,7 @@ screenData:
                type: Bool
                value: 
                   boolValue: 0
-   2:
+   1:
       LayoutId: "Layout1x1"
       layoutData: 
          zones: 
