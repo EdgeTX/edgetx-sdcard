@@ -168,7 +168,7 @@ local function drawProgressBar()
         local width = (100 * refreshIndex) / #fields
         --print(string.format("111 - width: %s, refreshIndex: %s/%s",width, refreshIndex, #fields))
         lcd.drawRectangle(330, 12, 100, 8, GREY)
-        lcd.drawFilledRectangle(332, 14, width, 4, GREY)
+        lcd.drawFilledRectangle(331, 12, width, 6, GREY)
     else
         local width = (60 * refreshIndex) / #fields
         lcd.drawRectangle(45, 1, 60, 6)
@@ -179,6 +179,7 @@ end
 -- Redraw the current page
 local function redrawFieldsPage(event, touchState)
     lcd.clear()
+    lcd.drawFilledRectangle(0,0, LCD_W, LCD_H, LIGHTWHITE);
     drawScreenTitle("FrSky S8R/S6R Gyro setup", page, #pages)
 
     if refreshIndex < #fields then
