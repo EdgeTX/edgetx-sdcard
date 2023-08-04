@@ -17,7 +17,8 @@
 
 chdir("/SCRIPTS/TOOLS/FrSky_S8R_S6R")
 
-local version = "v2.05"
+-- based on FrSky version 2.01
+local version = "v2.05-etx"
 
 local VALUE = 0
 local COMBO = 1

@@ -121,16 +121,10 @@ local function drawScreenTitle(title, page, pages)
     lcd.drawText(LCD_W - 40, 5, page .. "/" .. pages, MENU_TITLE_COLOR)
 end
 
-local function drawProgressBar()
-    local width = (300 * refreshIndex) / #fields
-    lcd.drawRectangle(100, 10, 300, 6)
-    lcd.drawFilledRectangle(102, 13, width, 2);
-end
-
 local function refreshPage(event)
     lcd.clear()
     lcd.drawFilledRectangle(0,0, LCD_W, LCD_H, LIGHTWHITE);
-    drawScreenTitle("Frsky S8R/S6R RX Calibration", calibrationStep + 1, 6)
+    drawScreenTitle("Frsky S8R/S6R RX Calibration", calibrationStep + 1, 7)
 
     if refreshIndex == #fields then
         refreshIndex = 0
@@ -179,10 +173,11 @@ local function refreshPage(event)
             -- background rect
             lcd.drawRectangle(prog_m - prog_w - mark_w_half, 80 + 25 * index - 0, prog_w*2+ mark_w_half *2, 18, BLACK);
             -- expected pos
-            lcd.drawFilledRectangle(prog_m + x_pos_expected - mark_w_half, 80 + 25 * index - 0, mark_w, 18, LIGHTGREY);
-            -- current pos
-            lcd.drawFilledRectangle(prog_m + x_pos - mark_w_half, 80 + 25 * index - 0, mark_w, 18, bg_color);
-            -- middle matk
+            lcd.drawFilledRectangle(prog_m + x_pos_expected - mark_w_half +1, 80 + 25 * index - 0 +1, mark_w -2, 18 -2, LIGHTGREY);
+            -- current pos (+ shade)
+            lcd.drawFilledRectangle(prog_m + x_pos - mark_w_half +1 +4, 80 + 25 * index - 0 +1 +4, mark_w -8, 18 -8, GREY);
+            lcd.drawFilledRectangle(prog_m + x_pos - mark_w_half    +4, 80 + 25 * index - 0    +4, mark_w -8, 18 -8, bg_color);
+            -- middle mark
             lcd.drawFilledRectangle(prog_m -1, 80 + 25 * index - 0, 2, 18, BLACK);
         end
 
@@ -195,7 +190,7 @@ local function refreshPage(event)
             lcd.drawText(160, 220, "Ready! press [Enter]")
         else
             lcd.drawFilledRectangle(150, 215, 200, 30, BLACK);
-            lcd.drawText(160, 220, "Press [Enter] when ready", WHITE)
+            lcd.drawText(160, 220, "Press [Enter] when 3 greens", WHITE)
         end
     else
         lcd.drawText(160, 50, "Calibration completed", 0)
