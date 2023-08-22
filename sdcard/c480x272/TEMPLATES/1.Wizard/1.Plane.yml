@@ -49,7 +49,7 @@ customFn:
       func: PLAY_VALUE
       def: "tele(0),7"
 thrTraceSrc: Thr
-switchWarningState: AuBuCuDuEuFuGuHu
+switchWarningState: C-FdHu
 rssiSource: none
 rfAlarms: 
    warning: 45
