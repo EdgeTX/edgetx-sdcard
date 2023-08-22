@@ -12,7 +12,6 @@ The contents of this repository are organised by color type and screen size, wit
     - Jumper T16
     - Jumper T18
     - RadioMaster TX16s / TX16s mkII
-    - Generally, most color screen radios
 - **c480x320.zip** (480x320 pixel landscape orientation color screen radios)
     - Flysky PL18
     - Flysky Paladin EV (PL18EV)
