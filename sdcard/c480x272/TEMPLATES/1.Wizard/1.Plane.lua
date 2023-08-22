@@ -634,7 +634,9 @@ end
 local function addMix(channel, input, name, weight, index)
     local mix = {
         source = input,
-        name = name
+        name = name,
+        --carryTrim= 0 -- 0=on
+        --trimSource= 0 -- 0=on
     }
     if weight ~= nil then
         mix.weight = weight
@@ -652,6 +654,7 @@ local function updateInputLine(channel, lineNo, expoWeight, weight, switch_name_
     inInfo.curveType = 1
     inInfo.curveValue = expoWeight
     inInfo.weight = weight
+    inInfo.trimSource = 0 -- 0=on
     if (switch_name_position ~= nil) then
         local switchIndex = getSwitchIndex(switch_name_position)
         inInfo.switch = switchIndex
