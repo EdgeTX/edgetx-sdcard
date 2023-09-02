@@ -6,3 +6,4 @@ region
 log-*
 exception*
 **/*.luac
+/.idea/
