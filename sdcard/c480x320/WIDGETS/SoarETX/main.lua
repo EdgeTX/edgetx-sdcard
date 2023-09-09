@@ -50,13 +50,6 @@ local function init()
     error("Curve #32 is missing! It is used to store persistent model parameters for Lua.")
   end
   
-  -- Work around the stupid fact that getCurve and setCurve tables are incompatible...
-  local y = parameterCurve.y
-  parameterCurve.y = { }
-  for i = 1, parameterCurve.points do
-    parameterCurve.y[i] = y[i - 1]
-  end
-
   function soarGlobals.getParameter(idx)
     return parameterCurve.y[idx]
   end
