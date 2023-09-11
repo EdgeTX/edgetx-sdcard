@@ -7,12 +7,11 @@ This repo contains the SD Card contents for all supported EdgeTX Radios.
 The contents of this repository are organised by color type and screen size, with zip archives generated for each color type and screen size.
 
 - **c480x272.zip** (480x272 pixel landscape orientation color screen radios)
-    - TX16s / TX16s mkII
-    - T16
-    - T18
-    - Horus x10s
-    - Horus x12s
-    - Generally, most color screen radios
+    - FrSky Horus x10s
+    - FrSky Horus x12s
+    - Jumper T16
+    - Jumper T18
+    - RadioMaster TX16s / TX16s mkII
 - **c480x320.zip** (480x320 pixel landscape orientation color screen radios)
     - Flysky PL18
     - Flysky Paladin EV (PL18EV)
@@ -20,18 +19,22 @@ The contents of this repository are organised by color type and screen size, wit
     - Flysky Nirvana NV14
     - Flysky Elysium EL18
 - **bw128x64.zip** (128x64 pixel black and white screen radios)
-    - T-Lite / T-Pro
-    - TX12 / TX12 mkII
-    - ZORRO
-    - QX7
-    - X9 Lite
-    - X-Lite
     - BetaFPV LiteRadio3 Pro
+    - FrSky Taranis Q X7
+    - FrSky Taranis X-Lite
+    - FrSky Taranis X9 Lite
     - iFlight Commando 8
+    - Jumper T20
+    - Jumper T-Lite
+    - Jumper T-Pro / T-Pro v2
+    - RadioMaster Boxer
+    - RadioMaster Pocket
+    - RadioMaster TX12 / TX12 mkII
+    - RadioMaster Zorro
 - **bw212x64.zip** (212x64 pixel "wide screen" black and white screen radios)
-    - X9D
-    - X9D Plus
-    - X9D Plus 2019
+    - FrSky Taranis X9D
+    - FrSky Taranis X9D+
+    - FrSky Taranis X9D+ 2019
 
 ### Preparing your SD Card
 

@@ -1,3 +1,0 @@
-A collection of sailplane templates with Lua widgets for timing, score keeping, graphing of log data, and model configuration.
-
-Author: Jesper Frickmann
