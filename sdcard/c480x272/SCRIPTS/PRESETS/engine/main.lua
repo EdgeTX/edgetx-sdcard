@@ -251,7 +251,7 @@ local function state_PRESET_OPTIONS_INIT()
 end
 
 local function state_PRESET_OPTIONS(event, touchState)
-    log("state_PRESET_OPTIONS()")
+    --log("state_PRESET_OPTIONS()")
 
     if event == EVT_TOUCH_FIRST and (touchState.x <= 40 and touchState.y >= 100 and touchState.y <= 160) then
         print(string.format("(%s) %s - %s", page, touchState.x, touchState.y))

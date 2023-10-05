@@ -57,13 +57,13 @@ local function lcdSizeTextFixed(txt, font_size)
     elseif font_size == M.FONT_6 then
         v_offset = 0
     end
-    return ts_w, ts_h, v_offset
+    return ts_w, ts_h +2*v_offset, v_offset
 end
 
 function M.drawBadgedText(txt, field, font_size, is_selected, is_edit)
     local ts_w, ts_h, v_offset = lcdSizeTextFixed(txt, font_size)
-    ts_h = 10 + ts_h + v_offset * 2
-    local r = ts_h / 2
+    local bdg_h = 5 + ts_h + 5
+    local r = bdg_h / 2
 
     if (field.w > 0) then
         ts_w = field.w
@@ -78,7 +78,7 @@ function M.drawBadgedText(txt, field, font_size, is_selected, is_edit)
     end
     lcd.drawFilledCircle(field.x, field.y + r, r, bg_color)
     lcd.drawFilledCircle(field.x + ts_w, field.y + r, r, bg_color)
-    lcd.drawFilledRectangle(field.x, field.y, ts_w, ts_h, bg_color)
+    lcd.drawFilledRectangle(field.x, field.y, ts_w, bdg_h, bg_color)
     local attr = 0
     if (is_selected and is_edit) then
         attr = attr + BLINK
@@ -149,60 +149,6 @@ function M.readMeta(filename)
     end
 
     return properties
-end
-
------------------------------------------------------------------
--- better font names
-local FONT_38 = XXLSIZE -- 38px
-local FONT_16 = DBLSIZE -- 16px
-local FONT_12 = MIDSIZE -- 12px
-local FONT_8 = 0 -- Default 8px
-local FONT_6 = SMLSIZE -- 6px
-
-local function lcdSizeTextFixed(txt, font_size)
-    local ts_w, ts_h = lcd.sizeText(txt, font_size)
-
-    local v_offset = 0
-    if font_size == FONT_38 then
-        v_offset = -11
-    elseif font_size == FONT_16 then
-        v_offset = -5
-    elseif font_size == FONT_12 then
-        v_offset = -4
-    elseif font_size == FONT_8 then
-        v_offset = -3
-    elseif font_size == FONT_6 then
-        v_offset = 0
-    end
-    return ts_w, ts_h, v_offset
-end
-
-
-local function drawBadgedText(txt, field, font_size, is_selected, is_edit)
-    local ts_w, ts_h, v_offset = lcdSizeTextFixed(txt, font_size)
-    ts_h = 10 + ts_h + v_offset * 2
-    local r = ts_h / 2
-
-    if (field.w > 0) then
-        ts_w = field.w
-    else
-        if (ts_w < 30) then
-            ts_w = 30
-        end
-    end
-    local bg_color = WHITE
-    if (is_selected) then
-        bg_color = GREEN
-    end
-    lcd.drawFilledCircle(field.x, field.y + r, r, bg_color)
-    lcd.drawFilledCircle(field.x + ts_w, field.y + r, r, bg_color)
-    lcd.drawFilledRectangle(field.x, field.y, ts_w, ts_h, bg_color)
-    local attr = 0
-    if (is_selected and is_edit) then
-        attr = attr + BLINK
-    end
-
-    lcd.drawText(field.x, field.y + v_offset + 5, txt, font_size + BLACK + attr)
 end
 
 --------------------------------------------------------------------

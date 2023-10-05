@@ -127,17 +127,17 @@ function M.newGUI()
 
         local v_offset = 0
         if font_size == M.FONT_SIZES.FONT_38 then
-            v_offset = -11
+            v_offset = -15
         elseif font_size == M.FONT_SIZES.FONT_16 then
-            v_offset = -5
+            v_offset = -8
         elseif font_size == M.FONT_SIZES.FONT_12 then
-            v_offset = -4
+            v_offset = -6
         elseif font_size == M.FONT_SIZES.FONT_8 then
-            v_offset = -3
+            v_offset = -4
         elseif font_size == M.FONT_SIZES.FONT_6 then
-            v_offset = 0
+            v_offset = -3
         end
-        return ts_w, ts_h, v_offset
+        return ts_w, ts_h +2*v_offset, v_offset
     end
 
     function gui.drawText(x, y, text, flags, inversColor)
