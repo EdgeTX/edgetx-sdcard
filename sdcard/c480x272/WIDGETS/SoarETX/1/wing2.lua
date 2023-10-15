@@ -64,23 +64,16 @@ local lftYs = { }
 local rgtYs = { }
 local activeP   -- The point currently being edited
 
--- Work around the stupid fact that getCurve and setCurve tables are incompatible...
+-- Make sure that we have the right number of points on the curve
 local function GetCurve(crvIndex)
-	local oldTbl = model.getCurve(crvIndex)
+	local tbl = model.getCurve(crvIndex)
 
-  if #oldTbl.y ~= N - 1 then
+  if #tbl.y ~= N then
     setStickySwitch(LS_STEP, false)
     error("Wrong number of points on curve CV" .. crvIndex + 1)
   end
 
-	local newTbl = { }
-	newTbl.y = { }
-	for p = 1, N do
-		newTbl.y[p] = oldTbl.y[p - 1]
-	end
-	newTbl.smooth = 1
-	newTbl.name = oldTbl.name
-	return newTbl
+	return tbl
 end -- GetCurve()
 
 -- Find the output where the specified curve index is being used
