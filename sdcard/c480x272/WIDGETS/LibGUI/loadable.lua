@@ -85,7 +85,7 @@ local subGUI = gui.gui(COL2, TOP + ROW, COL4 + WIDTH - COL3, 2 * ROW + HEIGHT)
 
 -- A number that can be edited
 subGUI.label(0, 0, WIDTH, HEIGHT, "Number:")
-subGUI.number(COL2s, 0, WIDTH, HEIGHT, 0)
+subGUI.number(COL2s, 0, WIDTH, HEIGHT, 0, nil, nil, -10, 10)
 
 -- A drop-down with physical switches
 subGUI.label(0, ROW, WIDTH, HEIGHT, "Drop-down:")
