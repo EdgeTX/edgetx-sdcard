@@ -1,26 +1,26 @@
 local function init()
-    colorChangeTime = getTime()  -- 初始化时间
+    colorChangeTime = getTime()  -- Initialize time
     phase = 0
 end
 
--- 生成平滑循环颜色的函数
+-- Function to generate smooth cyclic colors
 local function getColor(phase, length)
     local position = (phase % length) / length
     local r, g, b = 30, 30, 30
-    local maxBrightness = 50  -- 最大亮度值
+    local maxBrightness = 50  -- Maximum brightness value
 
-    -- RGB颜色过渡：红 -> 绿 -> 蓝 -> 红
+    -- RGB color transition: red -> green -> blue -> red
     if position < 1/3 then
-        -- 从红到绿
+        -- From red to green
         r = maxBrightness * (1 - 3 * position)
         g = maxBrightness * (3 * position)
     elseif position < 2/3 then
-        -- 从绿到蓝
+        -- From green to blue
         position = position - 1/3
         g = maxBrightness * (1 - 3 * position)
         b = maxBrightness * (3 * position)
     else
-        -- 从蓝到红
+        -- From blue to red
         position = position - 2/3
         b = maxBrightness * (1 - 3 * position)
         r = maxBrightness * (3 * position)
@@ -30,9 +30,9 @@ local function getColor(phase, length)
 end
 
 local function run()
-    if ((getTime() - colorChangeTime) > 16) then  -- 将时间间隔增加到16个时间单位
+    if ((getTime() - colorChangeTime) > 16) then  -- Increase the time interval to 16 time units
         colorChangeTime = getTime()
-        phase = phase + 1  -- 更新颜色相位
+        phase = phase + 1  -- Update color phase
     end
 
     for i = 0, LED_STRIP_LENGTH - 1, 1 do
