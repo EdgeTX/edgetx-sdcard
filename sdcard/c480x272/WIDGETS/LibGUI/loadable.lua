@@ -217,12 +217,16 @@ end
 
 -- This function is called from the refresh(...) function in the main script
 function widget.refresh(event, touchState)
-    gui.run(event, touchState)
     if event == nil then
-        lcd.drawFilledRectangle(0, 100-10, 480, 70, RED)
-        lcd.drawText(40, 100, "This script is running currently in \"widget\"mode")
-        lcd.drawText(40, 125, "It only work in app-mode (full screen)")
+        lcd.drawFilledRectangle(0, 0, LCD_W, HEADER, COLOR_THEME_SECONDARY1)
+        lcd.drawText(10, 40 / 2, "LibGUI  Demo", VCENTER + MIDSIZE + libGUI.colors.primary2)
+
+        lcd.drawFilledRectangle(0, 50-5, 480, 60, RED, 90)
+        lcd.drawText(10, 50, "change to full-screen")
+        lcd.drawText(10, 70, "to see the widget")
+        return
     end
+    gui.run(event, touchState)
 end
 
 -- Return to the create(...) function in the main script
