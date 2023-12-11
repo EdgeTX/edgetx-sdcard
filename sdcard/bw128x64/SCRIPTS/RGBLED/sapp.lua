@@ -4,7 +4,7 @@ end
 local function run()
     for i=0, LED_STRIP_LENGTH - 1, 1
     do
-        setRGBLedColor(i, 0, 50, 50)  -- Set to sapphire color
+        setRGBLedColor(i, 0, 255, 255)  -- Set to sapphire color
     end
     applyRGBLedColors()
 end

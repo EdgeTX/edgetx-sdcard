@@ -3,43 +3,46 @@ local function init()
     phase = 0
 end
 
--- Function to generate smooth cyclic colors
+local minBrightness = 0  -- Minimum brightness value
+local maxBrightness = 255  -- Maximum brightness value
+
 local function getColor(phase, length)
     local position = (phase % length) / length
-    local r, g, b = 30, 30, 30
-    local maxBrightness = 50  -- Maximum brightness value
+    local r, g, b = minBrightness, minBrightness, minBrightness
 
     -- RGB color transition: red -> green -> blue -> red
     if position < 1/3 then
         -- From red to green
-        r = maxBrightness * (1 - 3 * position)
-        g = maxBrightness * (3 * position)
+        r = maxBrightness * (1 - 32 * position)
+        g = maxBrightness * (32 * position)
     elseif position < 2/3 then
         -- From green to blue
         position = position - 1/3
-        g = maxBrightness * (1 - 3 * position)
-        b = maxBrightness * (3 * position)
+        g = maxBrightness * (1 - 32 * position)
+        b = maxBrightness * (32 * position)
     else
         -- From blue to red
         position = position - 2/3
-        b = maxBrightness * (1 - 3 * position)
-        r = maxBrightness * (3 * position)
+        b = maxBrightness * (1 - 32 * position)
+        r = maxBrightness * (32 * position)
     end
 
-    return math.max(0, math.min(r, maxBrightness)), math.max(0, math.min(g, maxBrightness)), math.max(0, math.min(b, maxBrightness))
+    return r, g, b
 end
 
-local function run()
-    if ((getTime() - colorChangeTime) > 16) then  -- Increase the time interval to 16 time units
-        colorChangeTime = getTime()
-        phase = phase + 1  -- Update color phase
-    end
+local colorChangeTime = 0  -- The time of the last color change
 
-    for i = 0, LED_STRIP_LENGTH - 1, 1 do
-        local r, g, b = getColor(phase, 255)
-        setRGBLedColor(i, r, g, b)
+local function run()
+    if ((getTime() - colorChangeTime) > 1) then  -- Use an interval of 2 time units
+        colorChangeTime = getTime()
+        phase = (phase + 1) % 255  -- Update color phase
+
+        for i = 0, LED_STRIP_LENGTH - 1, 1 do
+            local r, g, b = getColor(phase + i * 64, 255)  -- Increase phase offset for each LED
+            setRGBLedColor(i, r, g, b)
+        end
+        applyRGBLedColors()
     end
-    applyRGBLedColors()
 end
 
 local function background()

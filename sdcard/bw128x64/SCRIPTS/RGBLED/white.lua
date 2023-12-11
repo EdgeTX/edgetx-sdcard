@@ -4,7 +4,7 @@ end
 local function run()
     for i=0, LED_STRIP_LENGTH - 1, 1
     do
-        setRGBLedColor(i, 50, 50, 50)  -- Set to white color
+        setRGBLedColor(i, 255, 255, 255)  -- Set to white color
     end
     applyRGBLedColors()
 end

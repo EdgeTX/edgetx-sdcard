@@ -7,8 +7,8 @@ end
 local function getColor(phase, length)
     local position = (phase % length) / length
     local r, g, b = 5, 5, 5
-    local maxBrightness = 50  -- Maximum brightness value
-    local minBrightness = 20  -- Minimum brightness value
+    local maxBrightness = 255  -- Maximum brightness value
+    local minBrightness = 0  -- Minimum brightness value
 
     -- RGB color transition: red -> green -> blue -> red
     if position < 1/3 then
@@ -34,7 +34,7 @@ local function getColor(phase, length)
 end
 
 local function run()
-    if ((getTime() - cycleTime) > 8) then  -- Use an interval of 8 time units
+    if ((getTime() - cycleTime) > 2) then  -- Use an interval of 8 time units
         cycleTime = getTime()
         phase = phase + 1  -- Update color phase
     end

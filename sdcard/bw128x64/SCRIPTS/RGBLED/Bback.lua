@@ -29,6 +29,13 @@ local function getColor(phase, length)
         r = maxBrightness * (3 * position)
     end
 
+    -- Skip colors that are close to the background color
+    local bg_r, bg_g, bg_b = 0, 0, 72  -- Background color
+    local threshold = 30  -- Color difference threshold
+    if math.abs(r - bg_r) < threshold and math.abs(g - bg_g) < threshold and math.abs(b - bg_b) < threshold then
+        return getColor((phase + 1) % length, length)  -- Skip this color and get the next one
+    end
+
     return r, g, b
 end
 
@@ -40,7 +47,7 @@ local function run()
             local r, g, b = getColor(colorPhase, 255)
             setRGBLedColor(i, r, g, b)
         else
-            setRGBLedColor(i, 0, 0, 50)
+            setRGBLedColor(i, 0, 0, 72)
         end
     end
     if ((getTime() - scroll_oldtime) > 8) then
