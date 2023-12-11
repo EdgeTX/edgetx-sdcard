@@ -21,17 +21,6 @@
 -- GNU General Public License for more details.                          --
 ---------------------------------------------------------------------------
 local name = "LibGUI"
-local libGUI
-
--- Return GUI library table
-function loadGUI()
-  if not libGUI then
-  -- Loadable code chunk is called immediately and returns libGUI
-  	libGUI = loadScript("/WIDGETS/" .. name .. "/libgui.lua")
-  end
-  
-  return libGUI()
-end
 
 ---------------------------------------------------------------------------
 -- The following widget implementation demonstrates how to use the       --
@@ -52,7 +41,7 @@ end
 local function background(widget)
 end
 
-local options = { 
+local options = {
 }
 
 local function update(widget, options)
