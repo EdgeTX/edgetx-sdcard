@@ -2,8 +2,9 @@
 -- SoarETX F3K score keeper, loadable component                          --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Date:    2023-01-23                                                   --
--- Version: 1.0.2                                                        --
+-- Improvements: Frankie Arzu                                            --
+-- Date:    2024-01-15                                                   --
+-- Version: 1.2.0                                                        --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
 --                                                                       --

@@ -1,9 +1,9 @@
 ---------------------------------------------------------------------------
--- SoarETX, loadable component                                           --
+-- SoarETX model name, loadable component                                --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Date:    2022-11-21                                                   --
--- Version: 1.0.1                                                         --
+-- Date:    2022-02-08                                                   --
+-- Version: 1.0.0                                                        --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
 --                                                                       --
@@ -19,17 +19,20 @@
 -- GNU General Public License for more details.                          --
 ---------------------------------------------------------------------------
 
-local widget, soarGlobals =  ...
+local widget =  ...
+local name = model.getInfo().name
+local att = SMLSIZE
+
+for i, a in ipairs({ DBLSIZE, MIDSIZE, BOLD, 0 }) do
+  local w = lcd.sizeText(name, a)
+  if w <= widget.zone.w then
+    att = a
+    break
+  end
+end
+
+att = att + VCENTER + COLOR_THEME_PRIMARY2
 
 function widget.refresh(event, touchState)
-  if event then
-    lcd.exitFullScreen()
-  end
-  local flags = CENTER + VCENTER + MIDSIZE
-  if soarGlobals.battery and soarGlobals.battery > 0 then
-    flags = flags + COLOR_THEME_PRIMARY2
-  else
-    flags = flags + COLOR_THEME_DISABLED
-  end  
-  lcd.drawText(widget.zone.w / 2, widget.zone.h / 2, string.format("%1.1f V", soarGlobals.battery), flags)
+  lcd.drawText(0, widget.zone.h / 2, name, att)
 end -- refresh(...)

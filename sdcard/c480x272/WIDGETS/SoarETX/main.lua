@@ -2,8 +2,9 @@
 -- SoarETX widget                                                        --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Date:    2022-11-22                                                   --
--- Version: 1.0.1                                                        --
+-- Improvements: Frankie Arzu                                            --
+-- Date:    2024-01-15                                                   --
+-- Version: 1.2.0                                                        --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
 --                                                                       --
@@ -21,7 +22,8 @@
 
 local options = {
   { "Version", VALUE, 1, 1, 99 },
-  { "FileName", STRING, "" }
+  { "FileName", STRING, "" },
+  { "Type", STRING, "" }
 }
 
 local soarGlobals
@@ -75,16 +77,42 @@ local function Load(widget)
   end
 end
 
+local function GetCurve(crvIndex)
+  local N = 5
+
+  local oldTbl = model.getCurve(crvIndex)
+
+  if #oldTbl.y == N then -- Normal Behaviour
+    return oldTbl
+  end
+  
+  -- Work arround the bug of GetCurve in some versions (2.8.3) of ETX
+  if #oldTbl.y == N - 1 then
+    local newTbl = { }
+    newTbl.y = { }
+    for p = 1, N do
+      newTbl.y[p] = oldTbl.y[p - 1]
+    end
+    newTbl.smooth = 1
+    newTbl.name = oldTbl.name
+    return newTbl
+  end
+
+  return oldTbl
+end -- GetCurve()
+
+
 -- Initialize the first time this widget is instantiated
 local function init()
   soarGlobals = {
     path = "/WIDGETS/SoarETX/",
     battery = 0,
-    batteryParameter = 1
+    batteryParameter = 1,
+    getCurve = GetCurve
   }
 
   -- Functions to handle persistent model parameters stored in curve 32
-  local parameterCurve = model.getCurve(31)
+  local parameterCurve = GetCurve(31)
   
   if not parameterCurve then
     error("Curve #32 is missing! It is used to store persistent model parameters for Lua.")

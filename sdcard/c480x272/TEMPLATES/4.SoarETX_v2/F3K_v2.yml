@@ -1,6 +1,8 @@
+semver: 2.9.1
 header: 
-   name: "F3K"
+   name: "F3K_v2"
    bitmap: ""
+   labels: ""
 timers: 
    0:
       start: 0
@@ -11,6 +13,8 @@ timers:
       minuteBeep: 0
       persistent: 0
       countdownStart: -1
+      showElapsed: 0
+      extraHaptic: 0
       name: "Flight"
    1:
       start: 0
@@ -21,6 +25,8 @@ timers:
       minuteBeep: 0
       persistent: 0
       countdownStart: -1
+      showElapsed: 0
+      extraHaptic: 0
       name: "Window"
 telemetryProtocol: 0
 thrTrim: 0
@@ -33,6 +39,10 @@ displayChecklist: 0
 extendedLimits: 1
 extendedTrims: 0
 throttleReversed: 0
+enableCustomThrottleWarning: 0
+disableTelemetryWarning: 0
+showInstanceIds: 0
+customThrottleWarningPosition: 0
 beepANACenter: 0
 mixData: 
  -
@@ -520,8 +530,8 @@ expoData:
  -
    mode: 3
    scale: 0
+   trimSource: 0
    srcRaw: Rud
-   carryTrim: 0
    chn: 0
    swtch: "NONE"
    flightModes: 000000000
@@ -531,8 +541,8 @@ expoData:
  -
    mode: 3
    scale: 0
+   trimSource: 0
    srcRaw: Ele
-   carryTrim: 0
    chn: 1
    swtch: "NONE"
    flightModes: 000000000
@@ -545,8 +555,8 @@ expoData:
  -
    mode: 3
    scale: 0
+   trimSource: 0
    srcRaw: Ail
-   carryTrim: 0
    chn: 2
    swtch: "NONE"
    flightModes: 000000000
@@ -559,8 +569,8 @@ expoData:
  -
    mode: 3
    scale: 0
+   trimSource: 1
    srcRaw: Thr
-   carryTrim: 1
    chn: 3
    swtch: "NONE"
    flightModes: 000000000
@@ -570,8 +580,8 @@ expoData:
  -
    mode: 3
    scale: 0
+   trimSource: 1
    srcRaw: TrimThr
-   carryTrim: 1
    chn: 4
    swtch: "NONE"
    flightModes: 000000000
@@ -584,8 +594,8 @@ expoData:
  -
    mode: 3
    scale: 0
+   trimSource: 1
    srcRaw: MAX
-   carryTrim: 1
    chn: 5
    swtch: "NONE"
    flightModes: 000000000
@@ -595,8 +605,8 @@ expoData:
  -
    mode: 3
    scale: 0
+   trimSource: 1
    srcRaw: Thr
-   carryTrim: 1
    chn: 6
    swtch: "NONE"
    flightModes: 000000000
@@ -609,8 +619,8 @@ expoData:
  -
    mode: 3
    scale: 0
+   trimSource: 1
    srcRaw: S1
-   carryTrim: 1
    chn: 7
    swtch: "NONE"
    flightModes: 000000000
@@ -865,14 +875,14 @@ logicalSw:
       delay: 30
       duration: 0
    27:
-      func: FUNC_AND
-      def: "FM2,L16"
+      func: FUNC_OR
+      def: "FM1,FM2"
       andsw: "NONE"
       delay: 0
       duration: 0
    28:
-      func: FUNC_OR
-      def: "FM1,L28"
+      func: FUNC_AND
+      def: "L28,L16"
       andsw: "L8"
       delay: 0
       duration: 0
@@ -894,7 +904,7 @@ customFn:
    2:
       swtch: "L26"
       func: PLAY_TRACK
-      def: "flapup,5"
+      def: "se2flu,5"
    3:
       swtch: "L29"
       func: LOGS
@@ -903,6 +913,18 @@ customFn:
       swtch: "L30"
       func: LOGS
       def: "100"
+   5:
+      swtch: "FM0"
+      func: PLAY_TRACK
+      def: "se2cru,1x"
+   6:
+      swtch: "FM3"
+      func: PLAY_TRACK
+      def: "se2spd,1x"
+   7:
+      swtch: "FM4"
+      func: PLAY_TRACK
+      def: "se2thm,1x"
 flightModeData: 
    0:
       trim: 
@@ -915,9 +937,9 @@ flightModeData:
       fadeOut: 0
       gvars: 
          0:
-            val: 66
+            val: 70
          1:
-            val: 67
+            val: 65
          2:
             val: 10
          3:
@@ -941,7 +963,7 @@ flightModeData:
             value: -60
             mode: 2
          2:
-            value: 0
+            value: -20
             mode: 2
          3:
             value: 0
@@ -1080,8 +1102,12 @@ varioData:
    min: 0
    max: 0
 rssiSource: none
+rfAlarms: 
+   warning: 45
+   critical: 42
 thrTrimSw: 0
 potsWarnMode: WARN_OFF
+jitterFilter: GLOBAL
 failsafeChannels: 
    4:
       val: 1024
@@ -1089,6 +1115,13 @@ failsafeChannels:
       val: -1024
    6:
       val: -1024
+trainerData: 
+   mode: MASTER_TRAINER_JACK
+   channelsStart: 0
+   channelsCount: -8
+   frameLength: 0
+   delay: 0
+   pulsePol: 0
 inputNames: 
    0:
       val: "Rudd"
@@ -1124,6 +1157,10 @@ screenData:
                         type: String
                         value: 
                            stringValue: "f3k"
+                     2:
+                        type: String
+                        value: 
+                           stringValue: "FXX"
          options: 
             0:
                type: Bool
@@ -1156,11 +1193,15 @@ screenData:
                      0:
                         type: Signed
                         value: 
-                           signedValue: 1
+                           signedValue: 2
                      1:
                         type: String
                         value: 
                            stringValue: "outputs"
+                     2:
+                        type: String
+                        value: 
+                           stringValue: "F3K"
             1:
                widgetName: "SoarETX"
                widgetData: 
@@ -1168,11 +1209,15 @@ screenData:
                      0:
                         type: Signed
                         value: 
-                           signedValue: 1
+                           signedValue: 2
                      1:
                         type: String
                         value: 
                            stringValue: "wing2"
+                     2:
+                        type: String
+                        value: 
+                           stringValue: "F3K"
             2:
                widgetName: "SoarETX"
                widgetData: 
@@ -1180,11 +1225,15 @@ screenData:
                      0:
                         type: Signed
                         value: 
-                           signedValue: 1
+                           signedValue: 2
                      1:
                         type: String
                         value: 
-                           stringValue: "f3k_mix"
+                           stringValue: "mixes"
+                     2:
+                        type: String
+                        value: 
+                           stringValue: "F3K"
             3:
                widgetName: "SoarETX"
                widgetData: 
@@ -1192,11 +1241,15 @@ screenData:
                      0:
                         type: Signed
                         value: 
-                           signedValue: 1
+                           signedValue: 2
                      1:
                         type: String
                         value: 
-                           stringValue: "f3k_ctr"
+                           stringValue: "ailctr"
+                     2:
+                        type: String
+                        value: 
+                           stringValue: "F3K"
             4:
                widgetName: "SoarETX"
                widgetData: 
@@ -1204,11 +1257,15 @@ screenData:
                      0:
                         type: Signed
                         value: 
-                           signedValue: 1
+                           signedValue: 2
                      1:
                         type: String
                         value: 
                            stringValue: "graph"
+                     2:
+                        type: String
+                        value: 
+                           stringValue: "F3K"
             5:
                widgetName: "SoarETX"
                widgetData: 
@@ -1216,11 +1273,15 @@ screenData:
                      0:
                         type: Signed
                         value: 
-                           signedValue: 1
+                           signedValue: 2
                      1:
                         type: String
                         value: 
-                           stringValue: "f3k_sw"
+                           stringValue: "switch"
+                     2:
+                        type: String
+                        value: 
+                           stringValue: "F3K"
          options: 
             0:
                type: Bool
@@ -1256,6 +1317,10 @@ topbarData:
                   type: String
                   value: 
                      stringValue: "name"
+               2:
+                  type: String
+                  value: 
+                     stringValue: "FXX"
       3:
          widgetName: "SoarETX"
          widgetData: 
@@ -1268,5 +1333,23 @@ topbarData:
                   type: String
                   value: 
                      stringValue: "battery"
+               2:
+                  type: String
+                  value: 
+                     stringValue: "FXX"
 view: 1
-modelRegistrationID: ""
+modelRegistrationID: "670112G-"
+usbJoystickExtMode: 0
+usbJoystickIfMode: JOYSTICK
+usbJoystickCircularCut: 0
+radioThemesDisabled: GLOBAL
+radioGFDisabled: GLOBAL
+radioTrainerDisabled: GLOBAL
+modelHeliDisabled: GLOBAL
+modelFMDisabled: GLOBAL
+modelCurvesDisabled: GLOBAL
+modelGVDisabled: GLOBAL
+modelLSDisabled: GLOBAL
+modelSFDisabled: GLOBAL
+modelCustomScriptsDisabled: GLOBAL
+modelTelemetryDisabled: GLOBAL
