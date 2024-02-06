@@ -18,13 +18,13 @@ jobs:
   build-artifact:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Generate ZIPs
         run: |
           chmod +x generate.sh
           ./generate.sh
       - name: Upload a Build Artifact
-        uses: actions/upload-artifact@v2.2.3
+        uses: actions/upload-artifact@v4
         with:
           name: sdcard-latest
           path:  |
@@ -36,7 +36,7 @@ jobs:
     needs: build-artifact
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@master
+      - uses: actions/download-artifact@v4
         with:
           name: sdcard-latest
           path: .
