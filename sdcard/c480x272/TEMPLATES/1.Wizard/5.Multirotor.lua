@@ -27,6 +27,11 @@ local pages = {}
 local fields = {}
 local switches = {"SA", "SB", "SC", "SD", "SE", "SF", "SG"}
 
+local STICK_NUMBER_AIL = 3
+local STICK_NUMBER_ELE = 1
+local STICK_NUMBER_THR = 2
+local STICK_NUMBER_RUD = 0
+
 chdir("/TEMPLATES/1.Wizard")
 -- load common Bitmaps
 local ImgMarkBg = Bitmap.open("img/mark_bg.png")
@@ -139,7 +144,7 @@ end
 
 
 local ThrottleFields = {
-  {50, 50, COMBO, 1, defaultChannel(2), { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8" } },
+  {50, 50, COMBO, 1, defaultChannel(STICK_NUMBER_THR), { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8" } },
 }
 
 local ThrottleBackground
@@ -160,7 +165,7 @@ local function runThrottleConfig(event)
 end
 
 local RollFields = {
-  {50, 50, COMBO, 1, defaultChannel(3), { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8" } },
+  {50, 50, COMBO, 1, defaultChannel(STICK_NUMBER_AIL), { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8" } },
 }
 
 local RollBackground
@@ -182,7 +187,7 @@ local function runRollConfig(event)
 end
 
 local PitchFields = {
-  {50, 50, COMBO, 1, defaultChannel(1), { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8" } },
+  {50, 50, COMBO, 1, defaultChannel(STICK_NUMBER_ELE), { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8" } },
 }
 
 local PitchBackground
@@ -204,7 +209,7 @@ local function runPitchConfig(event)
 end
 
 local YawFields = {
-  {50, 50, COMBO, 1, defaultChannel(0), { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8" } },
+  {50, 50, COMBO, 1, defaultChannel(STICK_NUMBER_RUD), { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8" } },
 }
 
 local YawBackground
@@ -361,13 +366,13 @@ local function createModel(event)
   model.defaultInputs()
   model.deleteMixes()
   -- throttle
-  addMix(ThrottleFields[1][5], MIXSRC_FIRST_INPUT+defaultChannel(2), "Thr")
+  addMix(ThrottleFields[1][5], MIXSRC_FIRST_INPUT+defaultChannel(STICK_NUMBER_THR), "Thr")
   -- roll
-  addMix(RollFields[1][5], MIXSRC_FIRST_INPUT+defaultChannel(0), "Roll")
+  addMix(RollFields[1][5], MIXSRC_FIRST_INPUT+defaultChannel(STICK_NUMBER_AIL), "Roll")
   -- pitch
-  addMix(PitchFields[1][5], MIXSRC_FIRST_INPUT+defaultChannel(1), "Pitch")
+  addMix(PitchFields[1][5], MIXSRC_FIRST_INPUT+defaultChannel(STICK_NUMBER_ELE), "Pitch")
   -- yaw
-  addMix(YawFields[1][5], MIXSRC_FIRST_INPUT+defaultChannel(3), "Yaw")
+  addMix(YawFields[1][5], MIXSRC_FIRST_INPUT+defaultChannel(STICK_NUMBER_RUD), "Yaw")
   addMix(4, MIXSRC_SA + ArmFields[1][5], "Arm")
   addMix(5, MIXSRC_SA + BeeperFields[1][5], "Beeper")
   addMix(6, MIXSRC_SA + ModeFields[1][5], "Mode")
