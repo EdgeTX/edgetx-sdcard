@@ -1,6 +1,6 @@
 semver: 2.9.0
 header: 
-   name: "Plane"
+   name: "New Plane"
    bitmap: "plane.jpg"
    labels: ""
 timers: 
@@ -33,21 +33,6 @@ showInstanceIds: 0
 customThrottleWarningPosition: 0
 beepANACenter: 0
 logicalSw: 
-   0:
-      func: FUNC_VNEG
-      def: "tele(0),365"
-      andsw: "NONE"
-      delay: 0
-      duration: 0
-customFn: 
-   0:
-      swtch: "SF2"
-      func: OVERRIDE_CHANNEL
-      def: "2,-100,1"
-   1:
-      swtch: "L1"
-      func: PLAY_VALUE
-      def: "tele(0),7"
 thrTraceSrc: Thr
 switchWarningState: C-FdHu
 rssiSource: none
@@ -116,6 +101,10 @@ screenData:
                         value: 
                            boolValue: 0
                      3:
+                        type: Bool
+                        value: 
+                           boolValue: 0
+                     4:
                         type: Bool
                         value: 
                            boolValue: 0
@@ -225,3 +214,14 @@ topbarData:
                      boolValue: 1
 view: 0
 
+radioThemesDisabled: GLOBAL
+radioGFDisabled: GLOBAL
+radioTrainerDisabled: GLOBAL
+modelHeliDisabled: OFF
+modelFMDisabled: OFF
+modelCurvesDisabled: GLOBAL
+modelGVDisabled: OFF
+modelLSDisabled: GLOBAL
+modelSFDisabled: GLOBAL
+modelCustomScriptsDisabled: OFF
+modelTelemetryDisabled: GLOBAL
