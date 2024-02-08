@@ -122,13 +122,13 @@ local function lcdSizeTextFixed(txt, font_size)
     elseif font_size == FONT_6 then
         v_offset = 0
     end
-    return ts_w, ts_h, v_offset
+    return ts_w, ts_h +2*v_offset, v_offset
 end
 
 local function drawBadgedText(txt, field, font_size, is_selected, is_edit)
     local ts_w, ts_h, v_offset = lcdSizeTextFixed(txt, font_size)
-    ts_h = 10 + ts_h + v_offset * 2
-    local r = ts_h / 2
+    local bdg_h = 5 + ts_h + 5
+    local r = bdg_h / 2
 
     if (field.w > 0) then
         ts_w = field.w
@@ -143,7 +143,7 @@ local function drawBadgedText(txt, field, font_size, is_selected, is_edit)
     end
     lcd.drawFilledCircle(field.x, field.y + r, r, bg_color)
     lcd.drawFilledCircle(field.x + ts_w, field.y + r, r, bg_color)
-    lcd.drawFilledRectangle(field.x, field.y, ts_w, ts_h, bg_color)
+    lcd.drawFilledRectangle(field.x, field.y, ts_w, bdg_h, bg_color)
     local attr = 0
     if (is_selected and is_edit) then
         attr = attr + BLINK
@@ -735,19 +735,21 @@ local function createModel(event)
         addMix(GearFields.channel.value, switchIndex, "Gear", 100, 0)
     end
 
-    -- special function for arm switch
-    local switchName = MotorFields.arm_switch.avail_values[1 + MotorFields.arm_switch.value]
-    local switchIndex = getSwitchIndex(switchName .. CHAR_DOWN)
-    local channelIndex = MotorFields.motor_ch.value
+    -- SF arm switch
+    if (MotorFields.is_arm.value == 1) then
+        local switchName = MotorFields.arm_switch.avail_values[1 + MotorFields.arm_switch.value]
+        local switchIndex = getSwitchIndex(switchName .. CHAR_DOWN)
+        local channelIndex = MotorFields.motor_ch.value
 
-    model.setCustomFunction(FUNC_OVERRIDE_CHANNEL, {
-        switch = switchIndex,
-        func = 0,
-        value = -100,
-        mode = 0,
-        param = channelIndex, --"CH3"
-        active = 1
-    })
+        model.setCustomFunction(FUNC_OVERRIDE_CHANNEL, {
+            switch = switchIndex,
+            func = 0,
+            value = -100,
+            mode = 0,
+            param = channelIndex, --"CH3"
+            active = 1
+        })
+    end
 
     selectPage(1)
     return 0
