@@ -36,9 +36,6 @@ logicalSw:
 thrTraceSrc: Thr
 switchWarningState: C-FdHu
 rssiSource: none
-rfAlarms: 
-   warning: 45
-   critical: 42
 thrTrimSw: 0
 potsWarnMode: WARN_OFF
 jitterFilter: GLOBAL
