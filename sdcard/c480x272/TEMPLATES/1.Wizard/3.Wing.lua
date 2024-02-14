@@ -89,12 +89,9 @@ local function selectField(fields, step)
     repeat
         print(string.format("selectField: current: %s (vis: %s)", current, fields[current].is_visible))
         current = 1 + ((current + step - 1 + #fields) % #fields)
-    if fields[current].type == HEADER then
-        current = 1 + ((current + step - 1 + #fields) % #fields)
-    end
-
-
-
+        if fields[current].type == HEADER then
+            current = 1 + ((current + step - 1 + #fields) % #fields)
+        end
     until fields[current].is_visible == 1
     print(string.format("selectField-end: current: %s", current))
 end
