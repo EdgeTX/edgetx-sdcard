@@ -17,7 +17,7 @@
 
 -- Author: 3djc (2017)
 -- Update by: Offer Shmuely (2023)
--- version: 2.0
+local app_ver="2.1"
 
 local VALUE = 0
 local COMBO = 1
@@ -122,13 +122,13 @@ local function lcdSizeTextFixed(txt, font_size)
     elseif font_size == FONT_6 then
         v_offset = 0
     end
-    return ts_w, ts_h, v_offset
+    return ts_w, ts_h +2*v_offset, v_offset
 end
 
 local function drawBadgedText(txt, field, font_size, is_selected, is_edit)
     local ts_w, ts_h, v_offset = lcdSizeTextFixed(txt, font_size)
-    ts_h = 10 + ts_h + v_offset * 2
-    local r = ts_h / 2
+    local bdg_h = 5 + ts_h + 5
+    local r = bdg_h / 2
 
     if (field.w > 0) then
         ts_w = field.w
@@ -143,7 +143,7 @@ local function drawBadgedText(txt, field, font_size, is_selected, is_edit)
     end
     lcd.drawFilledCircle(field.x, field.y + r, r, bg_color)
     lcd.drawFilledCircle(field.x + ts_w, field.y + r, r, bg_color)
-    lcd.drawFilledRectangle(field.x, field.y, ts_w, ts_h, bg_color)
+    lcd.drawFilledRectangle(field.x, field.y, ts_w, bdg_h, bg_color)
     local attr = 0
     if (is_selected and is_edit) then
         attr = attr + BLINK
@@ -546,13 +546,6 @@ local function drawNextLine(text, chNum, text2)
     lineIndex = lineIndex + 20
 end
 
-local ConfigSummaryFields = {
-    ack = { id = 'ack', x = 110, y = 250, w = 0, type = COMBO, is_visible = 1, value = 0, avail_values = { "No, I need to change something", "Yes, all is well, create the plane !" } },
-}
-ConfigSummaryFields.page = {
-    ConfigSummaryFields.ack
-}
-
 local ImgSummary
 
 local function runConfigSummary(event)
@@ -602,7 +595,7 @@ local function runConfigSummary(event)
         drawNextLine("V-Tail Left", TailFields.ch_b.value)
     end
 
-    -- retracts
+    -- retracts gear
     if (GearFields.is_gear.value == 1) then
         local switchName = GearFields.switch.avail_values[1 + GearFields.switch.value]
         drawNextLine("Gear Switch", nil, switchName)
@@ -623,12 +616,20 @@ local function runConfigSummary(event)
         drawNextLine("Arm switch", nil, switchName)
     end
 
-    local result = runFieldsPage(ConfigSummaryFields.page, event)
+    lcd.drawFilledRectangle(60-10, 250-2, 240, 25, YELLOW)
+    lcd.drawText(60, 250, "Hold [Enter] to apply changes...", COLOR_THEME_PRIMARY1)
 
-    if (ConfigSummaryFields.ack.value == 1 and is_edit == false) then
+    if event == EVT_VIRTUAL_EXIT then
+        -- exit script
+        return 2
+    end
+
+    -- approve settings
+    if (event == EVT_VIRTUAL_ENTER_LONG) then
         selectPage(1)
     end
-    return result
+
+    return 0
 end
 
 local function addMix(channel, input, name, weight, index)
@@ -691,21 +692,19 @@ local function createModel(event)
         updateInputLine(defaultChannel_0_RUD, 0, expoVal, 100, nil)
     end
 
-
-
     -- motor
     if (MotorFields.is_motor.value == 1) then
         addMix(MotorFields.motor_ch.value, MIXSRC_FIRST_INPUT + defaultChannel_0_THR, "Motor")
     end
 
-    -- Ailerons
+    -- ailerons
     if (AilFields.ail_type.value == 1) then
         addMix(AilFields.ail_ch_a.value, MIXSRC_FIRST_INPUT + defaultChannel_0_AIL, "Ail")
     elseif (AilFields.ail_type.value == 2) then
         addMix(AilFields.ail_ch_a.value, MIXSRC_FIRST_INPUT + defaultChannel_0_AIL, "Ail-R")
         addMix(AilFields.ail_ch_b.value, MIXSRC_FIRST_INPUT + defaultChannel_0_AIL, "Ail-L", -100)
     end
-    -- Flaps
+    -- flaps
     if (FlapsFields.flap_type.value == 1) then
         addMix(FlapsFields.flap_ch_a.value, MIXSRC_SA, "Flaps")
     elseif (FlapsFields.flap_type.value == 2) then
@@ -735,19 +734,21 @@ local function createModel(event)
         addMix(GearFields.channel.value, switchIndex, "Gear", 100, 0)
     end
 
-    -- special function for arm switch
-    local switchName = MotorFields.arm_switch.avail_values[1 + MotorFields.arm_switch.value]
-    local switchIndex = getSwitchIndex(switchName .. CHAR_DOWN)
-    local channelIndex = MotorFields.motor_ch.value
+    -- SF arm switch
+    if (MotorFields.is_arm.value == 1) then
+        local switchName = MotorFields.arm_switch.avail_values[1 + MotorFields.arm_switch.value]
+        local switchIndex = getSwitchIndex(switchName .. CHAR_DOWN)
+        local channelIndex = MotorFields.motor_ch.value
 
-    model.setCustomFunction(FUNC_OVERRIDE_CHANNEL, {
-        switch = switchIndex,
-        func = 0,
-        value = -100,
-        mode = 0,
-        param = channelIndex, --"CH3"
-        active = 1
-    })
+        model.setCustomFunction(FUNC_OVERRIDE_CHANNEL, {
+            switch = switchIndex,
+            func = 0,
+            value = -100,
+            mode = 0,
+            param = channelIndex, --"CH3"
+            active = 1
+        })
+    end
 
     selectPage(1)
     return 0
