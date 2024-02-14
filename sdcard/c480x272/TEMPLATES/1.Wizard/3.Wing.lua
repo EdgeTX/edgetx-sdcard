@@ -17,10 +17,11 @@
 
 -- Author: Offer Shmuely
 -- Date: 2023
--- version: 1.0
+-- version: 1.1
 
 local VALUE = 0
 local COMBO = 1
+local HEADER = 2
 
 local is_edit = false
 local page = 1
@@ -41,10 +42,10 @@ local STICK_NUMBER_ELE = 1
 local STICK_NUMBER_THR = 2
 local STICK_NUMBER_RUD = 0
 
-local defaultChannel_AIL = defaultChannel(STICK_NUMBER_AIL)+1
-local defaultChannel_ELE = defaultChannel(STICK_NUMBER_ELE)+1
-local defaultChannel_THR = defaultChannel(STICK_NUMBER_THR)+1
-local defaultChannel_RUD = defaultChannel(STICK_NUMBER_RUD)+1
+local defaultChannel_AIL = defaultChannel(STICK_NUMBER_AIL) + 1
+local defaultChannel_ELE = defaultChannel(STICK_NUMBER_ELE) + 1
+local defaultChannel_THR = defaultChannel(STICK_NUMBER_THR) + 1
+local defaultChannel_RUD = defaultChannel(STICK_NUMBER_RUD) + 1
 
 local defaultChannel_0_AIL = defaultChannel(STICK_NUMBER_AIL)
 local defaultChannel_0_ELE = defaultChannel(STICK_NUMBER_ELE)
@@ -118,13 +119,13 @@ local function lcdSizeTextFixed(txt, font_size)
     elseif font_size == FONT_6 then
         v_offset = 0
     end
-    return ts_w, ts_h, v_offset
+    return ts_w, ts_h +2*v_offset, v_offset
 end
 
 local function drawBadgedText(txt, field, font_size, is_selected, is_edit)
     local ts_w, ts_h, v_offset = lcdSizeTextFixed(txt, font_size)
-    ts_h = 10 + ts_h + v_offset * 2
-    local r = ts_h / 2
+    local bdg_h = 5 + ts_h + 5
+    local r = bdg_h / 2
 
     if (field.w > 0) then
         ts_w = field.w
@@ -139,7 +140,7 @@ local function drawBadgedText(txt, field, font_size, is_selected, is_edit)
     end
     lcd.drawFilledCircle(field.x, field.y + r, r, bg_color)
     lcd.drawFilledCircle(field.x + ts_w, field.y + r, r, bg_color)
-    lcd.drawFilledRectangle(field.x, field.y, ts_w, ts_h, bg_color)
+    lcd.drawFilledRectangle(field.x, field.y, ts_w, bdg_h, bg_color)
     local attr = 0
     if (is_selected and is_edit) then
         attr = attr + BLINK
@@ -347,13 +348,6 @@ local function drawNextLine(text, chNum, text2)
     lineIndex = lineIndex + 20
 end
 
-local ConfigSummaryFields = {
-    ack= {id='ack', x=110, y=250, w=0, type=COMBO, is_visible=1, value=0, avail_values={ "No, I need to change something", "Yes, all is well, create the plane !" } },
-}
-ConfigSummaryFields.page = {
-    ConfigSummaryFields.ack
-}
-
 local ImgSummary
 
 local function runConfigSummary(event)
@@ -388,12 +382,21 @@ local function runConfigSummary(event)
 
     drawNextLine("Dual Rate", nil, ElevronFields.is_dual_rate.avail_values[1 + ElevronFields.is_dual_rate.value])
 
-    local result = runFieldsPage(ConfigSummaryFields.page, event)
 
-    if (ConfigSummaryFields.ack.value == 1 and is_edit == false) then
+    lcd.drawFilledRectangle(60-10, 250-2, 240, 25, YELLOW)
+    lcd.drawText(60, 250, "Hold [Enter] to apply changes...", COLOR_THEME_PRIMARY1)
+
+    if event == EVT_VIRTUAL_EXIT then
+        -- exit script
+        return 2
+    end
+
+    -- approve settings
+    if (event == EVT_VIRTUAL_ENTER_LONG) then
         selectPage(1)
     end
-    return result
+
+    return 0
 end
 
 local function addMix(channel, input, name, weight, index)
@@ -442,25 +445,24 @@ local function createModel(event)
     local expoVal = ElevronFields.expo.value
     local is_dual_rate = (ElevronFields.is_dual_rate.value == 1)
     if (is_dual_rate) then
-        updateInputLine(defaultChannel_0_AIL, 0, expoVal, 100,"SC" .. CHAR_UP)
-        updateInputLine(defaultChannel_0_AIL, 1, expoVal, 75, "SC-")
-        updateInputLine(defaultChannel_0_AIL, 2, expoVal, 50, "SC" .. CHAR_DOWN)
+        updateInputLine(defaultChannel_0_AIL, 0, expoVal, 100, "SC" .. CHAR_UP)
+        updateInputLine(defaultChannel_0_AIL, 1, expoVal, 75 , "SC-")
+        updateInputLine(defaultChannel_0_AIL, 2, expoVal, 50 , "SC" .. CHAR_DOWN)
 
-        updateInputLine(defaultChannel_0_ELE, 0, expoVal, 100,"SC" .. CHAR_UP)
-        updateInputLine(defaultChannel_0_ELE, 1, expoVal, 75, "SC-")
-        updateInputLine(defaultChannel_0_ELE, 2, expoVal, 50, "SC" .. CHAR_DOWN)
+        updateInputLine(defaultChannel_0_ELE, 0, expoVal, 100, "SC" .. CHAR_UP)
+        updateInputLine(defaultChannel_0_ELE, 1, expoVal, 75 , "SC-")
+        updateInputLine(defaultChannel_0_ELE, 2, expoVal, 50 , "SC" .. CHAR_DOWN)
     else
         updateInputLine(defaultChannel_0_AIL, 0, expoVal, 100, nil)
         updateInputLine(defaultChannel_0_ELE, 0, expoVal, 100, nil)
     end
-
 
     -- motor
     if (MotorFields.is_motor.value == 1) then
         addMix(MotorFields.motor_ch.value, MIXSRC_FIRST_INPUT + defaultChannel_0_THR, "Motor")
     end
 
-    -- Ailerons
+    -- ailerons
     addMix(ElevronFields.ail_ch_r.value, MIXSRC_FIRST_INPUT + defaultChannel(STICK_NUMBER_ELE), "ele-R", 50)
     addMix(ElevronFields.ail_ch_r.value, MIXSRC_FIRST_INPUT + defaultChannel(STICK_NUMBER_AIL), "ail-R", -50)
     addMix(ElevronFields.ail_ch_l.value, MIXSRC_FIRST_INPUT + defaultChannel(STICK_NUMBER_ELE), "ele-L", 50)
