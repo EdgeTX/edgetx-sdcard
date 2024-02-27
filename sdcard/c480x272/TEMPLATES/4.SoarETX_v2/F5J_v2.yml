@@ -1618,7 +1618,7 @@ customFn:
    5:
       swtch: "L6"
       func: PLAY_TRACK
-      def: "se2lnd,1x"
+      def: "landin,1x"
    6:
       swtch: "L7"
       func: PLAY_VALUE
@@ -1682,11 +1682,11 @@ customFn:
    21:
       swtch: "!L23"
       func: PLAY_TRACK
-      def: "se2drm,!1x"
+      def: "disarm,!1x"
    22:
       swtch: "L23"
       func: PLAY_TRACK
-      def: "se2arm,5"
+      def: "motarm,5"
    23:
       swtch: "L24"
       func: RESET
@@ -1698,7 +1698,7 @@ customFn:
    25:
       swtch: "L37"
       func: PLAY_TRACK
-      def: "se2flu,5"
+      def: "flapup,5"
    26:
       swtch: "L39"
       func: LOGS
@@ -1710,19 +1710,19 @@ customFn:
    28:
       swtch: "FM4"
       func: PLAY_TRACK
-      def: "se2spd,1x"
+      def: "speed,1x"
    29:
       swtch: "FM5"
       func: PLAY_TRACK
-      def: "se2thm,1x"
+      def: "therml,1x"
    30:
       swtch: "FM0"
       func: PLAY_TRACK
-      def: "se2cru,1x"
+      def: "cruise,1x"
    31:
       swtch: "FM2"
       func: PLAY_TRACK
-      def: "se2pwr,1x"
+      def: "power,1x"
 flightModeData: 
    0:
       trim: 

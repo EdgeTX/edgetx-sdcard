@@ -2,9 +2,8 @@
 -- SoarETX flaps and aileron alignment, loadable component               --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Improvements: Frankie Arzu                                            --
--- Date:    2024-01-15                                                   --
--- Version: 1.2.0                                                        --
+-- Date:    2022-08-20                                                   --
+-- Version: 1.0.0                                                        --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
 --                                                                       --

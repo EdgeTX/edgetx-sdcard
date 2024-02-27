@@ -260,11 +260,11 @@ customFn:
    4:
       swtch: "FM0"
       func: PLAY_TRACK
-      def: "se2cru,1x"
+      def: "cruise,1x"
    5:
       swtch: "FM3"
       func: PLAY_TRACK
-      def: "se2spd,1x"
+      def: "speed,1x"
 flightModeData: 
    0:
       name: "Cruise"
