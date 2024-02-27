@@ -733,7 +733,7 @@ customFn:
    2:
       swtch: "L26"
       func: PLAY_TRACK
-      def: "se2flu,5"
+      def: "flapup,5"
    3:
       swtch: "L29"
       func: LOGS
@@ -745,15 +745,15 @@ customFn:
    5:
       swtch: "FM0"
       func: PLAY_TRACK
-      def: "se2cru,1x"
+      def: "cruise,1x"
    6:
       swtch: "FM3"
       func: PLAY_TRACK
-      def: "se2spd,1x"
+      def: "speed,1x"
    7:
       swtch: "FM4"
       func: PLAY_TRACK
-      def: "se2thm,1x"
+      def: "therml,1x"
 flightModeData: 
    0:
       trim: 
