@@ -3,7 +3,7 @@
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
 -- Date:    2022-08-20                                                   --
--- Version: 1.0.2                                                        --
+-- Version: 1.0.0                                                        --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
 --                                                                       --
@@ -22,7 +22,7 @@
 local widget, soarGlobals =  ...
 local libGUI =  loadGUI()
 libGUI.flags =  0
-local gui =     libGUI.newGUI()
+local gui =     nil
 local colors =  libGUI.colors
 local title =   "Airbrake curves"
 
@@ -141,7 +141,9 @@ local function reset()
 end
 -------------------------------- Setup GUI --------------------------------
 
-do
+local function setup_gui()
+
+  gui = libGUI.newGUI()
   function gui.fullScreenRefresh()
     lcd.clear(COLOR_THEME_SECONDARY3)
 
@@ -199,7 +201,10 @@ end -- Setup GUI
 -------------------- Background and Refresh functions ---------------------
 
 function widget.background()
-  stepOff()
+  if (gui ~= nil) then
+    stepOff()
+    gui = nil  
+  end
 end -- background()
 
 function widget.refresh(event, touchState)
@@ -209,7 +214,8 @@ function widget.refresh(event, touchState)
     lcd.drawRectangle(7, 7, widget.zone.w - 14, widget.zone.h - 14, colors.primary2, 1)
     lcd.drawText(widget.zone.w / 2, widget.zone.h / 2, title, CENTER + VCENTER + MIDSIZE + colors.primary2)
     return
-  elseif not getLogicalSwitchValue(LS_STEP) then
+  elseif gui == nil then
+    setup_gui()
     init()
     return
   end

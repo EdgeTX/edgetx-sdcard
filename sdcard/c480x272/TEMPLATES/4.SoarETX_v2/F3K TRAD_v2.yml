@@ -1,6 +1,8 @@
+semver: 2.9.1
 header: 
-   name: "F3K"
+   name: "F3K TRAD_v2"
    bitmap: ""
+   labels: ""
 timers: 
    0:
       start: 0
@@ -11,6 +13,8 @@ timers:
       minuteBeep: 0
       persistent: 0
       countdownStart: -1
+      showElapsed: 0
+      extraHaptic: 0
       name: "Flight"
    1:
       start: 0
@@ -21,6 +25,8 @@ timers:
       minuteBeep: 0
       persistent: 0
       countdownStart: -1
+      showElapsed: 0
+      extraHaptic: 0
       name: "Window"
 telemetryProtocol: 0
 thrTrim: 0
@@ -33,6 +39,10 @@ displayChecklist: 0
 extendedLimits: 1
 extendedTrims: 0
 throttleReversed: 0
+enableCustomThrottleWarning: 0
+disableTelemetryWarning: 0
+showInstanceIds: 0
+customThrottleWarningPosition: 0
 beepANACenter: 0
 mixData: 
  -
@@ -83,7 +93,7 @@ mixData:
  -
    weight: -GV5
    destCh: 1
-   srcRaw: ch(24)
+   srcRaw: ch(29)
    carryTrim: 0
    mixWarn: 0
    mltpx: ADD
@@ -166,7 +176,7 @@ mixData:
    name: ""
  -
    weight: 100
-   destCh: 24
+   destCh: 29
    srcRaw: I3
    carryTrim: 0
    mixWarn: 0
@@ -181,10 +191,10 @@ mixData:
    delayDown: 0
    speedUp: 0
    speedDown: 0
-   name: "Brake"
+   name: ""
  -
    weight: 100
-   destCh: 24
+   destCh: 29
    srcRaw: MAX
    carryTrim: 0
    mixWarn: 0
@@ -198,74 +208,8 @@ mixData:
    speedDown: 0
    name: "BrkOff"
  -
-   weight: 100
-   destCh: 25
-   srcRaw: I4
-   carryTrim: 0
-   mixWarn: 0
-   mltpx: ADD
-   offset: 0
-   swtch: "NONE"
-   flightModes: 000000000
-   delayUp: 0
-   delayDown: 0
-   speedUp: 0
-   speedDown: 0
-   name: "SnpNeg"
- -
-   weight: 100
-   destCh: 25
-   srcRaw: I1
-   carryTrim: 1
-   mixWarn: 0
-   mltpx: MUL
-   offset: 0
-   swtch: "NONE"
-   flightModes: 000000000
-   curve: 
-      type: 3
-      value: -4
-   delayUp: 0
-   delayDown: 0
-   speedUp: 0
-   speedDown: 0
-   name: ""
- -
-   weight: 100
-   destCh: 26
-   srcRaw: I4
-   carryTrim: 0
-   mixWarn: 0
-   mltpx: ADD
-   offset: GV6
-   swtch: "NONE"
-   flightModes: 000000000
-   delayUp: 0
-   delayDown: 0
-   speedUp: 0
-   speedDown: 0
-   name: "SnpPos"
- -
-   weight: 100
-   destCh: 26
-   srcRaw: I1
-   carryTrim: 1
-   mixWarn: 0
-   mltpx: MUL
-   offset: 0
-   swtch: "NONE"
-   flightModes: 000000000
-   curve: 
-      type: 3
-      value: 4
-   delayUp: 0
-   delayDown: 0
-   speedUp: 0
-   speedDown: 0
-   name: ""
- -
    weight: 10
-   destCh: 27
+   destCh: 30
    srcRaw: I5
    carryTrim: 0
    mixWarn: 0
@@ -283,7 +227,7 @@ mixData:
    name: "Slider"
  -
    weight: 100
-   destCh: 27
+   destCh: 30
    srcRaw: I4
    carryTrim: 0
    mixWarn: 0
@@ -297,45 +241,9 @@ mixData:
    speedDown: 0
    name: ""
  -
-   weight: 100
-   destCh: 27
-   srcRaw: ch(25)
-   carryTrim: 0
-   mixWarn: 0
-   mltpx: ADD
-   offset: 0
-   swtch: "NONE"
-   flightModes: 000000000
-   curve: 
-      type: 0
-      value: 100
-   delayUp: 0
-   delayDown: 0
-   speedUp: 0
-   speedDown: 0
-   name: ""
- -
-   weight: 100
-   destCh: 27
-   srcRaw: ch(26)
-   carryTrim: 0
-   mixWarn: 0
-   mltpx: ADD
-   offset: 0
-   swtch: "NONE"
-   flightModes: 000000000
-   curve: 
-      type: 0
-      value: -100
-   delayUp: 0
-   delayDown: 0
-   speedUp: 0
-   speedDown: 0
-   name: ""
- -
-   weight: GV2
-   destCh: 28
-   srcRaw: ch(24)
+   weight: GV6
+   destCh: 30
+   srcRaw: I1
    carryTrim: 0
    mixWarn: 0
    mltpx: ADD
@@ -344,15 +252,30 @@ mixData:
    flightModes: 000000000
    curve: 
       type: 3
-      value: 3
+      value: 4
    delayUp: 0
    delayDown: 0
    speedUp: 0
    speedDown: 0
-   name: "Flap"
+   name: "SnpFlp"
  -
    weight: GV2
-   destCh: 28
+   destCh: 31
+   srcRaw: ch(29)
+   carryTrim: 0
+   mixWarn: 0
+   mltpx: ADD
+   offset: 0
+   swtch: "NONE"
+   flightModes: 000000000
+   delayUp: 0
+   delayDown: 0
+   speedUp: 0
+   speedDown: 0
+   name: "Brake"
+ -
+   weight: GV2
+   destCh: 31
    srcRaw: MAX
    carryTrim: 0
    mixWarn: 0
@@ -367,8 +290,8 @@ mixData:
    name: "Offset"
  -
    weight: 100
-   destCh: 28
-   srcRaw: ch(27)
+   destCh: 31
+   srcRaw: ch(30)
    carryTrim: 0
    mixWarn: 0
    mltpx: ADD
@@ -379,91 +302,7 @@ mixData:
    delayDown: 0
    speedUp: 0
    speedDown: 0
-   name: ""
- -
-   weight: GV1
-   destCh: 29
-   srcRaw: I2
-   carryTrim: 1
-   mixWarn: 0
-   mltpx: ADD
-   offset: 0
-   swtch: "NONE"
-   flightModes: 000000000
-   curve: 
-      type: 3
-      value: 5
-   delayUp: 0
-   delayDown: 0
-   speedUp: 0
-   speedDown: 0
-   name: "AbsAil"
- -
-   weight: 100
-   destCh: 30
-   srcRaw: ch(28)
-   carryTrim: 0
-   mixWarn: 0
-   mltpx: ADD
-   offset: 100
-   swtch: "NONE"
-   flightModes: 000000000
-   delayUp: 0
-   delayDown: 0
-   speedUp: 0
-   speedDown: 0
-   name: "DwnExc"
- -
-   weight: -100
-   destCh: 30
-   srcRaw: ch(29)
-   carryTrim: 0
-   mixWarn: 0
-   mltpx: ADD
-   offset: 0
-   swtch: "NONE"
-   flightModes: 000000000
-   curve: 
-      type: 0
-      value: GV4
-   delayUp: 0
-   delayDown: 0
-   speedUp: 0
-   speedDown: 0
-   name: "AilDow"
- -
-   weight: 100
-   destCh: 31
-   srcRaw: ch(28)
-   carryTrim: 0
-   mixWarn: 0
-   mltpx: ADD
-   offset: 0
-   swtch: "NONE"
-   flightModes: 000000000
-   delayUp: 0
-   delayDown: 0
-   speedUp: 0
-   speedDown: 0
-   name: "Flap"
- -
-   weight: -100
-   destCh: 31
-   srcRaw: ch(30)
-   carryTrim: 0
-   mixWarn: 0
-   mltpx: ADD
-   offset: 0
-   swtch: "NONE"
-   flightModes: 000000000
-   curve: 
-      type: 0
-      value: 100
-   delayUp: 0
-   delayDown: 0
-   speedUp: 0
-   speedDown: 0
-   name: "BmpUp"
+   name: "Camber"
  -
    weight: 100
    destCh: 31
@@ -520,8 +359,8 @@ expoData:
  -
    mode: 3
    scale: 0
+   trimSource: 0
    srcRaw: Rud
-   carryTrim: 0
    chn: 0
    swtch: "NONE"
    flightModes: 000000000
@@ -531,8 +370,8 @@ expoData:
  -
    mode: 3
    scale: 0
+   trimSource: 0
    srcRaw: Ele
-   carryTrim: 0
    chn: 1
    swtch: "NONE"
    flightModes: 000000000
@@ -545,8 +384,8 @@ expoData:
  -
    mode: 3
    scale: 0
+   trimSource: 0
    srcRaw: Ail
-   carryTrim: 0
    chn: 2
    swtch: "NONE"
    flightModes: 000000000
@@ -559,8 +398,8 @@ expoData:
  -
    mode: 3
    scale: 0
+   trimSource: 1
    srcRaw: Thr
-   carryTrim: 1
    chn: 3
    swtch: "NONE"
    flightModes: 000000000
@@ -570,8 +409,8 @@ expoData:
  -
    mode: 3
    scale: 0
+   trimSource: 1
    srcRaw: TrimThr
-   carryTrim: 1
    chn: 4
    swtch: "NONE"
    flightModes: 000000000
@@ -584,8 +423,8 @@ expoData:
  -
    mode: 3
    scale: 0
+   trimSource: 1
    srcRaw: MAX
-   carryTrim: 1
    chn: 5
    swtch: "NONE"
    flightModes: 000000000
@@ -595,8 +434,8 @@ expoData:
  -
    mode: 3
    scale: 0
+   trimSource: 1
    srcRaw: Thr
-   carryTrim: 1
    chn: 6
    swtch: "NONE"
    flightModes: 000000000
@@ -609,8 +448,8 @@ expoData:
  -
    mode: 3
    scale: 0
+   trimSource: 1
    srcRaw: S1
-   carryTrim: 1
    chn: 7
    swtch: "NONE"
    flightModes: 000000000
@@ -903,6 +742,18 @@ customFn:
       swtch: "L30"
       func: LOGS
       def: "100"
+   5:
+      swtch: "FM0"
+      func: PLAY_TRACK
+      def: "cruise,1x"
+   6:
+      swtch: "FM3"
+      func: PLAY_TRACK
+      def: "speed,1x"
+   7:
+      swtch: "FM4"
+      func: PLAY_TRACK
+      def: "therml,1x"
 flightModeData: 
    0:
       trim: 
@@ -1080,8 +931,12 @@ varioData:
    min: 0
    max: 0
 rssiSource: none
+rfAlarms: 
+   warning: 45
+   critical: 42
 thrTrimSw: 0
 potsWarnMode: WARN_OFF
+jitterFilter: GLOBAL
 failsafeChannels: 
    4:
       val: 1024
@@ -1124,6 +979,10 @@ screenData:
                         type: String
                         value: 
                            stringValue: "f3k"
+                     2:
+                        type: String
+                        value: 
+                           stringValue: ""
          options: 
             0:
                type: Bool
@@ -1156,11 +1015,15 @@ screenData:
                      0:
                         type: Signed
                         value: 
-                           signedValue: 1
+                           signedValue: 2
                      1:
                         type: String
                         value: 
                            stringValue: "outputs"
+                     2:
+                        type: String
+                        value: 
+                           stringValue: "F3K_TRAD"
             1:
                widgetName: "SoarETX"
                widgetData: 
@@ -1168,11 +1031,15 @@ screenData:
                      0:
                         type: Signed
                         value: 
-                           signedValue: 1
+                           signedValue: 2
                      1:
                         type: String
                         value: 
                            stringValue: "wing2"
+                     2:
+                        type: String
+                        value: 
+                           stringValue: "F3K_TRAD"
             2:
                widgetName: "SoarETX"
                widgetData: 
@@ -1180,11 +1047,15 @@ screenData:
                      0:
                         type: Signed
                         value: 
-                           signedValue: 1
+                           signedValue: 2
                      1:
                         type: String
                         value: 
-                           stringValue: "f3k_mix"
+                           stringValue: "mixes"
+                     2:
+                        type: String
+                        value: 
+                           stringValue: "F3K_TRAD"
             3:
                widgetName: "SoarETX"
                widgetData: 
@@ -1192,11 +1063,15 @@ screenData:
                      0:
                         type: Signed
                         value: 
-                           signedValue: 1
+                           signedValue: 2
                      1:
                         type: String
                         value: 
-                           stringValue: "f3k_ctr"
+                           stringValue: "ailctr"
+                     2:
+                        type: String
+                        value: 
+                           stringValue: "F3K_TRAD"
             4:
                widgetName: "SoarETX"
                widgetData: 
@@ -1204,11 +1079,15 @@ screenData:
                      0:
                         type: Signed
                         value: 
-                           signedValue: 1
+                           signedValue: 2
                      1:
                         type: String
                         value: 
                            stringValue: "graph"
+                     2:
+                        type: String
+                        value: 
+                           stringValue: ""
             5:
                widgetName: "SoarETX"
                widgetData: 
@@ -1216,11 +1095,15 @@ screenData:
                      0:
                         type: Signed
                         value: 
-                           signedValue: 1
+                           signedValue: 2
                      1:
                         type: String
                         value: 
-                           stringValue: "f3k_sw"
+                           stringValue: "switch"
+                     2:
+                        type: String
+                        value: 
+                           stringValue: "F3K_TRAD"
          options: 
             0:
                type: Bool
@@ -1256,6 +1139,10 @@ topbarData:
                   type: String
                   value: 
                      stringValue: "name"
+               2:
+                  type: String
+                  value: 
+                     stringValue: ""
       3:
          widgetName: "SoarETX"
          widgetData: 
@@ -1268,5 +1155,23 @@ topbarData:
                   type: String
                   value: 
                      stringValue: "battery"
-view: 1
-modelRegistrationID: ""
+               2:
+                  type: String
+                  value: 
+                     stringValue: ""
+view: 8
+modelRegistrationID: "-eC!U*U*"
+usbJoystickExtMode: 0
+usbJoystickIfMode: JOYSTICK
+usbJoystickCircularCut: 0
+radioThemesDisabled: GLOBAL
+radioGFDisabled: GLOBAL
+radioTrainerDisabled: GLOBAL
+modelHeliDisabled: GLOBAL
+modelFMDisabled: GLOBAL
+modelCurvesDisabled: GLOBAL
+modelGVDisabled: GLOBAL
+modelLSDisabled: GLOBAL
+modelSFDisabled: GLOBAL
+modelCustomScriptsDisabled: GLOBAL
+modelTelemetryDisabled: GLOBAL

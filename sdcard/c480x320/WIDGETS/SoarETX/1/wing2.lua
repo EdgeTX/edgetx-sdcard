@@ -2,8 +2,8 @@
 -- SoarETX flaperon alignment, loadable component                        --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Date:    2022-02-19                                                   --
--- Version: 1.0.0                                                        --
+-- Date:    2022-06-26                                                   --
+-- Version: 1.0.2                                                        --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
 --                                                                       --
@@ -39,11 +39,13 @@ local BUTTON_X =  LCD_W - BUTTON_W - MARGIN
 local BUTTON_H =  36
 local BUTTON_Y =  (LCD_H + TOP + HEIGHT - BUTTON_H) / 2
 
+-- Other constants
 local INP_STEP = getFieldInfo("input7").id  -- Step input
 local LS_STEP = 10                          -- Set this LS to apply step input and adjust
 local N = 5                                 -- Number of curve points
 local MAX_Y = 1500                          -- Max output value
 local MINDIF = 100                          -- Minimum difference between lower, center and upper values
+local NC = 32																-- Number of channels
 
 -- Flaperon curve indices
 local CRV_LFT = 0
@@ -64,10 +66,11 @@ local activeP   -- The point currently being edited
 
 -- Make sure that we have the right number of points on the curve
 local function GetCurve(crvIndex)
-	local tbl = model.getCurve(crvIndex)
+	local tbl = soarGlobals.getCurve(crvIndex)
 
   if #tbl.y ~= N then
     setStickySwitch(LS_STEP, false)
+    gui= nil
     error("Wrong number of points on curve CV" .. crvIndex + 1)
   end
 
@@ -76,14 +79,14 @@ end -- GetCurve()
 
 -- Find the output where the specified curve index is being used
 local function GetOutput(crvIndex)
-	for i = 0, N - 1 do
+	for i = 0, NC - 1 do
 		local out = model.getOutput(i)
-		
+
 		if out and out.curve == crvIndex then
 			return i, out
 		end
 	end
-  
+
   setStickySwitch(LS_STEP, false)
   error("No output channel with curve CV" .. crvIndex + 1)
 end -- GetOutput()
@@ -93,13 +96,13 @@ local function init()
 	lftOutIdx, lftOut = GetOutput(CRV_LFT)
 	rgtCrv = GetCurve(CRV_RGT)
 	rgtOutIdx, rgtOut = GetOutput(CRV_RGT)
-  setStickySwitch(LS_STEP, true) 
+  setStickySwitch(LS_STEP, true)
 end -- init()
 
 -- Find index of the curve point that corresponds to the value of the step input
 local function FindPoint()
 	local x = getValue(INP_STEP)
-	return math.floor((N - 1) / 2048 * (x + 1024) + 1.5) 
+	return math.floor((N - 1) / 2048 * (x + 1024) + 1.5)
 end -- FindPoint()
 
 -- Compute output after applying curve and center/endpoints
@@ -122,13 +125,13 @@ end
 
 local function drawCurve(x, y, w, h, yValues)
   -- Background and lines
-  gui.drawFilledRectangle(x, y, w, h, colors.primary2)
-  gui.drawRectangle(x, y, w, h, COLOR_THEME_SECONDARY2)
+  gui.drawFilledRectangle(x, y, w + 1, h, colors.primary2)
+  gui.drawRectangle(x, y, w + 1, h, COLOR_THEME_SECONDARY2)
 
   gui.drawLine(x + 0.25 * w, y, x + 0.25 * w, y + h, DOTTED, COLOR_THEME_SECONDARY2)
   gui.drawLine(x + 0.50 * w, y, x + 0.50 * w, y + h, SOLID, COLOR_THEME_SECONDARY2)
   gui.drawLine(x + 0.75 * w, y, x + 0.75 * w, y + h, DOTTED, COLOR_THEME_SECONDARY2)
-  
+
   gui.drawLine(x, y + 0.1667 * h, x + w, y + 0.1667 * h, DOTTED, COLOR_THEME_SECONDARY2)
   gui.drawLine(x, y + 0.3333 * h, x + w, y + 0.3333 * h, DOTTED, COLOR_THEME_SECONDARY2)
   gui.drawLine(x, y + 0.5000 * h, x + w, y + 0.5000 * h, SOLID, COLOR_THEME_SECONDARY2)
@@ -138,12 +141,12 @@ local function drawCurve(x, y, w, h, yValues)
   -- And now to the curve
   local xs = { }
   local ys = { }
-  
+
   for i = 1, N do
     xs[i] = x + math.floor(w * (i - 1) / (N - 1) + 0.5)
     ys[i] = y + math.floor(h * 0.5 * (1 - yValues[i] / MAX_Y) + 0.5)
   end
-  
+
   for i = 2, N do
     gui.drawLine(xs[i - 1], ys[i - 1], xs[i], ys[i], SOLID, COLOR_THEME_SECONDARY1, 3)
   end
@@ -198,11 +201,11 @@ end
 local function sliderPoint(crvTbl, outTbl, reverse)
   local value
   local activeP = activeP
-  
+
   if reverse then
     activeP = N + 1 - activeP
   end
-  
+
   if activeP == 1 then
     value = outTbl.min
   elseif activeP == (N + 1) / 2 then
@@ -212,7 +215,7 @@ local function sliderPoint(crvTbl, outTbl, reverse)
   else
     value = 10 * crvTbl.y[activeP]
   end
-  
+
   if reverse then
     value = -value
   end
@@ -221,9 +224,9 @@ local function sliderPoint(crvTbl, outTbl, reverse)
 end
 
 -- Reset outputs
-local function reset(crv, crvIndex, out, outIndex)
+local function reset()
   local midpt = (N + 1) / 2
-  
+
 	for p = 1, N do
     local y = 200.0 / (N - 1) * (p - midpt)
 		lftCrv.y[p] = y
@@ -241,7 +244,7 @@ local function reset(crv, crvIndex, out, outIndex)
 	rgtOut.offset = 0
 	rgtOut.max = 1000
 	model.setOutput(rgtOutIdx, rgtOut)
-	
+
 	init()
 end -- Reset()
 
@@ -255,10 +258,10 @@ do
     lcd.drawFilledRectangle(0, 0, LCD_W, HEADER, COLOR_THEME_SECONDARY1)
     lcd.drawText(10, 2, title, bit32.bor(DBLSIZE, colors.primary2))
 
-    -- Curves  
+    -- Curves
     drawCurve(DIST_X, TOP, WIDTH, HEIGHT, lftYs)
     drawCurve(WIDTH + 2 * DIST_X, TOP, WIDTH, HEIGHT, rgtYs)
-    
+
     -- Help text
     local txt = "Use the throttle stick to select a point on the\n" ..
                 "curve, and adjust with the sliders on the screen.\n" ..
@@ -283,19 +286,19 @@ do
       lcd.exitFullScreen()
     end
   end
-  
+
   local lftSlider = gui.verticalSlider(MARGIN, TOP, HEIGHT, 0, -750, 750, 10, adjLft)
 
   function lftSlider.update()
     lftSlider.value = sliderPoint(lftCrv, lftOut, true)
   end
-  
+
   local rgtSlider = gui.verticalSlider(LCD_W - MARGIN, TOP, HEIGHT, 0, -750, 750, 10, adjRgt)
 
   function rgtSlider.update()
     rgtSlider.value = sliderPoint(rgtCrv, rgtOut, false)
   end
-  
+
   gui.button(BUTTON_X, BUTTON_Y, BUTTON_W, BUTTON_H, "Reset", reset)
 end -- Setup GUI
 
@@ -318,7 +321,7 @@ function widget.refresh(event, touchState)
     init()
     return
   end
-  
+
   activeP = FindPoint()
   ComputeYs(lftCrv, lftOut, lftYs)
   reverse(lftYs)

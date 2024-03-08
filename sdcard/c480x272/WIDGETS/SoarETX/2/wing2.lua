@@ -3,7 +3,7 @@
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
 -- Date:    2022-06-26                                                   --
--- Version: 1.0.2                                                        --
+-- Version: 1.0.1                                                        --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
 --                                                                       --
@@ -22,9 +22,10 @@
 local widget, soarGlobals =  ...
 local libGUI =  loadGUI()
 libGUI.flags =  MIDSIZE
-local gui = libGUI.newGUI()
+local gui = nil
 local colors =  libGUI.colors
 local title =   "Wing alignment"
+local modelType = ""
 
 -- Screen drawing constants
 local HEADER =    40
@@ -41,7 +42,7 @@ local BUTTON_Y =  (LCD_H + TOP + HEIGHT - BUTTON_H) / 2
 
 -- Other constants
 local INP_STEP = getFieldInfo("input7").id  -- Step input
-local LS_STEP = 10                          -- Set this LS to apply step input and adjust
+local LS_STEP = nil                         -- Set this LS to apply step input and adjust (model type specific)
 local N = 5                                 -- Number of curve points
 local MAX_Y = 1500                          -- Max output value
 local MINDIF = 100                          -- Minimum difference between lower, center and upper values
@@ -64,13 +65,25 @@ local lftYs = { }
 local rgtYs = { }
 local activeP   -- The point currently being edited
 
+
+
+-- Turn off step input (if it was turned on by this widget)
+local function stepOff()
+	if (LS_STEP ~= nil) then setStickySwitch(LS_STEP, false) end
+end
+
+local function stepOn()
+  if (LS_STEP ~= nil) then setStickySwitch(LS_STEP, true) end
+end
+
+
 -- Make sure that we have the right number of points on the curve
 local function GetCurve(crvIndex)
 	local tbl = soarGlobals.getCurve(crvIndex)
 
   if #tbl.y ~= N then
-    setStickySwitch(LS_STEP, false)
-    gui= nil
+    stepOff()
+    gui = nil
     error("Wrong number of points on curve CV" .. crvIndex + 1)
   end
 
@@ -87,7 +100,8 @@ local function GetOutput(crvIndex)
 		end
 	end
 
-  setStickySwitch(LS_STEP, false)
+  stepOff()
+  gui = nil
   error("No output channel with curve CV" .. crvIndex + 1)
 end -- GetOutput()
 
@@ -96,7 +110,7 @@ local function init()
 	lftOutIdx, lftOut = GetOutput(CRV_LFT)
 	rgtCrv = GetCurve(CRV_RGT)
 	rgtOutIdx, rgtOut = GetOutput(CRV_RGT)
-  setStickySwitch(LS_STEP, true)
+  stepOn()
 end -- init()
 
 -- Find index of the curve point that corresponds to the value of the step input
@@ -250,13 +264,25 @@ end -- Reset()
 
 -------------------------------- Setup GUI --------------------------------
 
-do
+local function setup_gui()
+  gui = libGUI.newGUI()
+
+  -- Extract Model Type from parametes
+  modelType = widget.options.Type 
+
+  if modelType == "F3K" or modelType == "F3K_TRAD"  then
+    LS_STEP = 10  -- Logical Switch 10
+  else
+    LS_STEP = 10
+    modelType = "F??"
+  end
+
   function gui.fullScreenRefresh()
     lcd.clear(COLOR_THEME_SECONDARY3)
 
     -- Top bar
     lcd.drawFilledRectangle(0, 0, LCD_W, HEADER, COLOR_THEME_SECONDARY1)
-    lcd.drawText(10, 2, title, bit32.bor(DBLSIZE, colors.primary2))
+    lcd.drawText(10, 2, title.." "..modelType, bit32.bor(DBLSIZE, colors.primary2))
 
     -- Curves
     drawCurve(DIST_X, TOP, WIDTH, HEIGHT, lftYs)
@@ -305,8 +331,9 @@ end -- Setup GUI
 -------------------- Background and Refresh functions ---------------------
 
 function widget.background()
-  if getLogicalSwitchValue(LS_STEP) then
-    setStickySwitch(LS_STEP, false)
+  if gui ~= nil then
+    gui = nil
+    stepOff()
   end
 end -- background()
 
@@ -317,7 +344,8 @@ function widget.refresh(event, touchState)
     lcd.drawRectangle(7, 7, widget.zone.w - 14, widget.zone.h - 14, colors.primary2, 1)
     lcd.drawText(widget.zone.w / 2, widget.zone.h / 2, title, CENTER + VCENTER + MIDSIZE + colors.primary2)
     return
-  elseif not getLogicalSwitchValue(LS_STEP) then
+  elseif gui == nil then
+    setup_gui()
     init()
     return
   end
