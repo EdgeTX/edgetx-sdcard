@@ -53,7 +53,7 @@ function M.writeHeaderIfNeeded()
     io.close(hFile)
 end
 
-function M.addFlightLog(duration, flight_count)
+function M.addFlightLog(flight_start_date_time, duration, flight_count)
     M.m_log.info("addFlightLog(%s, %s)", duration, flight_count)
 
     M.writeHeaderIfNeeded()
@@ -65,8 +65,8 @@ function M.addFlightLog(duration, flight_count)
     end
 
     -- flight_date =
-    local now = getDateTime()
-    local flight_date = string.format("%04d-%02d-%02d %02d:%02d", now.year, now.mon, now.day, now.hour, now.min)
+    local dt = flight_start_date_time
+    local flight_date = string.format("%04d-%02d-%02d %02d:%02d", dt.year, dt.mon, dt.day, dt.hour, dt.min)
     M.m_log.info("date_str: %s", flight_date)
 
     -- model name
