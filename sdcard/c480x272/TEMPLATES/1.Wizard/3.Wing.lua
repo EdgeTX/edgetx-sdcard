@@ -17,10 +17,11 @@
 
 -- Author: Offer Shmuely
 -- Date: 2023
--- version: 1.0
+-- version: 1.1
 
 local VALUE = 0
 local COMBO = 1
+local HEADER = 2
 
 local is_edit = false
 local page = 1
@@ -41,10 +42,10 @@ local STICK_NUMBER_ELE = 1
 local STICK_NUMBER_THR = 2
 local STICK_NUMBER_RUD = 0
 
-local defaultChannel_AIL = defaultChannel(STICK_NUMBER_AIL)+1
-local defaultChannel_ELE = defaultChannel(STICK_NUMBER_ELE)+1
-local defaultChannel_THR = defaultChannel(STICK_NUMBER_THR)+1
-local defaultChannel_RUD = defaultChannel(STICK_NUMBER_RUD)+1
+local defaultChannel_AIL = defaultChannel(STICK_NUMBER_AIL) + 1
+local defaultChannel_ELE = defaultChannel(STICK_NUMBER_ELE) + 1
+local defaultChannel_THR = defaultChannel(STICK_NUMBER_THR) + 1
+local defaultChannel_RUD = defaultChannel(STICK_NUMBER_RUD) + 1
 
 local defaultChannel_0_AIL = defaultChannel(STICK_NUMBER_AIL)
 local defaultChannel_0_ELE = defaultChannel(STICK_NUMBER_ELE)
@@ -62,6 +63,9 @@ local function addField(fields, step)
     elseif field.type == COMBO then
         min = 0
         max = #(field.avail_values) - 1
+    elseif field.type == HEADER then
+        min = 0
+        max = 0
     end
     if (step < 0 and field.value > min) or (step > 0 and field.value < max) then
         field.value = field.value + step
@@ -86,6 +90,9 @@ local function selectField(fields, step)
     repeat
         print(string.format("selectField: current: %s (vis: %s)", current, fields[current].is_visible))
         current = 1 + ((current + step - 1 + #fields) % #fields)
+        if fields[current].type == HEADER then
+            current = 1 + ((current + step - 1 + #fields) % #fields)
+        end
     until fields[current].is_visible == 1
     print(string.format("selectField-end: current: %s", current))
 end
@@ -112,14 +119,13 @@ local function lcdSizeTextFixed(txt, font_size)
     elseif font_size == FONT_6 then
         v_offset = 0
     end
-    return ts_w, ts_h, v_offset
+    return ts_w, ts_h +2*v_offset, v_offset
 end
-
 
 local function drawBadgedText(txt, field, font_size, is_selected, is_edit)
     local ts_w, ts_h, v_offset = lcdSizeTextFixed(txt, font_size)
-    ts_h = 10 + ts_h + v_offset * 2
-    local r = ts_h / 2
+    local bdg_h = 5 + ts_h + 5
+    local r = bdg_h / 2
 
     if (field.w > 0) then
         ts_w = field.w
@@ -132,9 +138,9 @@ local function drawBadgedText(txt, field, font_size, is_selected, is_edit)
     if (is_selected) then
         bg_color = GREEN
     end
-    lcd.drawFilledCircle(field.x , field.y + r, r, bg_color)
-    lcd.drawFilledCircle(field.x + ts_w , field.y + r, r, bg_color)
-    lcd.drawFilledRectangle(field.x, field.y , ts_w, ts_h, bg_color)
+    lcd.drawFilledCircle(field.x, field.y + r, r, bg_color)
+    lcd.drawFilledCircle(field.x + ts_w, field.y + r, r, bg_color)
+    lcd.drawFilledRectangle(field.x, field.y, ts_w, bdg_h, bg_color)
     local attr = 0
     if (is_selected and is_edit) then
         attr = attr + BLINK
@@ -165,6 +171,8 @@ local function redrawFieldsPage(fields, event)
                     --lcd.drawText(field.x, field.y, field.avail_values[1 + field.value], attr)
                     drawBadgedText(field.avail_values[1 + field.value], field, FONT_8, is_selected, is_edit)
                 end
+            elseif field.type == HEADER then
+                lcd.drawText(field.x, field.y, field.value, FONT_8 + BLACK + attr + BOLD)
             end
         end
     end
@@ -226,10 +234,9 @@ local function drawTitle(txt)
     lcd.drawText(150, 8, txt, COLOR_THEME_PRIMARY1)
 end
 
-
 local MotorFields = {
     is_motor   = { id='is_motor'  , x=170, y=50 , w=0, type=COMBO, is_visible=1, value=1                   , avail_values={ "No", "Yes" } },
-    motor_ch   = { id='motor_ch'  , x=170, y=90 , w=0, type=COMBO, is_visible=1, value=defaultChannel_0_THR, avail_values={ "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8" } },
+    motor_ch   = { id='motor_ch'  , x=170, y=90 , w=0, type=COMBO, is_visible=1, value=defaultChannel_0_THR, avail_values={ "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8", "CH9", "CH10" } },
     is_arm     = { id='is_arm'    , x=170, y=130, w=0, type=COMBO, is_visible=1, value=1                   , avail_values={ "No", "Yes" } },
     arm_switch = { id='arm_switch', x=230, y=130, w=0, type=COMBO, is_visible=1, value=5                   , avail_values={ "SA", "SB", "SC", "SD", "SE", "SF", "SG", "SH" } },
     page = {}
@@ -341,13 +348,6 @@ local function drawNextLine(text, chNum, text2)
     lineIndex = lineIndex + 20
 end
 
-local ConfigSummaryFields = {
-    ack= {id='ack', x=110, y=250, w=0, type=COMBO, is_visible=1, value=0, avail_values={ "No, I need to change something", "Yes, all is well, create the plane !" } },
-}
-ConfigSummaryFields.page = {
-    ConfigSummaryFields.ack
-}
-
 local ImgSummary
 
 local function runConfigSummary(event)
@@ -382,18 +382,29 @@ local function runConfigSummary(event)
 
     drawNextLine("Dual Rate", nil, ElevronFields.is_dual_rate.avail_values[1 + ElevronFields.is_dual_rate.value])
 
-    local result = runFieldsPage(ConfigSummaryFields.page, event)
 
-    if (ConfigSummaryFields.ack.value == 1 and is_edit == false) then
+    lcd.drawFilledRectangle(60-10, 250-2, 240, 25, YELLOW)
+    lcd.drawText(60, 250, "Hold [Enter] to apply changes...", COLOR_THEME_PRIMARY1)
+
+    if event == EVT_VIRTUAL_EXIT then
+        -- exit script
+        return 2
+    end
+
+    -- approve settings
+    if (event == EVT_VIRTUAL_ENTER_LONG) then
         selectPage(1)
     end
-    return result
+
+    return 0
 end
 
 local function addMix(channel, input, name, weight, index)
     local mix = {
         source = input,
-        name = name
+        name = name,
+        --carryTrim= 0 -- 0=on
+        --trimSource= 0 -- 0=on
     }
     if weight ~= nil then
         mix.weight = weight
@@ -411,6 +422,7 @@ local function updateInputLine(channel, lineNo, expoWeight, weight, switch_name_
     inInfo.curveType = 1
     inInfo.curveValue = expoWeight
     inInfo.weight = weight
+    inInfo.trimSource = 0 -- 0=on
     if (switch_name_position ~= nil) then
         local switchIndex = getSwitchIndex(switch_name_position)
         inInfo.switch = switchIndex
@@ -433,43 +445,44 @@ local function createModel(event)
     local expoVal = ElevronFields.expo.value
     local is_dual_rate = (ElevronFields.is_dual_rate.value == 1)
     if (is_dual_rate) then
-        updateInputLine(defaultChannel_0_AIL, 0, expoVal, 100,"SC" .. CHAR_UP)
-        updateInputLine(defaultChannel_0_AIL, 1, expoVal, 75, "SC-")
-        updateInputLine(defaultChannel_0_AIL, 2, expoVal, 50, "SC" .. CHAR_DOWN)
+        updateInputLine(defaultChannel_0_AIL, 0, expoVal, 100, "SC" .. CHAR_UP)
+        updateInputLine(defaultChannel_0_AIL, 1, expoVal, 75 , "SC-")
+        updateInputLine(defaultChannel_0_AIL, 2, expoVal, 50 , "SC" .. CHAR_DOWN)
 
-        updateInputLine(defaultChannel_0_ELE, 0, expoVal, 100,"SC" .. CHAR_UP)
-        updateInputLine(defaultChannel_0_ELE, 1, expoVal, 75, "SC-")
-        updateInputLine(defaultChannel_0_ELE, 2, expoVal, 50, "SC" .. CHAR_DOWN)
+        updateInputLine(defaultChannel_0_ELE, 0, expoVal, 100, "SC" .. CHAR_UP)
+        updateInputLine(defaultChannel_0_ELE, 1, expoVal, 75 , "SC-")
+        updateInputLine(defaultChannel_0_ELE, 2, expoVal, 50 , "SC" .. CHAR_DOWN)
     else
         updateInputLine(defaultChannel_0_AIL, 0, expoVal, 100, nil)
         updateInputLine(defaultChannel_0_ELE, 0, expoVal, 100, nil)
     end
-
 
     -- motor
     if (MotorFields.is_motor.value == 1) then
         addMix(MotorFields.motor_ch.value, MIXSRC_FIRST_INPUT + defaultChannel_0_THR, "Motor")
     end
 
-    -- Ailerons
+    -- ailerons
     addMix(ElevronFields.ail_ch_r.value, MIXSRC_FIRST_INPUT + defaultChannel(STICK_NUMBER_ELE), "ele-R", 50)
     addMix(ElevronFields.ail_ch_r.value, MIXSRC_FIRST_INPUT + defaultChannel(STICK_NUMBER_AIL), "ail-R", -50)
     addMix(ElevronFields.ail_ch_l.value, MIXSRC_FIRST_INPUT + defaultChannel(STICK_NUMBER_ELE), "ele-L", 50)
     addMix(ElevronFields.ail_ch_l.value, MIXSRC_FIRST_INPUT + defaultChannel(STICK_NUMBER_AIL), "ail-L", 50)
 
-    -- special function for arm switch
-    local switchName = MotorFields.arm_switch.avail_values[1 + MotorFields.arm_switch.value]
-    local switchIndex = getSwitchIndex(switchName .. CHAR_DOWN)
-    local channelIndex = MotorFields.motor_ch.value
+    -- SF arm switch
+    if (MotorFields.is_arm.value == 1) then
+        local switchName = MotorFields.arm_switch.avail_values[1 + MotorFields.arm_switch.value]
+        local switchIndex = getSwitchIndex(switchName .. CHAR_DOWN)
+        local channelIndex = MotorFields.motor_ch.value
 
-    model.setCustomFunction(FUNC_OVERRIDE_CHANNEL, {
-        switch = switchIndex,
-        func = 0,
-        value = -100,
-        mode = 0,
-        param = channelIndex, --"CH3"
-        active = 1
-    })
+        model.setCustomFunction(FUNC_OVERRIDE_CHANNEL, {
+            switch = switchIndex,
+            func = 0,
+            value = -100,
+            mode = 0,
+            param = channelIndex, --"CH3"
+            active = 1
+        })
+    end
 
     selectPage(1)
     return 0

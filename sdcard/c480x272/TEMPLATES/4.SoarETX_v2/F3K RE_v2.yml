@@ -1,6 +1,8 @@
+semver: 2.9.1
 header: 
-   name: "F3K RE"
+   name: "F3K RE_v2"
    bitmap: ""
+   labels: ""
 timers: 
    0:
       start: 0
@@ -11,6 +13,8 @@ timers:
       minuteBeep: 0
       persistent: 0
       countdownStart: -1
+      showElapsed: 0
+      extraHaptic: 0
       name: "Flight"
    1:
       start: 0
@@ -21,6 +25,8 @@ timers:
       minuteBeep: 0
       persistent: 0
       countdownStart: -1
+      showElapsed: 0
+      extraHaptic: 0
       name: "Window"
 telemetryProtocol: 0
 thrTrim: 0
@@ -33,6 +39,10 @@ displayChecklist: 0
 extendedLimits: 1
 extendedTrims: 0
 throttleReversed: 0
+enableCustomThrottleWarning: 0
+disableTelemetryWarning: 0
+showInstanceIds: 0
+customThrottleWarningPosition: 0
 beepANACenter: 0
 mixData: 
  -
@@ -88,8 +98,8 @@ expoData:
  -
    mode: 3
    scale: 0
+   trimSource: 0
    srcRaw: Ail
-   carryTrim: 0
    chn: 0
    swtch: "NONE"
    flightModes: 000000000
@@ -99,8 +109,8 @@ expoData:
  -
    mode: 3
    scale: 0
+   trimSource: 0
    srcRaw: Ele
-   carryTrim: 0
    chn: 1
    swtch: "NONE"
    flightModes: 000000000
@@ -113,8 +123,8 @@ expoData:
  -
    mode: 3
    scale: 0
+   trimSource: 1
    srcRaw: S1
-   carryTrim: 1
    chn: 2
    swtch: "NONE"
    flightModes: 000000000
@@ -213,14 +223,14 @@ logicalSw:
       delay: 0
       duration: 0
    17:
-      func: FUNC_AND
-      def: "FM2,L16"
+      func: FUNC_OR
+      def: "FM1,FM2"
       andsw: "NONE"
       delay: 0
       duration: 0
    18:
-      func: FUNC_OR
-      def: "FM1,L18"
+      func: FUNC_AND
+      def: "L18,L16"
       andsw: "L8"
       delay: 0
       duration: 0
@@ -247,6 +257,14 @@ customFn:
       swtch: "L20"
       func: LOGS
       def: "100"
+   4:
+      swtch: "FM0"
+      func: PLAY_TRACK
+      def: "cruise,1x"
+   5:
+      swtch: "FM3"
+      func: PLAY_TRACK
+      def: "speed,1x"
 flightModeData: 
    0:
       name: "Cruise"
@@ -350,8 +368,12 @@ varioData:
    min: 0
    max: 0
 rssiSource: none
+rfAlarms: 
+   warning: 45
+   critical: 42
 thrTrimSw: 0
 potsWarnMode: WARN_OFF
+jitterFilter: GLOBAL
 failsafeChannels: 
    4:
       val: 1024
@@ -359,6 +381,13 @@ failsafeChannels:
       val: -1024
    6:
       val: -1024
+trainerData: 
+   mode: MASTER_TRAINER_JACK
+   channelsStart: 0
+   channelsCount: -8
+   frameLength: 0
+   delay: 0
+   pulsePol: 0
 inputNames: 
    0:
       val: "Rudd"
@@ -384,6 +413,10 @@ screenData:
                         type: String
                         value: 
                            stringValue: "f3k"
+                     2:
+                        type: String
+                        value: 
+                           stringValue: ""
          options: 
             0:
                type: Bool
@@ -416,11 +449,15 @@ screenData:
                      0:
                         type: Signed
                         value: 
-                           signedValue: 1
+                           signedValue: 2
                      1:
                         type: String
                         value: 
                            stringValue: "outputs"
+                     2:
+                        type: String
+                        value: 
+                           stringValue: "F3K_RE"
             1:
                widgetName: "SoarETX"
                widgetData: 
@@ -428,23 +465,15 @@ screenData:
                      0:
                         type: Signed
                         value: 
-                           signedValue: 1
+                           signedValue: 2
                      1:
                         type: String
                         value: 
-                           stringValue: "f3kre_mx"
-            5:
-               widgetName: "SoarETX"
-               widgetData: 
-                  options: 
-                     0:
-                        type: Signed
-                        value: 
-                           signedValue: 1
-                     1:
+                           stringValue: "mixes"
+                     2:
                         type: String
                         value: 
-                           stringValue: "f3kre_sw"
+                           stringValue: "F3K_RE"
             3:
                widgetName: "SoarETX"
                widgetData: 
@@ -452,11 +481,31 @@ screenData:
                      0:
                         type: Signed
                         value: 
-                           signedValue: 1
+                           signedValue: 2
                      1:
                         type: String
                         value: 
                            stringValue: "graph"
+                     2:
+                        type: String
+                        value: 
+                           stringValue: "F3K_RE"
+            5:
+               widgetName: "SoarETX"
+               widgetData: 
+                  options: 
+                     0:
+                        type: Signed
+                        value: 
+                           signedValue: 2
+                     1:
+                        type: String
+                        value: 
+                           stringValue: "switch"
+                     2:
+                        type: String
+                        value: 
+                           stringValue: "F3K_RE"
          options: 
             0:
                type: Bool
@@ -492,6 +541,10 @@ topbarData:
                   type: String
                   value: 
                      stringValue: "name"
+               2:
+                  type: String
+                  value: 
+                     stringValue: ""
       3:
          widgetName: "SoarETX"
          widgetData: 
@@ -504,5 +557,23 @@ topbarData:
                   type: String
                   value: 
                      stringValue: "battery"
-view: 0
-modelRegistrationID: ""
+               2:
+                  type: String
+                  value: 
+                     stringValue: ""
+view: 1
+modelRegistrationID: "670112G-"
+usbJoystickExtMode: 0
+usbJoystickIfMode: JOYSTICK
+usbJoystickCircularCut: 0
+radioThemesDisabled: GLOBAL
+radioGFDisabled: GLOBAL
+radioTrainerDisabled: GLOBAL
+modelHeliDisabled: GLOBAL
+modelFMDisabled: GLOBAL
+modelCurvesDisabled: GLOBAL
+modelGVDisabled: GLOBAL
+modelLSDisabled: GLOBAL
+modelSFDisabled: GLOBAL
+modelCustomScriptsDisabled: GLOBAL
+modelTelemetryDisabled: GLOBAL

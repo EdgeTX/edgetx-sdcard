@@ -3,7 +3,7 @@
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
 -- Date:    2022-06-26                                                   --
--- Version: 1.0.1                                                        --
+-- Version: 1.0.2                                                        --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
 --                                                                       --
@@ -66,10 +66,11 @@ local activeP   -- The point currently being edited
 
 -- Make sure that we have the right number of points on the curve
 local function GetCurve(crvIndex)
-	local tbl = model.getCurve(crvIndex)
+	local tbl = soarGlobals.getCurve(crvIndex)
 
   if #tbl.y ~= N then
     setStickySwitch(LS_STEP, false)
+    gui= nil
     error("Wrong number of points on curve CV" .. crvIndex + 1)
   end
 
