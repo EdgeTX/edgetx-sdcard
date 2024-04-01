@@ -52,6 +52,16 @@ local gui = libGUI.newGUI()
 -- Make a minimize button from a custom element
 local custom = gui.custom({ }, LCD_W - 34, 6, 28, 28)
 
+local function getLastSwitchIndex()
+    local lastSwitch
+    for switchIndex, switchName in switches() do
+        if string.find(switchName, "^!?S[A-H][+-]?") then
+            lastSwitch = switchIndex
+        end
+    end
+    return lastSwitch
+end
+
 function custom.draw(focused)
   lcd.drawRectangle(LCD_W - 34, 6, 28, 28, libGUI.colors.primary2)
   lcd.drawFilledRectangle(LCD_W - 30, 19, 20, 3, libGUI.colors.primary2)
@@ -93,7 +103,7 @@ local labelDropDown = subGUI.label(0, 2 * ROW, 2 * WIDTH, HEIGHT, "")
 
 local dropDownIndices = { }
 local dropDownItems = { }
-local lastSwitch = getSwitchIndex(CHAR_TRIM .. "Rl") - 1
+local lastSwitch = getLastSwitchIndex()
 
 for i, s in switches(-lastSwitch, lastSwitch) do
   if i ~= 0 then
