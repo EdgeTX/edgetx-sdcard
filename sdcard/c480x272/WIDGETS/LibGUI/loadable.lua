@@ -54,7 +54,7 @@ local custom = gui.custom({ }, LCD_W - 34, 6, 28, 28)
 
 local function getLastSwitchIndex()
     local lastSwitch
-    for switchIndex, switchName in switches() do
+    for switchIndex, switchName in switches(1, SWSRC_LAST) do
         if string.find(switchName, "^!?S[A-H][+-]?") then
             lastSwitch = switchIndex
         end
