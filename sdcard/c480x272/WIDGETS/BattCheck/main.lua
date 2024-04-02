@@ -19,10 +19,8 @@
 -- Widget to display the levels of lipo/li-ion battery with indication of each cell (FLVSS)
 -- 3djc & Offer Shmuely
 -- Date: 2022
--- ver: 0.8
-local version = "v0.8"
-
 local app_name = "BattCheck"
+local app_ver = "0.8"
 
 local _options = {
     { "Sensor"      , SOURCE, 0      }, -- default to 'Cels'
