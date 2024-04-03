@@ -9,6 +9,7 @@ local M = {}
 local ctx2
 local label_new_time
 local label_org_time
+local ddTimerId
 
 ---------------------------------------------------------------------------------------------------
 local Fields = {
@@ -78,11 +79,15 @@ function M.init()
 
     ctx2 = m_libgui.newGUI()
 
-    ctx2.label(menu_x, 60, 0, menu_h, "original time:", m_utils.FONT_8)
-    label_org_time = ctx2.label(160, 60, 0, menu_h, formatTime2(hh, mm, ss), m_utils.FONT_8)
+    ctx2.label(240, 40, 0, menu_h, "original time:", m_utils.FONT_8)
+    label_org_time = ctx2.label(340, 40, 0, menu_h, formatTime2(hh, mm, ss), m_utils.FONT_8)
 
 
-    ctx2.label(menu_x, 130, 0, menu_h, "new time:", m_utils.FONT_8)
+    local preset_list = {"Timer1","Timer2","Timer3"}
+    ddTimerId = ctx2.dropDown(menu_x, 70, 100, 25, preset_list, 1)
+    ddTimerId.selected = 3
+
+    ctx2.label(menu_x, 120, 0, menu_h, "new time:", m_utils.FONT_8)
 
     local p = Fields.timer1_hour
     ctx2.label(p.x, p.y -20, menu_w, menu_h, p.text, m_utils.FONT_8)
@@ -98,8 +103,8 @@ function M.init()
 
     label_new_time = ctx2.label(180, 170, 0, menu_h, formatTime2(hh, mm, ss), m_utils.FONT_16)
 
-    ctx2.label(menu_x, 220, 0, menu_h, "Setting timer to count up", m_utils.FONT_8)
-    ctx2.label(menu_x, 240, 0, menu_h, "Setting timer to be persistent", m_utils.FONT_8)
+    ctx2.label(menu_x, 210, 0, menu_h, "Note: Setting the timer to count up", m_utils.FONT_8)
+    ctx2.label(menu_x, 230, 0, menu_h, "Note: Setting the timer to be persistent", m_utils.FONT_8)
 
     return nil
 end
@@ -119,16 +124,19 @@ end
 
 function M.do_update_model()
     log("preset::do_update_model()")
+    -- log("preset::timer_id: %s", ddTimerId.selected)
 
     local hh = Fields.timer1_hour.gui_obj.value
     local mm = Fields.timer1_min.gui_obj.value
     local ss = Fields.timer1_sec.gui_obj.value
 
-    local t1 = model.getTimer(0)
+    local timeId = ddTimerId.selected-1
+    local t1 = model.getTimer(timeId)
     t1.value = hh*3600 + mm*60 + ss
     t1.start = 0
-    --t1.persistent = 2
-    model.setTimer(0, t1)
+    t1.persistent = 2
+    t1.name = "Air Time"
+    model.setTimer(timeId, t1)
 
     return m_utils.PRESET_RC.OK_CONTINUE
 end
