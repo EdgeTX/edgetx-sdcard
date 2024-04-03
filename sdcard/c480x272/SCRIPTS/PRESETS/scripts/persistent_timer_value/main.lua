@@ -103,8 +103,8 @@ function M.init()
 
     label_new_time = ctx2.label(180, 170, 0, menu_h, formatTime2(hh, mm, ss), m_utils.FONT_16)
 
-    ctx2.label(menu_x, 210, 0, menu_h, "Note: Setting the timer to count up", m_utils.FONT_8)
-    ctx2.label(menu_x, 230, 0, menu_h, "Note: Setting the timer to be persistent", m_utils.FONT_8)
+    ctx2.label(menu_x, 210, 0, menu_h, "Note: Changing the timer to count up", m_utils.FONT_8)
+    ctx2.label(menu_x, 230, 0, menu_h, "Note: Changing the timer to be persistent", m_utils.FONT_8)
 
     return nil
 end
