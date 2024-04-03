@@ -355,12 +355,13 @@ local function state_ON_END(event, touchState)
     lcd.drawBitmap(ImgSummary, 300, 60)
 
     lcd.drawText(70, 90, "Model successfully updated!", COLOR_THEME_PRIMARY1)
-    lcd.drawText(100, 130, "Hold [RTN] to exit.", COLOR_THEME_PRIMARY1)
+    lcd.drawText(100, 130, "[TAP] or [RTN] to exit.", COLOR_THEME_PRIMARY1)
 
-    if event == EVT_TOUCH_FIRST then
+    if (event == EVT_TOUCH_FIRST) or (event == EVT_VIRTUAL_EXIT) then
         log("state_ON_END() - exit")
         return 2
     end
+
     return 0
 end
 ---------------------------------------------------------------------------------------------------
