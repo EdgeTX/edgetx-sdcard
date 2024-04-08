@@ -19,7 +19,7 @@
 
 
 -- This widget display a graphical representation of a Lipo/Li-ion (not other types) battery level,
--- it will automatically detect the cell amount of the battery.
+-- it can automatically detect the cell amount of the battery.
 -- it will take a lipo/li-ion voltage that received as a single value (as opposed to multi cell values send while using FLVSS liPo Voltage Sensor)
 -- common sources are:
 --   * Transmitter Battery
@@ -41,11 +41,12 @@ local app_ver = "0.7"
 local CELL_DETECTION_TIME = 8
 
 local _options = {
-    { "Sensor"            , SOURCE, 0      }, -- default to 'A1'
-    { "Color"             , COLOR , YELLOW },
-    { "Show_Total_Voltage", BOOL  , 0      }, -- 0=Show as average Lipo cell level, 1=show the total voltage (voltage as is)
-    { "Lithium_Ion"       , BOOL  , 0      }, -- 0=LIPO battery, 1=LI-ION (18650/21500)
-    { "Lithium_HV"        , BOOL  , 0      }, -- 0=LIPO battery, 1=LiHV 4.35V
+    { "Sensor"            , SOURCE, 0             }, -- default to 'A1'
+    { "Color"             , COLOR , YELLOW        },
+    { "Show_Total_Voltage", BOOL  , 0             }, -- 0=Show as average Lipo cell level, 1=show the total voltage (voltage as is)
+    { "Cell_Count"        , VALUE , 0     , 0, 14 }, -- 0=Auto-detect using the total voltage
+    { "Lithium_Ion"       , BOOL  , 0             }, -- 0=LIPO battery, 1=LI-ION (18650/21500)
+    { "Lithium_HV"        , BOOL  , 0             }, -- 0=LIPO battery, 1=LiHV 4.35V
 }
 
 -- Data gathered from commercial lipo sensors
@@ -144,6 +145,7 @@ local function update(wgt, options)
 
     wgt.options.Show_Total_Voltage = wgt.options.Show_Total_Voltage % 2 -- modulo due to bug that cause the value to be other than 0|1
 
+    log(string.format("wgt.options.Cell_Count: %s", wgt.options.Cell_Count))
     log(string.format("wgt.options.Lithium_Ion: %s", wgt.options.Lithium_Ion))
     log(string.format("wgt.options.Lithium_HV: %s", wgt.options.Lithium_HV))
 end
@@ -296,7 +298,10 @@ local function calculateBatteryData(wgt)
     if (wgt.cell_detected == true) then
         log("permanent cellCount: " .. wgt.cellCount)
     else
-        local newCellCount = calcCellCount(wgt, v)
+        local newCellCount = wgt.options.Cell_Count
+        if newCellCount == 0 then
+            newCellCount = calcCellCount(wgt, v)
+        end
         if (wgt.tools.periodicHasPassed(wgt.periodic1, false)) then
             wgt.cell_detected = true
             wgt.cellCount = newCellCount
