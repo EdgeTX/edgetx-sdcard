@@ -3,8 +3,8 @@
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
 -- Improvements: Frankie Arzu                                            --
--- Date:    2024-01-15                                                   --
--- Version: 1.2.0                                                        --
+-- Date:    2024-04-7                                                    --
+-- Version: 1.2.1                                                        --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
 --                                                                       --
@@ -134,9 +134,9 @@ local function init()
   -- Build lists of physical switch position indices and names
   local swIndices = { }
   local swNames = { }
-  local MAX_SW = getSwitchIndex(CHAR_TRIM .. "Rl") - 1
-  for swIdx, swName in switches(-MAX_SW, MAX_SW) do
-    if swIdx ~= 0 then
+  
+  for swIdx, swName in switches() do
+    if string.find(swName,"^!?S[A-H][+-]?") then
       i = #swIndices + 1
       swIndices[i] = swIdx
       swNames[i] = swName

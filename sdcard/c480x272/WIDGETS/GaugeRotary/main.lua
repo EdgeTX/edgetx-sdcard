@@ -38,10 +38,9 @@
 
 -- Author : Offer Shmuely
 -- Date: 2021-2023
--- Version: 0.7
-
-
 local app_name = "GaugeRotary"
+local app_ver = "0.8"
+
 
 -- consts
 local DEFAULT_MIN_MAX = {
@@ -192,6 +191,17 @@ local function getWidgetValue(wgt)
     local sourceName = getSourceName(wgt.options.Source)
     log("[%s-%s],currentValue: %s" , wgt.options.Source, sourceName, currentValue)
 
+    local fieldinfo = getFieldInfo(wgt.options.Source)
+    if (fieldinfo == nil) then
+        log("getFieldInfo(%s)==nil", wgt.options.Source)
+        return sourceName, -1, nil, nil, ""
+    end
+
+    local txtUnit = wgt.tools.unitIdToString(fieldinfo.unit)
+    if type(currentValue) == "table" then
+        txtUnit = "v"
+    end
+
     --- if table, sum of all cells
     if type(currentValue) == "table" then
         local cellSum = 0
@@ -204,13 +214,6 @@ local function getWidgetValue(wgt)
     -- workaround for bug in getSourceName()
     sourceName = wgt.tools.cleanInvalidCharFromGetFiledInfo(sourceName)
 
-    local fieldinfo = getFieldInfo(wgt.options.Source)
-    if (fieldinfo == nil) then
-        log("getFieldInfo(%s)==nil", wgt.options.Source)
-        return sourceName, -1, nil, nil, ""
-    end
-
-    local txtUnit = wgt.tools.unitIdToString(fieldinfo.unit)
 
     --log("")
     --log("id: %s", fieldinfo.id)

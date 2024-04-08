@@ -28,9 +28,9 @@
 
 -- Author : Offer Shmuely
 -- Date: 2021-2023
--- ver: 0.7
-
 local app_name = "Value2"
+local app_ver = "0.8"
+
 
 -- imports
 local LibLogClass = loadScript("/WIDGETS/" .. app_name .. "/lib_log.lua", "tcd")
@@ -47,21 +47,49 @@ local FONT_12 = MIDSIZE -- 12px
 local FONT_8 = 0 -- Default 8px
 local FONT_6 = SMLSIZE -- 6px
 
--- backward compatibility
-local ver, radio, maj, minor, rev, osname = getVersion()
-local DEFAULT_SOURCE = 1
-if maj == 2 and minor == 7 then
-    -- for 2.7.x
-    DEFAULT_SOURCE = 253     -- RSSI=253, TxBt=243, RxBt=256
-elseif maj == 2 and minor >= 8 then
-    -- for 2.8.x
-    DEFAULT_SOURCE = 306     -- RSSI
+-- for backward compatibility
+--local function getSensorId(sensorName)
+--    for i=0, 30, 1 do
+--        local s2 = model.getSensor(i)
+--        --if s2.name == sensorName then
+--            local sensor_id = s2.id
+--            print(string.format("getSensorPrecession: a id: %d", sensor_id))
+--            if sensor_id > 61440 then
+--                sensor_id = sensor_id - 61440 --F000
+--            end
+--            print(string.format("getSensorPrecession: b id: %d", sensor_id))
+--            local instance_hex_value = s2.instance
+--            local instance_dec_value = tonumber(instance_hex_value, 16)
+--            print(string.format("getSensorPrecession: c s2.instance: %d --> %d", s2.instance, instance_dec_value))
+--            sensor_id = sensor_id + instance_dec_value
+--            print(string.format("getSensorPrecession: d sensor_id: %d", sensor_id))
+--            print(string.format("getSensorPrecession: %d. name: %s, unit: %s , prec: %s , id: %s , instance: %s, sensor_id: %s ", i, s2.name, s2.unit, s2.prec, s2.id, s2.instance, sensor_id))
+--            --return sensor_id
+--        --end
+--    end
+--    return -1
+--end
+
+-- for backward compatibility
+local function getSensorId(key)
+    local OS_SWITCH_ID = {
+        ["2.7"]  = {RSSI=253, CELS=0  , TxBt=243, RxBt=256},
+        ["2.8"]  = {RSSI=261, CELS=300, TxBt=251, RxBt=0  },
+        ["2.9"]  = {RSSI=294, CELS=121, TxBt=251, RxBt=291},
+        ["2.10"] = {RSSI=0  , CELS=0  , TxBt=0  , RxBt=0  },
+    }
+    local ver, radio, maj, minor, rev, osname = getVersion()
+    local os1 = string.format("%d.%d", maj, minor)
+    return OS_SWITCH_ID[os1][key]
 end
+
+local DEFAULT_SOURCE = getSensorId("RxBt")
 
 local options = {
     { "Source", SOURCE, DEFAULT_SOURCE },
     { "TextColor", COLOR, COLOR_THEME_PRIMARY1 },
-    { "Suffix", STRING, "" }
+    { "Suffix", STRING, "" },
+    { "Show_MinMax", BOOL, 1 }
 }
 
 --------------------------------------------------------------
@@ -73,6 +101,9 @@ end
 local function update(wgt, options)
   if (wgt == nil) then return end
     wgt.options = options
+    if wgt.options.Show_MinMax == nil then
+        wgt.options.Show_MinMax = 1
+    end
 
     wgt.fieldinfo = nil
     wgt.source_name = nil
@@ -103,6 +134,7 @@ local function update(wgt, options)
         wgt.unit = wgt.tools.unitIdToString(wgt.fieldinfo.unit)
 
         local base_source_name = wgt.source_name
+        log("getFieldInfo    base_source_id: %s", wgt.options.Source)
         log("getFieldInfo    base_source_name: %s", base_source_name)
         log("getFieldInfo    #base_source_name: %d", #base_source_name)
         local last_char = string.sub(base_source_name, #base_source_name,#base_source_name)
@@ -165,37 +197,71 @@ local function prettyPrintNone(val, precession)
     --    return string.format("%2.5f", val)
     end
 
-    return string.format("%2.3f ?prec?", val)
+    --return string.format("%2.3f ?prec?", val)
+    return string.format("%2.0f", val)
 end
 
-local function getFontSize(wgt, txt, max_w, max_h)
+local function getFontSizeHeader(wgt, txt, max_h)
+    local font_size
+    if max_h > 115 then
+        font_size = FONT_16
+        log("getFontSizeHeader: [%s] FONT_16 h: %d", txt, max_h)
+    elseif max_h > 80 then
+        font_size = FONT_12
+        log("getFontSizeHeader: [%s] FONT_12 h: %d", txt, max_h)
+    elseif max_h > 50 then
+        font_size = FONT_8
+        log("getFontSizeHeader: [%s] FONT_8 h: %d", txt, max_h)
+    else
+        font_size = FONT_6
+        log("getFontSizeHeader: [%s] FONT_6 h: %d", txt, max_h)
+    end
+
+    local w, h, v_offset = wgt.tools.lcdSizeTextFixed(txt, font_size)
+    return font_size, w, h, v_offset
+end
+
+local function getFontSize(wgt, txt, max_w, max_h, max_font_size)
     local w, h, v_offset = wgt.tools.lcdSizeTextFixed(txt, FONT_38)
     if w <= max_w and h <= max_h then
         log("[%s] FONT_38 %dx%d", txt, w, h, txt)
-        return FONT_38, w, h + 2* v_offset, v_offset
+        return FONT_38, w, h, v_offset
     end
 
     w, h, v_offset = wgt.tools.lcdSizeTextFixed(txt, FONT_16)
     if w <= max_w and h <= max_h then
         log("[%s] FONT_16 %dx%d", txt, w, h, txt)
-        return FONT_16, w, h + 2* v_offset, v_offset
+        return FONT_16, w, h, v_offset
     end
 
     w, h, v_offset = wgt.tools.lcdSizeTextFixed(txt, FONT_12)
     if w <= max_w and h <= max_h then
         log("[%s] FONT_12 %dx%d", txt, w, h, txt)
-        return FONT_12, w, h + 2* v_offset, v_offset
+        return FONT_12, w, h, v_offset
     end
 
     w, h, v_offset = wgt.tools.lcdSizeTextFixed(txt, FONT_8)
     if w <= max_w and h <= max_h then
         log("[%s] FONT_8 %dx%d", txt, w, h, txt)
-        return FONT_8, w, h + 2* v_offset, v_offset
+        return FONT_8, w, h, v_offset
     end
 
     w, h, v_offset = wgt.tools.lcdSizeTextFixed(txt, FONT_6)
     log("[%s] FONT_6 %dx%d", txt, w, h, txt)
-    return FONT_6, w, h + 2* v_offset, v_offset
+    return FONT_6, w, h, v_offset
+end
+
+local function getFontSizeMinMax(wgt, txt, max_w, max_h, max_font_size)
+    local w, h, v_offset
+    w, h, v_offset = wgt.tools.lcdSizeTextFixed(txt, FONT_8)
+    if w <= max_w and h <= max_h then
+        log("[%s] FONT_8 %dx%d", txt, w, h, txt)
+        return FONT_8, w, h, v_offset
+    end
+
+    w, h, v_offset = wgt.tools.lcdSizeTextFixed(txt, FONT_6)
+    log("[%s] FONT_6 %dx%d", txt, w, h, txt)
+    return FONT_6, w, h, v_offset
 end
 
 local function getFontSizePrint(wgt, txt, max_w, max_h)
@@ -205,7 +271,7 @@ local function getFontSizePrint(wgt, txt, max_w, max_h)
 end
 
 local function calcWidgetValues(wgt)
-    if (wgt.tools.isTelemetryAvailable() == false) then
+    if (wgt.last_value ~= nil and wgt.tools.isTelemetryAvailable() == false) then
         log("overriding value with last_value: %s", wgt.last_value)
         return
     end
@@ -232,7 +298,7 @@ local function refresh_app_mode(wgt, event, touchState)
         lcd.exitFullScreen()
     end
 
-    local val_str = string.format("%s %s", prettyPrintNone(wgt.last_value, wgt.precession), wgt.unit)
+    local val_str = string.format("%s%s", prettyPrintNone(wgt.last_value, wgt.precession), wgt.unit)
 
     local zone_w = LCD_W
     local zone_h = LCD_H
@@ -253,45 +319,58 @@ local function refresh_app_mode(wgt, event, touchState)
 
     -- draw min value
     if (wgt.last_value_min ~= -1) then
-        val_str = string.format("min: %s %s", prettyPrintNone(wgt.last_value_min, wgt.precession), wgt.unit)
+        val_str = string.format("min: %s%s", prettyPrintNone(wgt.last_value_min, wgt.precession), wgt.unit)
         lcd.drawText(0 + 10, 0 + LCD_H - 80, val_str, FONT_16 + wgt.options.TextColor)
     end
 
     -- draw max value
     if (wgt.last_value_max ~= -1) then
-        val_str = string.format("max: %s %s", prettyPrintNone(wgt.last_value_max, wgt.precession), wgt.unit)
+        val_str = string.format("max: %s%s", prettyPrintNone(wgt.last_value_max, wgt.precession), wgt.unit)
         lcd.drawText(0 + 10, 0 + LCD_H - 40, val_str, FONT_16 + wgt.options.TextColor)
     end
 end
 
 local function refresh_widget_with_telem(wgt)
-    local last_y = 0
+    local last_y = 1
 
     -- draw header
     local header_txt = wgt.source_name .. " " .. wgt.options.Suffix
-    local font_size_header, ts_h_w, ts_h_h, v_offset = getFontSize(wgt, header_txt, wgt.zone.w, wgt.zone.h / 4)
-    log("val: font_size_header: %d, ts_h_h: %d, lastY: %d", wgt.zone.y, ts_h_h, last_y)
-    lcd.drawText(wgt.zone.x, wgt.zone.y + last_y + v_offset, header_txt, font_size_header + wgt.options.TextColor)
+    local font_size_header, ts_h_w, ts_h_h, ts_h_v_offset = getFontSizeHeader(wgt, header_txt, wgt.zone.h)
+    lcd.drawText(wgt.zone.x + 5, wgt.zone.y + last_y + ts_h_v_offset, header_txt, font_size_header + wgt.options.TextColor)
     --lcd.drawRectangle(wgt.zone.x, wgt.zone.y + last_y, ts_h_w, ts_h_h, BLUE)
-    last_y = last_y + ts_h_h
+    last_y = last_y + ts_h_h + 3
 
     -- draw value
-    local str_v = string.format("%s %s", prettyPrintNone(wgt.last_value, wgt.precession), wgt.unit)
-    local font_size_v, ts_v_w, ts_v_h, v_offset = getFontSize(wgt, str_v, wgt.zone.w, wgt.zone.h)
+    --local str_v = string.format("%s%s", prettyPrintNone(wgt.last_value, wgt.precession), wgt.unit)
+    local str_v = prettyPrintNone(wgt.last_value, wgt.precession)
+    local font_size_v, ts_v_w, ts_v_h, ts_v_v_offset = getFontSize(wgt, str_v, wgt.zone.w, wgt.zone.h - ts_h_h - 0)
+
     local dx = (wgt.zone.w - ts_v_w) / 2
-    lcd.drawText(wgt.zone.x + dx, wgt.zone.y + last_y + v_offset, str_v, font_size_v + wgt.options.TextColor)
+    lcd.drawText     (wgt.zone.x + dx, wgt.zone.y + last_y + ts_v_v_offset, str_v, font_size_v + wgt.options.TextColor)
     --lcd.drawRectangle(wgt.zone.x + dx, wgt.zone.y + last_y, ts_v_w, ts_v_h, BLUE)
-    last_y = last_y + ts_v_h
-    log("val: wgt.zone.y: %d, ts_v_h: %d, lastY: %d", wgt.zone.y, ts_v_h, last_y)
+
+    -- draw unit
+    local font_size_u = wgt.tools.getFontSizeRelative(font_size_v, -2)
+    local ts_u_w, ts_u_h, ts_u_v_offset = wgt.tools.lcdSizeTextFixed(wgt.unit, font_size_u)
+    lcd.drawText     (wgt.zone.x + dx + ts_v_w, wgt.zone.y + last_y + (ts_v_h - ts_u_h) + ts_u_v_offset, wgt.unit, font_size_u + wgt.options.TextColor)
+    --lcd.drawRectangle(wgt.zone.x + dx + ts_v_w, wgt.zone.y + last_y + (ts_v_h - ts_u_h)                , ts_u_w, ts_u_h, BLUE)
+
+    last_y = last_y + ts_v_h + 5
 
     -- draw min max
+
+    --local str_minmax = string.format("%s..%s %s", prettyPrintNone(wgt.last_value_min, wgt.precession), prettyPrintNone(wgt.last_value_max, wgt.precession), wgt.unit)
+    local str_minmax = string.format("%s..%s", prettyPrintNone(wgt.last_value_min, wgt.precession), prettyPrintNone(wgt.last_value_max, wgt.precession))
+    local font_size_minmax, ts_mm_w, ts_mm_h = getFontSizeMinMax(wgt, str_minmax, wgt.zone.w -40, wgt.zone.h - last_y)
+    --local font_size_minmax, ts_mm_w, ts_mm_h = FONT_6, wgt.tools.lcdSizeTextFixed(str_minmax, FONT_6)
+
+
+    if (wgt.options.Show_MinMax == 0) then
+        return
+    end
     if (wgt.last_value_min == -1 or wgt.last_value_max == -1) then
         return
     end
-
-    local str_minmax = string.format("%s..%s %s", prettyPrintNone(wgt.last_value_min, wgt.precession), prettyPrintNone(wgt.last_value_max, wgt.precession), wgt.unit)
-    local font_size_minmax, ts_mm_w, ts_mm_h = getFontSize(wgt, str_minmax, wgt.zone.w -40, wgt.zone.h - last_y)
-
     if ts_mm_h >= wgt.zone.h - last_y then
         return
     end
@@ -310,16 +389,16 @@ end
 local function refresh_widget_no_telem(wgt)
     -- end of flight
 
-    local last_y = 0
+    local last_y = 1
     lcd.setColor(CUSTOM_COLOR, lcd.RGB(0xA4A5A4))
 
     -- draw header
     local header_txt = wgt.source_name .. " " .. wgt.options.Suffix
-    local font_size_header, ts_h_w, ts_h_h, v_offset = getFontSize(wgt, header_txt, wgt.zone.w, wgt.zone.h / 4)
+    local font_size_header, ts_h_w, ts_h_h, v_offset = getFontSizeHeader(wgt, header_txt, wgt.zone.h)
     log("val: font_size_header: %d, ts_h_h: %d, lastY: %d", wgt.zone.y, ts_h_h, last_y)
-    lcd.drawText(wgt.zone.x, wgt.zone.y + last_y + v_offset, header_txt, font_size_header + CUSTOM_COLOR)
+    lcd.drawText(wgt.zone.x + 5, wgt.zone.y + last_y + v_offset, header_txt, font_size_header + BLACK)
     --lcd.drawRectangle(wgt.zone.x, wgt.zone.y + last_y, ts_h_w, ts_h_h, BLUE)
-    last_y = last_y + ts_h_h
+    last_y = last_y + ts_h_h + 3
 
     -- draw min max calc
     local ts_mm_w =0
@@ -327,29 +406,43 @@ local function refresh_widget_no_telem(wgt)
     local font_size_mm = 0
     local v_offset = 0
     local val_str_mm = ""
-    if (wgt.last_value_min ~= -1 and wgt.last_value_max ~= -1) and (wgt.zone.h > 50) then
-        val_str_mm = string.format("%s..%s %s", prettyPrintNone(wgt.last_value_min, wgt.precession), prettyPrintNone(wgt.last_value_max, wgt.precession), wgt.unit)
-        font_size_mm, ts_mm_w, ts_mm_h, v_offset = getFontSize(wgt, val_str_mm, wgt.zone.w, wgt.zone.h - last_y)
-        --local dx = (wgt.zone.w - ts_mm_w) / 2
-        --if (ts_mm_h <= wgt.zone.h - last_y) and (ts_mm_w <= wgt.zone.w) then
-        --    wgt.tools.drawBadgedText(val_str_mm, wgt.zone.x + dx - 5, wgt.zone.h - ts_mm_h, font_size_mm, wgt.options.TextColor, CUSTOM_COLOR)
-        --    --log("wgt.zone.y: %d, wgt.zone.h: %d, ts_mm_h: %d", wgt.zone.y,wgt.zone.h,ts_mm_h)
-        --end
+    if (wgt.options.Show_MinMax == 1) then
+        if (wgt.last_value_min ~= -1 and wgt.last_value_max ~= -1) and (wgt.zone.h > 50) then
+            val_str_mm = string.format("%s..%s %s", prettyPrintNone(wgt.last_value_min, wgt.precession), prettyPrintNone(wgt.last_value_max, wgt.precession), wgt.unit)
+            font_size_mm, ts_mm_w, ts_mm_h, v_offset = getFontSize(wgt, val_str_mm, wgt.zone.w, wgt.zone.h - last_y)
+            --local dx = (wgt.zone.w - ts_mm_w) / 2
+            --if (ts_mm_h <= wgt.zone.h - last_y) and (ts_mm_w <= wgt.zone.w) then
+            --    wgt.tools.drawBadgedText(val_str_mm, wgt.zone.x + dx - 5, wgt.zone.h - ts_mm_h, font_size_mm, wgt.options.TextColor, CUSTOM_COLOR)
+            --    --log("wgt.zone.y: %d, wgt.zone.h: %d, ts_mm_h: %d", wgt.zone.y,wgt.zone.h,ts_mm_h)
+            --end
+        end
     end
 
     -- draw value
-    local str_v = string.format("%s %s", prettyPrintNone(wgt.last_value, wgt.precession), wgt.unit)
+    --local str_v = string.format("%s %s", prettyPrintNone(wgt.last_value, wgt.precession), wgt.unit)
+    local str_v = prettyPrintNone(wgt.last_value, wgt.precession)
     local font_size_v, ts_v_w, ts_v_h, v_offset = getFontSize(wgt, str_v, wgt.zone.w, wgt.zone.h - ts_h_h - ts_mm_h)
-    lcd.drawText(wgt.zone.x, wgt.zone.y + last_y + v_offset, str_v, font_size_v + CUSTOM_COLOR)
+    local dx = (wgt.zone.w - ts_v_w) / 2
+    lcd.drawText(wgt.zone.x + dx, wgt.zone.y + last_y + v_offset, str_v, font_size_v + CUSTOM_COLOR)
     --lcd.drawRectangle(wgt.zone.x, wgt.zone.y + last_y, ts_v_w, ts_v_h, BLUE)
-    last_y = last_y + ts_v_h
+
+    -- draw unit
+    local font_size_u = wgt.tools.getFontSizeRelative(font_size_v, -2)
+    local ts_u_w, ts_u_h, ts_u_v_offset = wgt.tools.lcdSizeTextFixed(wgt.unit, font_size_u)
+    lcd.drawText     (wgt.zone.x + dx + ts_v_w, wgt.zone.y + last_y + (ts_v_h - ts_u_h) + ts_u_v_offset, wgt.unit, font_size_u + CUSTOM_COLOR)
+    --lcd.drawRectangle(wgt.zone.x + dx + ts_v_w, wgt.zone.y + last_y + (ts_v_h - ts_u_h)                , ts_u_w, ts_u_h, BLUE)
+
+    last_y = last_y + ts_v_h + 5
+
 
     -- draw min max
-    local dx = (wgt.zone.w - ts_mm_w) / 2
-    if (wgt.last_value_min ~= -1 and wgt.last_value_max ~= -1) and (wgt.zone.h > 50) then
-        if (ts_mm_h <= wgt.zone.h - last_y) and (ts_mm_w <= wgt.zone.w) then
-            wgt.tools.drawBadgedText(val_str_mm, wgt.zone.x + dx - 5, wgt.zone.y + last_y, font_size_mm, wgt.options.TextColor, CUSTOM_COLOR)
-            --log("wgt.zone.y: %d, wgt.zone.h: %d, ts_mm_h: %d", wgt.zone.y,wgt.zone.h,ts_mm_h)
+    if (wgt.options.Show_MinMax == 1) then
+        local dx = (wgt.zone.w - ts_mm_w) / 2
+        if (wgt.last_value_min ~= -1 and wgt.last_value_max ~= -1) and (wgt.zone.h > 50) then
+            if (ts_mm_h <= wgt.zone.h - last_y) and (ts_mm_w <= wgt.zone.w) then
+                wgt.tools.drawBadgedText(val_str_mm, wgt.zone.x + dx - 5, wgt.zone.y + last_y, font_size_mm, wgt.options.TextColor, CUSTOM_COLOR)
+                --log("wgt.zone.y: %d, wgt.zone.h: %d, ts_mm_h: %d", wgt.zone.y,wgt.zone.h,ts_mm_h)
+            end
         end
     end
 

@@ -23,6 +23,7 @@
 -- it will take a lipo/li-ion voltage that received as a single value (as opposed to multi cell values send while using FLVSS liPo Voltage Sensor)
 -- common sources are:
 --   * Transmitter Battery
+--   * expressLRS pwm receivers (ER6/ER8/SuperP14ch)
 --   * FrSky VFAS
 --   * A1/A2 analog voltage
 --   * mini quad flight controller
@@ -34,9 +35,8 @@
 -- Widget to display the levels of Lipo battery from single analog source
 -- Author : Offer Shmuely
 -- Date: 2021-2023
--- ver: 0.5
-
 local app_name = "BattAnalog"
+local app_ver = "0.7"
 
 local CELL_DETECTION_TIME = 8
 
@@ -45,10 +45,11 @@ local _options = {
     { "Color"             , COLOR , YELLOW },
     { "Show_Total_Voltage", BOOL  , 0      }, -- 0=Show as average Lipo cell level, 1=show the total voltage (voltage as is)
     { "Lithium_Ion"       , BOOL  , 0      }, -- 0=LIPO battery, 1=LI-ION (18650/21500)
+    { "Lithium_HV"        , BOOL  , 0      }, -- 0=LIPO battery, 1=LiHV 4.35V
 }
 
 -- Data gathered from commercial lipo sensors
-local _lipoPercentListSplit = {
+local percent_list_lipo = {
     { { 3.000,  0 }, { 3.093,  1 }, { 3.196,  2 }, { 3.301,  3 }, { 3.401,  4 }, { 3.477,  5 }, { 3.544,  6 }, { 3.601,  7 }, { 3.637,  8 }, { 3.664,  9 }, { 3.679, 10 }, { 3.683, 11 }, { 3.689, 12 }, { 3.692, 13 } },
     { { 3.705, 14 }, { 3.710, 15 }, { 3.713, 16 }, { 3.715, 17 }, { 3.720, 18 }, { 3.731, 19 }, { 3.735, 20 }, { 3.744, 21 }, { 3.753, 22 }, { 3.756, 23 }, { 3.758, 24 }, { 3.762, 25 }, { 3.767, 26 } },
     { { 3.774, 27 }, { 3.780, 28 }, { 3.783, 29 }, { 3.786, 30 }, { 3.789, 31 }, { 3.794, 32 }, { 3.797, 33 }, { 3.800, 34 }, { 3.802, 35 }, { 3.805, 36 }, { 3.808, 37 }, { 3.811, 38 }, { 3.815, 39 } },
@@ -60,7 +61,7 @@ local _lipoPercentListSplit = {
 }
 
 -- from: https://electric-scooter.guide/guides/electric-scooter-battery-voltage-chart/
-local _liionPercentListSplit = {
+local percent_list_lion = {
     { { 2.800,  0 }, { 2.840,  1 }, { 2.880,  2 }, { 2.920,  3 }, { 2.960,  4 } },
     { { 3.000,  5 }, { 3.040,  6 }, { 3.080,  7 }, { 3.096,  8 }, { 3.112,  9 } },
     { { 3.128, 10 }, { 3.144, 11 }, { 3.160, 12 }, { 3.176, 13 }, { 3.192, 14 } },
@@ -84,11 +85,29 @@ local _liionPercentListSplit = {
     { { 4.10, 100}, { 4.15,100 }, { 4.20, 100} },
 }
 
+-- TODO new to fine tune the graph!
+local percent_list_hv = {
+    { { 3.150,  0 }, { 3.243,  1 }, { 3.346,  2 }, { 3.451,  3 }, { 3.551,  4 }, { 3.627,  5 }, { 3.694,  6 }, { 3.751,  7 }, { 3.787,  8 }, { 3.814,  9 }, { 3.829, 10 }, { 3.833, 11 }, { 3.839, 12 }, { 3.842, 13 } },
+    { { 3.855, 14 }, { 3.860, 15 }, { 3.863, 16 }, { 3.865, 17 }, { 3.870, 18 }, { 3.881, 19 }, { 3.885, 20 }, { 3.894, 21 }, { 3.903, 22 }, { 3.906, 23 }, { 3.908, 24 }, { 3.912, 25 }, { 3.917, 26 } },
+    { { 3.924, 27 }, { 3.930, 28 }, { 3.933, 29 }, { 3.936, 30 }, { 3.939, 31 }, { 3.944, 32 }, { 3.947, 33 }, { 3.950, 34 }, { 3.952, 35 }, { 3.955, 36 }, { 3.958, 37 }, { 3.961, 38 }, { 3.965, 39 } },
+    { { 3.968, 40 }, { 3.972, 41 }, { 3.975, 42 }, { 3.979, 43 }, { 3.983, 44 }, { 3.986, 45 }, { 3.990, 46 }, { 3.993, 47 }, { 3.997, 48 }, { 4.000, 49 }, { 4.004, 50 }, { 4.007, 51 }, { 4.010, 52 } },
+    { { 4.013, 53 }, { 4.016, 54 }, { 4.020, 55 }, { 4.024, 56 }, { 4.029, 57 }, { 4.038, 58 }, { 4.043, 59 }, { 4.047, 60 }, { 4.052, 61 }, { 4.056, 62 }, { 4.061, 63 }, { 4.068, 64 } },
+    { { 4.073, 65 }, { 4.078, 66 }, { 4.089, 67 }, { 4.093, 68 }, { 4,099, 69 }, { 4.105, 70 }, { 4.111, 71 }, { 4.118, 72 }, { 4.124, 73 }, { 4.131, 74 }, { 4.137, 75 }, { 4.144, 76 } },
+    { { 4.151, 77 }, { 4.157, 78 }, { 4.164, 79 }, { 4.171, 80 }, { 4.179, 81 }, { 4.186, 82 }, { 4.194, 83 }, { 4.202, 84 }, { 4.212, 85 }, { 4.224, 86 }, { 4.235, 87 }, { 4.245, 88 } },
+    { { 4.255, 89 }, { 4.261, 90 }, { 4.266, 91 }, { 4.270, 92 }, { 4.275, 93 }, { 4.279, 94 }, { 4.285, 95 }, { 4.295, 96 }, { 4.326, 97 }, { 4.329, 98 }, { 4.343, 99 }, { 4.350, 100 } },
+}
+
+
+local voltageRanges_lipo = {4.3,8.6,12.9,17.2,21.5,25.8,30.1,34.4,38.7,43.0,47.3,51.6}
+local voltageRanges_lion = {4.2,8.4,12.6,16.8,21,25.2,29.4,33.6,37.8,42,46.2,50.4,54.6}
+local voltageRanges_hv   = {4.45,8.9,13.35,17.8,22.25,26.7,31.15,35.6,40.05,44.5,48.95,53.4,57.85}
+
+
 local defaultSensor = "RxBt" -- RxBt / A1 / A3/ VFAS / Batt
 
 --------------------------------------------------------------
 local function log(s)
-    print("BattAnalog: " .. s)
+    --print("[" .. app_name .. "]" .. s)
 end
 --------------------------------------------------------------
 
@@ -126,6 +145,7 @@ local function update(wgt, options)
     wgt.options.Show_Total_Voltage = wgt.options.Show_Total_Voltage % 2 -- modulo due to bug that cause the value to be other than 0|1
 
     log(string.format("wgt.options.Lithium_Ion: %s", wgt.options.Lithium_Ion))
+    log(string.format("wgt.options.Lithium_HV: %s", wgt.options.Lithium_HV))
 end
 
 local function create(zone, options)
@@ -152,7 +172,7 @@ local function create(zone, options)
 
     -- imports
     wgt.ToolsClass = loadScript("/WIDGETS/" .. app_name .. "/lib_widget_tools.lua", "tcd")
-    wgt.tools = wgt.ToolsClass(app_name)
+    wgt.tools = wgt.ToolsClass(nil, app_name)
 
     update(wgt, options)
     return wgt
@@ -183,9 +203,12 @@ local function getCellPercent(wgt, cellValue)
         return 100
     end
 
-    local _percentListSplit = _lipoPercentListSplit
-    if wgt.options.Lithium_Ion == 1 then
-        _percentListSplit = _liionPercentListSplit
+    local _percentListSplit = percent_list_lipo
+    if wgt.options.Lithium_Ion == 1 and wgt.options.Lithium_HV == 0 then
+        _percentListSplit = percent_list_lion
+    end
+    if wgt.options.Lithium_Ion == 0 and wgt.options.Lithium_HV == 1 then
+        _percentListSplit = percent_list_hv
     end
 
     for i1, v1 in ipairs(_percentListSplit) do
@@ -217,24 +240,25 @@ end
 
 -- Only invoke this function once.
 local function calcCellCount(wgt, singleVoltage)
-    if singleVoltage     < 4.3  then return 1
-    elseif singleVoltage < 8.6  then return 2
-    elseif singleVoltage < 12.9 then return 3
-    elseif singleVoltage < 17.2 then return 4
-    elseif singleVoltage < 21.5 then return 5
-    elseif singleVoltage < 25.8 then return 6
-    elseif singleVoltage < 30.1 then return 7
-    elseif singleVoltage < 34.4 then return 8
-    elseif singleVoltage < 38.7 then return 9
-    elseif singleVoltage < 43.0 then return 10
-    elseif singleVoltage < 47.3 then return 11
-    elseif singleVoltage < 51.6 then return 12
+    local voltageRanges = voltageRanges_lipo
+
+    if wgt.options.Lithium_Ion == 1 and wgt.options.Lithium_HV == 0 then
+        voltageRanges = voltageRanges_lion
+    end
+    if wgt.options.Lithium_Ion == 0 and wgt.options.Lithium_HV == 1 then
+        voltageRanges = voltageRanges_hv
+    end
+
+    for i = 1, #voltageRanges do
+        if singleVoltage < voltageRanges[i] then
+            log("calcCellCount %s --> %s", singleVoltage, i)
+            return i
+        end
     end
 
     log("no match found" .. singleVoltage)
     return 1
 end
-
 
 --- This function returns a table with cels values
 local function calculateBatteryData(wgt)
@@ -273,11 +297,11 @@ local function calculateBatteryData(wgt)
         log("permanent cellCount: " .. wgt.cellCount)
     else
         local newCellCount = calcCellCount(wgt, v)
-        if (wgt.tools.periodicHasPassed(wgt.periodic1)) then
+        if (wgt.tools.periodicHasPassed(wgt.periodic1, false)) then
             wgt.cell_detected = true
             wgt.cellCount = newCellCount
         else
-            local duration_passed = wgt.tools.periodicGetElapsedTime(wgt.periodic1)
+            local duration_passed = wgt.tools.periodicGetElapsedTime(wgt.periodic1, false)
             log(string.format("detecting cells: %ss, %d/%d msec", newCellCount, duration_passed, wgt.tools.getDurationMili(wgt.periodic1)))
 
             -- this is necessary for simu where cell-count can change
@@ -535,6 +559,13 @@ local function refresh(wgt, event, touchState)
     if (wgt.options.Show_Total_Voltage == nil) then return end
 
     background(wgt)
+
+    if wgt.options.Lithium_Ion == 1 and wgt.options.Lithium_HV == 1 then
+        lcd.drawText(0,0, "Invalid settings", MIDSIZE + BLINK)
+        lcd.drawText(0,30, "can not set LI-ION & LIHV", 0 +BLINK)
+        return
+    end
+
 
     if wgt.isDataAvailable then
         wgt.no_telem_blink = 0
