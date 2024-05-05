@@ -31,6 +31,7 @@ The contents of this repository are organised by color type and screen size, wit
     - RadioMaster Pocket
     - RadioMaster TX12 / TX12 mkII
     - RadioMaster Zorro
+    - RadioMaster MT12
 - **bw212x64.zip** (212x64 pixel "wide screen" black and white screen radios)
     - FrSky Taranis X9D
     - FrSky Taranis X9D+
