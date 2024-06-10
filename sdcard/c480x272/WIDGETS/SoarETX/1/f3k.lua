@@ -20,7 +20,7 @@
 ---------------------------------------------------------------------------
 
 local widget, soarGlobals = ...
-local libGUI = loadGUI()
+local libGUI = soarGlobals.libGUI
 libGUI.flags = DBLSIZE
 local colors = libGUI.colors
 local activeGUI
@@ -40,7 +40,7 @@ local RGT =      LCD_W - 18
 local TOP =      50
 local BOTTOM =   LCD_H - 30
 local LINE =     60
-local LINE2 =    28 
+local LINE2 =    28
 local HEIGHT =   42
 local HEIGHT2 =  18
 local BUTTON_W = 86
@@ -82,7 +82,7 @@ local state               -- Current program state
 local scores = { }              -- List of saved scores
 local taskWindow = 0            -- Task window duration (zero counts up)
 local launches = -1             -- Number of launches allowed, -1 for unlimited
-local taskScores = 0            -- Number of scores in task 
+local taskScores = 0            -- Number of scores in task
 local finalScores = false       -- Task scores are final
 local targetType = 0            -- 1. Huge ladder, 2. Poker, 3. "1234", 4. Big ladder, Else: constant time
 local scoreType                 -- 1. Best, 2. Last, 3. Make time
@@ -111,7 +111,7 @@ local SCORE_FILE = "/LOGS/JF F3K Scores.csv"
 -- Handle transitions between program states
 local function GotoState(newState)
   state = newState
- 
+
   -- Stop blinking
   screenTask.timer0.blink = false
 
@@ -126,13 +126,13 @@ local function GotoState(newState)
 		setStickySwitch(LS_FLT_TMR, false)
     screenTask.labelTimer0.title = "Target:"
     screenTask.locked = true
-	
+
   elseif state == STATE_FLYING then
 		setStickySwitch(LS_WIN_TMR, true)
 		setStickySwitch(LS_FLT_TMR, true)
     screenTask.labelTimer0.title = "Flight:"
     screenTask.locked = true
-    
+
     if model.getTimer(0).start > 0 then
       -- Report the target time
       playDuration(model.getTimer(0).start, 0)
@@ -140,35 +140,35 @@ local function GotoState(newState)
       -- ... or beep
       playTone(1760, 100, PLAY_NOW)
     end
-  
+
   elseif state == STATE_COMMITTED then
     -- Call launch height
     if getLogicalSwitchValue(LS_ALT) then
       playNumber(getValue("Alt+"), UNIT_METERS)
     end
-    
-    if launches > 0 then 
+
+    if launches > 0 then
       launches = launches - 1
     end
-  
+
     lastChange = 0
- 
+
  elseif state == STATE_FINISHED then
     playTone(880, 1000, 0)
   end
-  
+
   -- Configure "button3"
   screenTask.button3.disabled = false
   if state <= STATE_PAUSE then
-    screenTask.button3.title = "Start"    
+    screenTask.button3.title = "Start"
   elseif state == STATE_WINDOW then
     screenTask.button3.title = "Pause"
   elseif state >= STATE_COMMITTED then
     screenTask.button3.title = "Zero"
   else
-    screenTask.button3.disabled = true  
+    screenTask.button3.disabled = true
   end
-  
+
   -- Configure info text label
 	if state == STATE_PAUSE then
     screenTask.labelInfo.title = string.format("Total: %i sec.", totalScore)
@@ -188,18 +188,18 @@ end -- GotoState()
 -- Function for setting up a task
 local function SetupTask(taskName, taskData)
   screenTask.title = taskName
-  
+
   taskWindow = taskData[1]
   launches = taskData[2]
   taskScores = taskData[3]
   finalScores = taskData[4]
   targetType = taskData[5]
   scoreType = taskData[6]
-  screenTask.buttonQR.value = taskData[7]  
+  screenTask.buttonQR.value = taskData[7]
   scores = { }
   totalScore = 0
   pokerCalled = false
-  
+
   -- Setup scores
   for i = 1, N_LINES do
     if i > taskScores then
@@ -210,7 +210,7 @@ local function SetupTask(taskName, taskData)
       screenTask.scores[i].hidden = false
     end
   end
-  
+
   -- A few extra counts in 1234
   if targetType == 3 then
 		counts = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 30, 45, 65, 70, 75, 125, 130, 135, 185, 190, 195}
@@ -236,7 +236,7 @@ local function RecordBest(scores, newScore)
       if newScore > scores[i] then j = i end
       i = i + 1
     end
-    
+
     if j == 0 then j = i end -- New score is smallest; end of the list
   end
 
@@ -298,7 +298,7 @@ local function Score()
 
 	end
 
-  totalScore = 0  
+  totalScore = 0
   for i = 1, #scores do
     totalScore = totalScore + math.min(MaxScore(i), scores[i])
   end
@@ -307,7 +307,7 @@ end -- Score()
 -- Reset altimeter
 local function ResetAlt()
   for i = 0, 31 do
-    if model.getSensor(i).name == "Alt" then 
+    if model.getSensor(i).name == "Alt" then
       model.resetSensor(i)
       break
     end
@@ -370,11 +370,11 @@ end  --  Best1234Target(..)
 -- Get called time from user in Poker
 local function PokerCall()
   local dial
-  
+
   -- Find dials for setting target time in Poker and height ceilings etc.
   for input = 0, 31 do
     local tbl = model.getInput(input, 0)
-    
+
     if tbl and tbl.name == "Dial" then
       dial = tbl.source
     end
@@ -393,24 +393,24 @@ local function PokerCall()
     t2 = tblStep[i + 1][1]
   end
   local dt = tblStep[i][2]
-  
+
   local result = t1 + dt * math.floor(x * (t2 - t1) /dt)
-  
+
   if scoreType == 3 then
     result = math.min(winTimer - 1, result)
   end
-  
+
   if math.abs(input - lastInput) >= 20 then
     lastInput = input
     lastChange = getTime()
   end
-  
+
   if state == STATE_COMMITTED and lastChange > 0 and getTime() - lastChange > 100 then
     playTone(3000, 100, PLAY_NOW)
     playDuration(result)
     lastChange = 0
   end
-  
+
   return result
 end -- PokerCall()
 
@@ -435,11 +435,11 @@ local function TargetTime()
     return MaxScore(#scores + 1)
 	end
 end -- TargetTime()
-	
+
 -- Initialize variables before flight
 local function InitializeFlight()
 	local targetTime = TargetTime()
-	
+
 	-- Get ready to count down
 	countIndex = #counts
 	while countIndex > 1 and counts[countIndex] >= targetTime do
@@ -468,7 +468,7 @@ function widget.background()
 
 		ResetAlt()
 	end
-	
+
   -- Call altitude every 10 sec.
 	if getLogicalSwitchValue(LS_ALT10) and now > nextCall then
 		playNumber(getValue("Alt"), UNIT_METERS)
@@ -478,11 +478,11 @@ function widget.background()
 	if state <= STATE_READY and state ~= STATE_FINISHED then
 		InitializeFlight()
 	end
-	
+
 	flightTimer = model.getTimer(0).value
 	flightTime = math.abs(model.getTimer(0).start - flightTimer)
 	winTimer = model.getTimer(1).value
-	
+
 	if state < STATE_WINDOW then
 		if state == STATE_IDLE then
 			-- Set window timer
@@ -515,7 +515,7 @@ function widget.background()
 				-- Play tone to warn that timer is NOT running
 				playTone(1760, 200, 0, PLAY_NOW)
 			end
-			
+
 		elseif state == STATE_READY then
 			if launchReleased then
 				GotoState(STATE_FLYING)
@@ -533,12 +533,12 @@ function widget.background()
 			elseif flightTimer > 0 and math.ceil(flightTimer / 60) < math.ceil(prevFt / 60) then
 				playDuration(flightTimer, 0)
 			end
-			
+
       -- Blink when flight ttimer is negative
       if flightTimer < 0 then
         screenTask.timer0.blink = true
       end
-      
+
 			if state == STATE_FLYING then
 				-- Within 10 sec. "grace period", cancel the flight
 				if launchPulled then
@@ -549,7 +549,7 @@ function widget.background()
 				if flightTime >= 10 then
 					GotoState(STATE_COMMITTED)
 				end
-				
+
 			elseif launchPulled then
 				-- Report the time after flight is done
 				if model.getTimer(0).start == 0 then
@@ -557,7 +557,7 @@ function widget.background()
 				end
 
 				Score()
-				
+
 				-- Change state
 				if (finalScores and #scores == taskScores) or launches == 0 or (taskWindow > 0 and winTimer <= 0) then
 					GotoState(STATE_FINISHED)
@@ -568,7 +568,7 @@ function widget.background()
 				end
 			end
 		end
-		
+
 		prevWt = winTimer
 		prevFt = flightTimer
 	end
@@ -622,12 +622,12 @@ function libGUI.widgetRefresh()
   local COL2 = COL1 + 30
   local COL3 = COL1 + 125
   local RGT  = COL1 + 400
-  
+
   -- Draw scores
   x = 5
   local y = 0
   local dy = widget.zone.h / N_LINES
-  
+
   for i = 1, taskScores do
     lcd.drawText(COL1, y, string.format("%i.", i), colors.primary1 + DBLSIZE)
     if i > #scores then
@@ -641,14 +641,14 @@ function libGUI.widgetRefresh()
   -- Draw timers
   local blink = 0
   local y = 4
-  
+
   local tmr = model.getTimer(0).value
-  if tmr < 0 and state == STATE_COMMITTED then 
+  if tmr < 0 and state == STATE_COMMITTED then
     blink = BLINK
   end
 
   lcd.drawText(COL3, y + 10, screenTask.labelTimer0.title, colors.primary1 + DBLSIZE)
-  lcd.drawTimer(RGT, y, tmr, colors.primary1 + blink + XXLSIZE + RIGHT)  
+  lcd.drawTimer(RGT, y, tmr, colors.primary1 + blink + XXLSIZE + RIGHT)
   y = y + 2 * dy
   tmr = model.getTimer(1).value
   lcd.drawText(COL3, y + 10, "Task:", colors.primary1 + DBLSIZE)
@@ -660,13 +660,13 @@ end -- widgetRefresh()
 local function SetupScreen(gui, title, pop)
   gui.title = title
   local x1
-  
+
   if pop then
     x1 = LCD_W - 80
   else
     x1 = LCD_W - 50
   end
-  
+
   function gui.fullScreenRefresh()
     local color
     lcd.clear(COLOR_THEME_SECONDARY3)
@@ -678,17 +678,17 @@ local function SetupScreen(gui, title, pop)
     -- Date
     local now = getDateTime()
     local str = string.format("%02i:%02i", now.hour, now.min)
-    lcd.drawText(x1, 6, str, RIGHT + MIDSIZE + colors.primary2)    
+    lcd.drawText(x1, 6, str, RIGHT + MIDSIZE + colors.primary2)
 
     if soarGlobals.battery == 0 then
       color = COLOR_THEME_DISABLED
     else
       color = colors.primary2
     end
-    
+
     str = string.format("%1.1fV", soarGlobals.battery)
     lcd.drawText(x1 - 65, 6, str, RIGHT + MIDSIZE + color)
-    
+
     -- Draw trims
     local p = {
       { LCD_W - 191, LCD_H - 14, 177, 8 },
@@ -696,7 +696,7 @@ local function SetupScreen(gui, title, pop)
       { LCD_W - 14, 68, 8, 177 },
       { 7, 68, 8, 177 },
     }
-    
+
     for i = 1, 4 do
       local q = p[i]
       local value = getValue(trimSources[i]) / 10.24
@@ -708,21 +708,21 @@ local function SetupScreen(gui, title, pop)
         x = q[1] + q[3] / 2
         y = q[2] + q[4] * (100 - value) / 200
       end
-      
+
       lcd.drawFilledRectangle(q[1], q[2], q[3], q[4], COLOR_THEME_SECONDARY1)
       lcd.drawFilledRectangle(x - 9, y - 6, 18, 15, colors.primary1)
       lcd.drawFilledRectangle(x - 10, y - 7, 18, 15, colors.focus)
       lcd.drawNumber(x, y, value, SMLSIZE + VCENTER + CENTER + colors.primary2)
     end
-    
+
     -- Flight mode
-    lcd.drawText(LCD_W / 2, LCD_H - LINE2, select(2, getFlightMode()), MIDSIZE + CENTER + COLOR_THEME_SECONDARY1)    
+    lcd.drawText(LCD_W / 2, LCD_H - LINE2, select(2, getFlightMode()), MIDSIZE + CENTER + COLOR_THEME_SECONDARY1)
   end -- fullScreenRefresh()
-  
+
   -- Return button
   if pop then
     gui.buttonRet = gui.custom({ }, LCD_W - 74, 6, 28, 28)
-    
+
     function gui.buttonRet.draw(focused)
       local color
 
@@ -733,14 +733,14 @@ local function SetupScreen(gui, title, pop)
         color = COLOR_THEME_DISABLED
         gui.buttonRet.disabled = true
       end
-      
+
       lcd.drawRectangle(LCD_W - 74, 6, 28, 28, color)
       lcd.drawFilledRectangle(LCD_W - 61, 12, 3, 18, color)
       for i = 0, 3 do
         lcd.drawLine(LCD_W - 60 , 10 + i, LCD_W - 50 - i, 20, SOLID, color)
         lcd.drawLine(LCD_W - 60 , 10 + i, LCD_W - 70 + i, 20, SOLID, color)
       end
-      
+
       if focused then
         gui.buttonRet.drawFocus()
       end
@@ -752,7 +752,7 @@ local function SetupScreen(gui, title, pop)
       end
     end
   end
-  
+
   -- Minimize button
   local buttonMin = gui.custom({ }, LCD_W - 34, 6, 28, 28)
 
@@ -764,7 +764,7 @@ local function SetupScreen(gui, title, pop)
       buttonMin.drawFocus()
     end
   end
-  
+
   function buttonMin.onEvent(event)
     if event == EVT_VIRTUAL_ENTER then
       lcd.exitFullScreen()
@@ -780,7 +780,7 @@ local function SetupScreen(gui, title, pop)
     end
   end
   gui.setEventHandler(EVT_VIRTUAL_EXIT, HandleEXIT)
-  
+
   return gui
 end -- SetupScreen
 
@@ -791,7 +791,7 @@ do
   local ROW = 65
   x = 40
   y = 60
-  
+
   SetupScreen(menuMain, "SoarETX  F3K")
 
   -- Generate callbacks with closure for calling submenus
@@ -806,7 +806,7 @@ do
   menuMain.button(x, y, WIDTH, HEIGHT, "Practice", MakePush(menuPractice))
   y = y + ROW
   menuMain.button(x, y, WIDTH, HEIGHT, "Scores", MakePush(menuScores))
-  
+
   activeGUI = menuMain
 end
 
@@ -831,7 +831,7 @@ do -- Setup F3K tasks menu
 		"L. One flight only",
 		"M. Huge Ladder"
 	}
-  
+
   -- {win, launches, scores, final, tgtType, scoType, QR }
   local taskData = {
     { 420, -1, 1, false, 300, 2, false },   -- A. Last flight
@@ -862,7 +862,7 @@ end
 
 do -- Setup practice tasks menu
   SetupScreen(menuPractice, "Practice  Tasks", true)
-  
+
 	local tasks = {
 		"Just Fly!",
 		"Quick Relaunch!",
@@ -875,7 +875,7 @@ do -- Setup practice tasks menu
     { 0, -1, 5, false, 2, 2, true },  -- QR
     { 600, 2, 2, true, 5, 2, false }  -- Deuces
   }
-  
+
   -- Call back function running when a menu item is selected
   local function callBack(menu)
     SetupTask(tasks[menu.selected], taskData[menu.selected])
@@ -888,13 +888,13 @@ end
 
 do -- Setup score keeper screen for F3K and Practice tasks
   SetupScreen(screenTask, "", true)
-  
+
   -- Restore default task and dismiss task screen
-  function screenTask.dismiss()  
+  function screenTask.dismiss()
     SetupTask("Just Fly!", { 0, -1, 5, false, 0, 2, false })
     PopGUI()
   end
-  
+
   -- Return button shows prompt to save scores instead of popping right away
   function screenTask.buttonRet.onEvent(event)
     if event == EVT_VIRTUAL_ENTER then
@@ -905,17 +905,17 @@ do -- Setup score keeper screen for F3K and Practice tasks
       end
     end
   end
-  
+
   -- Add score times
   local y = TOP
   local dy = select(2, lcd.sizeText("", libGUI.flags))
-  
+
   screenTask.scoreLabels = { }
   screenTask.scores = { }
 
   for i = 1, N_LINES do
     screenTask.scoreLabels[i] = screenTask.label(LEFT, y, 20, HEIGHT, string.format("%i.", i))
-    
+
     local s = screenTask.timer(LEFT + 40, y, 60, HEIGHT, 0, nil)
     s.disabled = true
     s.value = "-  -  -"
@@ -924,35 +924,35 @@ do -- Setup score keeper screen for F3K and Practice tasks
     -- Modify timer's draw function to insert score value
     local draw = s.draw
     function s.draw(idx)
-      if i > #scores then 
+      if i > #scores then
         screenTask.scores[i].value = "-  -  -"
       else
         screenTask.scores[i].value = scores[i]
       end
-      
+
       draw(idx)
     end
     y = y + dy
   end
-  
+
   -- Add center buttons
   local y = TOP
   screenTask.buttonQR = screenTask.toggleButton(COL2, y, BUTTON_W, HEIGHT, "QR", false, nil)
   y = y + LINE
   screenTask.buttonEoW = screenTask.toggleButton(COL2, y, BUTTON_W, HEIGHT, "EoW", true, nil)
-  
+
   local function callBack(button)
     if state <= STATE_PAUSE then
       GotoState(STATE_WINDOW)
-    
+
     elseif state == STATE_WINDOW then
       GotoState(STATE_PAUSE)
-    
+
     elseif state >= STATE_COMMITTED then
       -- Record a zero score!
       flightTime = 0
       Score()
-      
+
       -- Change state
       if winTimer <= 0 or (finalScores and #scores == taskScores) or launches == 0 then
         GotoState(STATE_FINISHED)
@@ -962,26 +962,26 @@ do -- Setup score keeper screen for F3K and Practice tasks
       end
     end
   end
-  
+
   y = y + LINE
   screenTask.button3 = screenTask.button(COL2, y, BUTTON_W, HEIGHT, "Start", callBack)
-  
+
   -- Info text label
   screenTask.labelInfo = screenTask.label(RGT - 250, BOT_ROW, 250, HEIGHT, "", libGUI.flags + RIGHT)
-  
+
   -- Add timers
   y = TOP
   screenTask.labelTimer0 = screenTask.label(RGT - 160, y, 50, HEIGHT2, "Target:", MIDSIZE)
   y = y + LINE2
   screenTask.timer0 = screenTask.timer(RGT - 160, y, 160, HEIGHT, 0, nil, XXLSIZE + RIGHT)
   screenTask.timer0.disabled = true
-  
+
   y = y + LINE
   screenTask.label(RGT - 160, y, 50, HEIGHT2, "Task:", MIDSIZE)
   y = y + LINE2
   local tmr = screenTask.timer(RGT - 160, y, 160, HEIGHT, 1, nil, XXLSIZE + RIGHT)
   tmr.disabled = true
-  
+
 -- Short press EXIT handler must prompt to save scores
   local function HandleEXIT(event, touchState)
     if CanPopGUI() then
@@ -1001,7 +1001,7 @@ do -- Prompt asking to save scores and exit task window
   local RGT = x0 + PROMPT_W - PROMPT_M
   local TOP = y0 + PROMPT_M
   local BOTTOM = y0 + PROMPT_H - PROMPT_M
-  
+
   function promptSaveScores.fullScreenRefresh()
     lcd.drawFilledRectangle(x0, y0, PROMPT_W, PROMPT_H, colors.primary2)
     lcd.drawRectangle(x0, y0, PROMPT_W, PROMPT_H, colors.primary1, 3)
@@ -1015,21 +1015,21 @@ do -- Prompt asking to save scores and exit task window
       if scoreFile then
         io.write(scoreFile, string.format("%s,%s", model.getInfo().name, screenTask.title))
 
-        local now = getDateTime()				
+        local now = getDateTime()
         io.write(scoreFile, string.format(",%04i-%02i-%02i", now.year, now.mon, now.day))
-        io.write(scoreFile, string.format(",%02i:%02i", now.hour, now.min))				
+        io.write(scoreFile, string.format(",%02i:%02i", now.hour, now.min))
         io.write(scoreFile, string.format(",s,%i", taskScores))
         io.write(scoreFile, string.format(",%i", totalScore))
-        
+
         for i = 1, #scores do
           io.write(scoreFile, string.format(",%i", scores[i]))
         end
-        
+
         io.write(scoreFile, "\n")
         io.close(scoreFile)
       end
     end
-    
+
     -- Dismiss prompt and return to menu
     screenTask.dismissPrompt()
     screenTask.dismiss()
@@ -1047,7 +1047,7 @@ do -- Setup score browser screen
   local scoreFile         -- File handle
   local pos               -- Read position in file
   local firstRecordTouch  -- First record at the start of touch slide
-  
+
   -- Read a line of a log file
   local function ReadLine(scoreFile, pos)
     if scoreFile and pos then
@@ -1061,7 +1061,7 @@ do -- Setup score browser screen
         return pos, str
       end
     end
-    
+
     -- No "\n" was found; return nothing
     return 0, ""
   end  --  ReadLine()
@@ -1074,7 +1074,7 @@ do -- Setup score browser screen
 
     for field in string.gmatch(str, "[^,]+") do
       i = i + 1
-      
+
       if i == 1 then
         record.planeName = field
       elseif i == 2 then
@@ -1093,33 +1093,33 @@ do -- Setup score browser screen
         record.scores[#record.scores + 1] = tonumber(field)
       end
     end
-    
+
     if record.totalScore then
       records[#records + 1] = record
     end
   end  --  ReadLineData()
-  
+
   local function DrawRecord(i, r)
     local top = 40 + i * RECORD_H
     local left = 200
     local w = (LCD_W - left - 10) / 3
     local record = records[r]
-    
+
     if not record then
       return
     end
-    
+
     if r % 2 == 0 then
       lcd.drawFilledRectangle(0, top, LCD_W, RECORD_H, COLOR_THEME_SECONDARY2)
     end
-    
+
     lcd.drawText(10, top + 6, record.taskName, BOLD)
     lcd.drawText(10, top + 24, record.dateStr .. " " .. record.timeStr, SMLSIZE)
     lcd.drawText(10, top + 36, record.planeName, SMLSIZE)
-    
+
     local x = left
     local y = top + 6
-    
+
     for j = 1, math.min(5, record.taskScores) do
       lcd.drawText(x, y, j .. ".")
 
@@ -1130,7 +1130,7 @@ do -- Setup score browser screen
       else
         lcd.drawText(x + 18, y, record.scores[j] .. record.unitStr)
       end
-      
+
       if j == 3 then
         x = left
         y = top + 30
@@ -1138,7 +1138,7 @@ do -- Setup score browser screen
         x = x + w
       end
     end
-    
+
     lcd.drawText(left + 2 * w, top + 30, "Total: " .. record.totalScore .. record.unitStr)
   end -- DrawRecord
 
@@ -1152,7 +1152,7 @@ do -- Setup score browser screen
     end
 
     lcd.clear(COLOR_THEME_SECONDARY3)
-    
+
     -- Top bar
     lcd.drawFilledRectangle(0, 0, LCD_W, HEADER, COLOR_THEME_SECONDARY1)
     lcd.drawText(10, 2, "Score Card", bit32.bor(DBLSIZE, colors.primary2))
@@ -1160,25 +1160,25 @@ do -- Setup score browser screen
     -- Date
     local now = getDateTime()
     local str = string.format("%02i:%02i", now.hour, now.min)
-    lcd.drawText(LCD_W - 80, 6, str, RIGHT + MIDSIZE + colors.primary2)    
+    lcd.drawText(LCD_W - 80, 6, str, RIGHT + MIDSIZE + colors.primary2)
 
     if soarGlobals.battery == 0 then
       color = COLOR_THEME_DISABLED
     else
       color = colors.primary2
     end
-    
+
     str = string.format("%1.1fV", soarGlobals.battery)
     lcd.drawText(LCD_W - 140, 6, str, RIGHT + MIDSIZE + color)
-    
+
     -- Return button
     lcd.drawFilledRectangle(LCD_W - 74, 6, 28, 28, COLOR_THEME_SECONDARY1)
     lcd.drawRectangle(LCD_W - 74, 6, 28, 28, colors.primary2)
-    
+
     for i = -1, 1 do
       lcd.drawLine(LCD_W - 60 + i, 12, LCD_W - 60 + i, 30, SOLID, colors.primary2)
     end
-    
+
     for i = 0, 3 do
       lcd.drawLine(LCD_W - 60 , 10 + i, LCD_W - 50 - i, 20, SOLID, colors.primary2)
       lcd.drawLine(LCD_W - 60 , 10 + i, LCD_W - 70 + i, 20, SOLID, colors.primary2)
@@ -1188,17 +1188,17 @@ do -- Setup score browser screen
     lcd.drawFilledRectangle(LCD_W - 34, 6, 28, 28, COLOR_THEME_SECONDARY1)
     lcd.drawRectangle(LCD_W - 34, 6, 28, 28, colors.primary2)
     lcd.drawFilledRectangle(LCD_W - 30, 19, 20, 3, colors.primary2)
-  
+
     if event ~= EVT_TOUCH_SLIDE then
       firstRecordTouch = nil
     end
-    
+
     if event == EVT_VIRTUAL_EXIT then
       firstRecord = nil
       return PopGUI()
     elseif event == EVT_TOUCH_TAP then
       local x, y = touchState.x, touchState.y
-      
+
       if 6 <= y and y <= 34 then
         if LCD_W - 74 <= x and x <= LCD_W - 40 then
           firstRecord = nil
@@ -1226,9 +1226,9 @@ do -- Setup score browser screen
         local r = i + firstRecord
         DrawRecord(i, r)
       end
-    
+
     else -- Read score records
-      lcd.drawText(LCD_W / 2, LCD_H / 2, "Reading scores ...", VCENTER + CENTER + DBLSIZE + colors.primary1)      
+      lcd.drawText(LCD_W / 2, LCD_H / 2, "Reading scores ...", VCENTER + CENTER + DBLSIZE + colors.primary1)
 
       if not scoreFile then
         scoreFile = io.open(SCORE_FILE, "r")
@@ -1237,7 +1237,7 @@ do -- Setup score browser screen
           records = { }
         end
       end
-      
+
       if scoreFile then
         for i = 1, 10 do
           local str
@@ -1247,11 +1247,11 @@ do -- Setup score browser screen
             io.close(scoreFile)
             scoreFile = nil
             firstRecord = math.max(1, #records - 3)
-            
+
             if #records == 0 then
               firstRecord = nil
             end
-            
+
             break
           end
         end

@@ -20,7 +20,7 @@
 ---------------------------------------------------------------------------
 local widget, soarGlobals =  ...
 
-local libGUI =    loadGUI()
+local libGUI =    soarGlobals.libGUI
 libGUI.flags =    0
 local colors =    libGUI.colors
 local title =     "Graph"

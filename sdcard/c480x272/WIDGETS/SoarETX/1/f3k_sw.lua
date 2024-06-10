@@ -20,7 +20,7 @@
 ---------------------------------------------------------------------------
 
 local widget, soarGlobals =  ...
-local libGUI =  loadGUI()
+local libGUI =  soarGlobals.libGUI
 libGUI.flags =  0
 local gui
 local colors =  libGUI.colors
@@ -50,7 +50,7 @@ local items = {
 
 local function init()
   gui = libGUI.newGUI()
-  
+
   function gui.fullScreenRefresh()
     -- Top bar
     lcd.drawFilledRectangle(0, 0, LCD_W, HEADER, COLOR_THEME_SECONDARY1)
@@ -88,7 +88,7 @@ local function init()
   -- Build the list of drop downs
   local y = HEADER + 2
   local w1 = COL2 - MARGIN
-  
+
   -- Build lists of physical switch position indices and names
   local swIndices = { }
   local swNames = { }
@@ -107,20 +107,20 @@ local function init()
     lsTbl.v1 = swIdx
     model.setLogicalSwitch(dropDown.ls, lsTbl)
   end
-  
+
   for i, item in ipairs(items) do
     gui.label(MARGIN, y, w1, HEIGHT, item[1])
-    
+
     local swIdx = model.getLogicalSwitch(item[2]).v1
     local selected = 0
-    
+
     for i, idx in ipairs(swIndices) do
       if swIdx == idx then
         selected = i
         break
       end
     end
-    
+
     if selected == 0 then
       -- Oops, no switch matching current value in LS!
       gui.label(COL2, y, WIDTH, HEIGHT, "???", CENTER + BOLD)
@@ -148,6 +148,6 @@ function widget.refresh(event, touchState)
     init()
     return
   end
-  
+
   gui.run(event, touchState)
 end -- refresh(...)

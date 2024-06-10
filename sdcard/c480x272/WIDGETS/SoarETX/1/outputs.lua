@@ -20,7 +20,7 @@
 ---------------------------------------------------------------------------
 
 local widget, soarGlobals =  ...
-local libGUI =  loadGUI()
+local libGUI =  soarGlobals.libGUI
 libGUI.flags =  MIDSIZE
 local gui
 local colors =  libGUI.colors
@@ -75,12 +75,12 @@ do
   local PROMPT_H = 172
   warningPrompt.x = (LCD_W - PROMPT_W) / 2
   warningPrompt.y = (LCD_H - PROMPT_H) / 2
-  
+
   function warningPrompt.fullScreenRefresh()
     local txt = "Please disable the motor!\n\n" ..
                 "Sudden spikes may occur when channels are moved.\n\n" ..
                 "Press ENTER to proceed."
-    
+
     warningPrompt.drawFilledRectangle(0, 0, PROMPT_W, HEADER, COLOR_THEME_SECONDARY1)
     warningPrompt.drawFilledRectangle(0, HEADER, PROMPT_W, PROMPT_H - HEADER, libGUI.colors.primary2)
     warningPrompt.drawRectangle(0, 0, PROMPT_W, PROMPT_H, libGUI.colors.primary1, 2)
@@ -125,7 +125,7 @@ do
   }
   editPrompt.x = (LCD_W - PROMPT_W) / 2
   editPrompt.y = (LCD_H - PROMPT_H) / 2
-  
+
   function editPrompt.fullScreenRefresh()
     if not editPrompt.editing then
       editPoints = 0
@@ -138,7 +138,7 @@ do
     editPrompt.drawFilledRectangle(0, HEADER, PROMPT_W, PROMPT_H - HEADER, libGUI.colors.primary2)
     editPrompt.drawRectangle(0, 0, PROMPT_W, PROMPT_H, libGUI.colors.primary1, 2)
     editPrompt.drawText(MARGIN, HEADER / 2, "Select what to edit:", DBLSIZE + VCENTER + libGUI.colors.primary2)
-    
+
     local y = HEADER + MARGIN + h / 2
 
     for i = 1, 5 do
@@ -162,7 +162,7 @@ do
     editPoints = menu.selected
     gui.dismissPrompt()
   end -- onMenu(...)
-  
+
   editPrompt.menu(MARGIN, HEADER + MARGIN, MENU_W, MENU_H, menuItems, onMenu)
 end -- Prompt for selecting what to edit
 
@@ -171,13 +171,13 @@ local function MoveOutput(direction, channel)
 	local m = { } -- Channel indices
 	m[1] = channel.iChannel -- Channel to move
 	m[2] = m[1] + direction -- Neighbouring channel to swap
-	
+
 	-- Are we at then end?
 	if m[2] < 1 or m[2] > N then
 		playTone(3000, 100, 0, PLAY_NOW)
 		return
 	end
-	
+
 	local outputs = { } -- List of output tables
 	local mixes = { }   -- List of lists of mixer tables
 
@@ -191,7 +191,7 @@ local function MoveOutput(direction, channel)
 			mixes[i][j] = model.getMix(m[i] - 1, j - 1)
 		end
 	end
-	
+
 	-- Write back swapped data
 	for i = 1, 2 do
 		model.setOutput(m[i] - 1, outputs[3 - i])
@@ -223,7 +223,7 @@ local function MoveOutput(direction, channel)
 				mixes[j].source = m[1] + CHAN_BASE
 			end
 		end
-		
+
 		-- Do we have to write back data?
 		if dirty then
 			-- Delete existing mixer lines
@@ -262,7 +262,7 @@ local function init()
     -- Top bar
     lcd.drawFilledRectangle(0, 0, LCD_W, HEADER, COLOR_THEME_SECONDARY1)
     lcd.drawText(MARGIN, HEADER / 2 - 2, "Configure   outputs", DBLSIZE + VCENTER + colors.primary2)
-    
+
     -- Row background
     for i = 0, 6 do
       local y = HEADER + i * ROW
@@ -272,7 +272,7 @@ local function init()
         lcd.drawFilledRectangle(0, y, LCD_W, ROW, COLOR_THEME_SECONDARY3)
       end
     end
-    
+
     -- Adjust scroll for channels
     if focusNamed > 0 then
       if focusNamed < firstLine then
@@ -282,7 +282,7 @@ local function init()
       end
     end
     focusNamed = 0
-    
+
     -- Draw vertical reference lines
     for i = -6, 6 do
       local x = CTR - i * MAXOUT / (SCALE * 6) + 2
@@ -313,10 +313,10 @@ local function init()
     local HEIGHT = ROW - 8
     local iNamed = 0
     channels = { }
-    
+
     for iChannel = 1, N do
       local output = model.getOutput(iChannel - 1)
-      
+
       if output and output.name ~= "" then
         local channel = gui.gui(2, LCD_H, LCD_W - 4, ROW - 4)
         local d0
@@ -356,8 +356,8 @@ local function init()
         end -- onEvent(...)
 
         -- Custom element for changing output channel (and moving all mixer lines etc.)
-        local nbrChannel = channel.custom({ }, 2, 2, 30, HEIGHT)        
-        
+        local nbrChannel = channel.custom({ }, 2, 2, 30, HEIGHT)
+
         function nbrChannel.draw(focused)
           local fg = libGUI.colors.primary1
           if focused then
@@ -391,13 +391,13 @@ local function init()
             channel.editing = true
           end
         end -- onEvent(...)
-      
+
         -- Label for channel name
         local lblName = channel.label(32, 2, 140, HEIGHT, ". " .. channel.output.name)
-        
+
         -- Custom element to invert output direction
         local revert = channel.custom({ }, 172, 2, 30, HEIGHT)
-        
+
         function revert.draw(focused)
           local y = HEIGHT / 2 + 3
           if channel.output.revert == 1 then
@@ -413,7 +413,7 @@ local function init()
               channel.drawLine(x, y, x - 8, y + 8, SOLID, colors.primary1)
             end
           end
-          
+
           function revert.onEvent(event, touchState)
             if event == EVT_VIRTUAL_ENTER then
               channel.output.revert = 1 - channel.output.revert
@@ -435,14 +435,14 @@ local function init()
           local y = HEIGHT / 2 + 2
           local yLbl = y - 12 - select(2, lcd.sizeText("", flags))
           local iScroll = 0
-          
+
           function interval.draw(focused)
             local output = channel.output
             local p = { 0, 0, 0 }
             local colorBar = libGUI.colors.primary3
             local colorDot = libGUI.colors.primary2
             local colorDotBorder = libGUI.colors.primary3
-            
+
             x = {
               CTR + output.min / SCALE,
               CTR + output.offset / SCALE,
@@ -457,7 +457,7 @@ local function init()
                 channel.drawNumber(x[3], yLbl, 0.1 * output.max, flags)
                 colorBar = libGUI.colors.primary1
                 colorDot = libGUI.colors.edit
-                p = activePoints(editPoints)              
+                p = activePoints(editPoints)
               else
                 interval.drawFocus()
               end
@@ -477,21 +477,21 @@ local function init()
             -- Draw position indicators
             local outX = getValue(CHAN_BASE + channel.iChannel)
             if outX >= 0 then
-              outX = output.offset + math.min(outX, 1024) * (output.max - output.offset) / 1024 
+              outX = output.offset + math.min(outX, 1024) * (output.max - output.offset) / 1024
             else
-              outX = output.offset + math.max(outX, -1024) * (output.offset - output.min) / 1024 
+              outX = output.offset + math.max(outX, -1024) * (output.offset - output.min) / 1024
             end
             outX = CTR + outX / SCALE
             channel.drawFilledTriangle(outX, y - 3, outX - 3, y - 9, outX + 3, y - 9, colorBar)
             channel.drawLine(outX, y - 2, outX, y + 2, SOLID, colorBar)
             channel.drawFilledTriangle(outX, y + 3, outX - 3, y + 9, outX + 3, y + 9, colorBar)
           end -- draw(...)
-          
+
           local RR = 14 ^ 2
-          
+
           local function ptCovers(p, q)
             local ap = activePoints(editPoints)
-            
+
             for i = 1, 3 do
               if ap[i] ~= 0 and (x[i] - p) ^ 2 + (y - q) ^ 2 <= RR then
                 return i
@@ -499,46 +499,46 @@ local function init()
             end
             return 0
           end -- ptCovers(...)
-          
+
           local function adjustPoints(d)
             local output = channel.output
             local p = activePoints(editPoints)
             local min = output.min
             local ctr = output.offset
             local max = output.max
-            
+
             -- Check limits
             if p[1] == -1 then
               d = math.min(d, math.max(0, MAXOUT + min))
             elseif p[1] == 1 then
               d = math.max(d, math.min(0, -(MAXOUT + min)))
             end
-            
+
             if p[2] - p[1] == 1 then
               d = math.max(d, math.min(0, MINDIF + min - ctr))
             elseif p[2] - p[1] == -1 then
               d = math.min(d, math.max(0, ctr - min - MINDIF))
             end
-            
+
             if p[3] - p[2] == 1 then
               d = math.max(d, math.min(0, MINDIF + ctr - max))
             elseif p[3] - p[2] == -1 then
               d = math.min(d, math.max(0, max - ctr - MINDIF))
             end
-            
+
             if p[3] == 1 then
               d = math.min(d, math.max(0, MAXOUT - max))
             end
-            
+
             -- Update output values
             output.min = min + p[1] * d
             output.offset = ctr + p[2] * d
             output.max = max + p[3] * d
-            
+
             -- Write back data
             model.setOutput(channel.iChannel - 1, output)
           end
-          
+
           function interval.onEvent(event, touchState)
             if event == EVT_VIRTUAL_ENTER and not channel.editing then
               channel.editing = true
@@ -586,7 +586,7 @@ function widget.refresh(event, touchState)
     init()
     return
   end
-  
+
   gui.run(event, touchState)
 end -- refresh(...)
 

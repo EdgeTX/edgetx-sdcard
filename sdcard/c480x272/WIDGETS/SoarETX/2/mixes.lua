@@ -20,7 +20,7 @@
 ---------------------------------------------------------------------------
 
 local widget, soarGlobals =  ...
-local libGUI =  loadGUI()
+local libGUI =  soarGlobals.libGUI
 libGUI.flags =  0
 local gui = libGUI.newGUI()
 local colors =  libGUI.colors
@@ -84,40 +84,40 @@ local mixes = mixes_F3K
 
 do
   -- Extract Model Type from parametes
-  modelType = widget.options.Type 
+  modelType = widget.options.Type
 
   if modelType == "F3K" or modelType == "F3K_TRAD" then
     mixes = mixes_F3K
   elseif modelType == "F3K_FH" then
     mixes = mixes_F3K_FH
   elseif modelType == "F3K_RE" then
-    mixes = mixes_F3K_RE 
+    mixes = mixes_F3K_RE
   elseif modelType == "F3J" or modelType == "F5J" then
-    mixes = mixes_FxJ 
+    mixes = mixes_FxJ
   else
-    mixes = mixes_FXY 
+    mixes = mixes_FXY
     modelType = "F??"
   end
 
   function gui.fullScreenRefresh()
     lcd.clear(COLOR_THEME_SECONDARY3)
-    
+
     -- Top bar
     lcd.drawFilledRectangle(0, 0, LCD_W, HEADER, COLOR_THEME_SECONDARY1)
     lcd.drawText(10, 2, title.." "..modelType, bit32.bor(DBLSIZE, colors.primary2))
-    
+
     -- Fligh mode
     local fmIdx, fmStr = getFlightMode()
     lcd.drawText(LCD_W - HEADER, HEADER / 2, "FM" .. fmIdx .. ":" .. fmStr, RIGHT + VCENTER + MIDSIZE + colors.primary2)
-    
+
     -- Line stripes
     for i = 1, 3, 2 do
       lcd.drawFilledRectangle(0, HEADER + LINE * i, LCD_W, LINE, COLOR_THEME_SECONDARY2)
     end
-    
+
     local bottom = HEADER + 4 * LINE
     lcd.drawLine(LCD_W2, HEADER, LCD_W2, bottom, SOLID, colors.primary1)
-    
+
     -- Help text
     local txt = "Some variables can be adjusted individually for each flight mode.\n" ..
                 "Therefore, select the flight mode for which you want to adjust.\n" ..
@@ -145,7 +145,7 @@ do
 
   -- Grid for items
   local x, y = MARGIN, HEADER + 2
-  
+
   local function move()
     if x == MARGIN then
       x = x + LCD_W2
@@ -154,11 +154,11 @@ do
       y = y + LINE
     end
   end
-  
+
   -- Add label and number element for a GV
   local function addGV(label, gv, min, max)
     gui.label(x, y, W1, HEIGHT, label)
-    
+
     local function changeGV(delta, number)
       local value = number.value + delta
       value = math.max(value, min)
@@ -166,16 +166,16 @@ do
       model.setGlobalVariable(gv, fm, value)
       return value
     end
-    
+
     local number = gui.number(x + W1, y, W2, HEIGHT, 0, changeGV, RIGHT + libGUI.flags)
-    
+
     function number.update()
       number.value = model.getGlobalVariable(gv, fm)
     end
-    
+
     move()
   end
-  
+
   -- ADD GVs
   for i, mix in ipairs(mixes) do
     addGV(mix[1], mix[2], mix[3], mix[4])
@@ -191,7 +191,7 @@ do
     soarGlobals.setParameter(soarGlobals.batteryParameter, value - 100)
     return value
   end
-  
+
   local batP = soarGlobals.getParameter(soarGlobals.batteryParameter)
   gui.number(x + W1, y, W2, HEIGHT, batP + 100, changeBattery, RIGHT + PREC1 + libGUI.flags)
 end -- Setup GUI
@@ -206,8 +206,8 @@ function widget.refresh(event, touchState)
     lcd.drawText(widget.zone.w / 2, widget.zone.h / 2, title, CENTER + VCENTER + MIDSIZE + colors.primary2)
     return
   end
-  
+
   fm = getFlightMode()
-  
+
   gui.run(event, touchState)
 end -- refresh(...)

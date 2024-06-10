@@ -20,7 +20,7 @@
 ---------------------------------------------------------------------------
 
 local widget, soarGlobals =  ...
-local libGUI =  loadGUI()
+local libGUI = soarGlobals.libGUI
 libGUI.flags =  0
 local gui =     libGUI.newGUI()
 local colors =  libGUI.colors
@@ -84,9 +84,9 @@ end
 local function adjust(slider)
 	-- Compensate for possible negative differential
 	local dif = model.getGlobalVariable(GV_DIF, 0)
-	local difComp = 100.0 / math.max(10.0, math.min(100.0, 100.0 + dif))	
+	local difComp = 100.0 / math.max(10.0, math.min(100.0, 100.0 + dif))
 	-- Calculate aileron travel from current airbrake travel
-	local ail = math.min(2 * slider.value, 2 * (100 - slider.value) * difComp)	
+	local ail = math.min(2 * slider.value, 2 * (100 - slider.value) * difComp)
 	model.setGlobalVariable(GV_AIL, 0, ail)
 	model.setGlobalVariable(GV_BRK, 0, slider.value)
 end
@@ -96,7 +96,7 @@ end
 do
   function gui.fullScreenRefresh()
     lcd.clear(COLOR_THEME_SECONDARY3)
-    
+
     -- Top bar
     lcd.drawFilledRectangle(0, 0, LCD_W, HEADER, COLOR_THEME_SECONDARY1)
     lcd.drawText(10, 2, title, bit32.bor(DBLSIZE, colors.primary2))
@@ -107,12 +107,12 @@ do
     local brk = 2 * model.getGlobalVariable(GV_BRK, 0)
     local brkDeg = 0.45 * brk
     local dif = 0.01 * model.getGlobalVariable(GV_DIF, 0)
-    
+
     lcd.drawPie(CTR_X, CTR_Y, R2, 90 - ailDeg * math.min(1, 1 + dif), 91 + brkDeg, colors.primary2)
     lcd.drawAnnulus(CTR_X, CTR_Y, R1, R2, 90 + ailDeg * math.min(1, 1 - dif), 90 + brkDeg, COLOR_THEME_SECONDARY2)
     lcd.drawAnnulus(CTR_X, CTR_Y, R1, R2, 90, 90 + ailDeg * math.min(1, 1 - dif), COLOR_BLEND)
     lcd.drawAnnulus(CTR_X, CTR_Y, R1, R2, 90 - ailDeg * math.min(1, 1 + dif), 90, COLOR_THEME_SECONDARY1)
-    
+
     lcd.drawArc(CTR_X, CTR_Y, R2, 90 - ailDeg * math.min(1, 1 + dif), 90 + brkDeg, colors.primary3)
     drawRadian(90 - ailDeg * math.min(1, 1 + dif))
     drawRadian(90)
@@ -132,7 +132,7 @@ do
     lcd.drawText(CTR_X + R1, CTR_Y, "brake ", RIGHT + SMLSIZE + colors.primary1)
     lcd.drawText(CTR_X + R2, CTR_Y - SML_H, "  max.", SMLSIZE + colors.primary1)
     lcd.drawText(CTR_X + R2, CTR_Y, "  reflex", SMLSIZE + colors.primary1)
-    
+
     local txt = "Use the slider to adjust the flaperons to the position of maximum reflex.\n\n" ..
                 "Notice that camber can only move the flaperons down from this position."
     lcd.drawTextLines(MARGIN, TOP, CTR_X - 2 * MARGIN, LCD_H - TOP - MARGIN, txt, colors.primary1)
@@ -178,6 +178,6 @@ function widget.refresh(event, touchState)
     setStickySwitch(LS_CTR, true)
     slider.value = model.getGlobalVariable(GV_BRK, 0)
   end
-  
+
   gui.run(event, touchState)
 end -- refresh(...)
