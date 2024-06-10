@@ -33,12 +33,6 @@ function M.writeHeaderIfNeeded()
         return
     end
 
-    -- write csv header
-    local hFile = io.open(hist_file_name, "a")
-    if hFile == nil then
-        M.m_log.info("failed to write file, probably dir is not exist: %s", hist_file_name)
-        return
-    end
     local headline = string.format(line_format,
         "flight_date",
         "model_name",
@@ -46,10 +40,16 @@ function M.writeHeaderIfNeeded()
         "duration",
         "model_id"
     )
+
+    -- write csv header
+    local hFile = io.open(hist_file_name, "a")
+    if hFile == nil then
+        M.m_log.info("failed to write file, probably dir is not exist: %s", hist_file_name)
+        return
+    end
     io.write(hFile, headline)
     local ver_line = "# api_ver=1\n"
     io.write(hFile, ver_line)
-
     io.close(hFile)
 end
 
@@ -57,12 +57,6 @@ function M.addFlightLog(flight_start_date_time, duration, flight_count)
     M.m_log.info("addFlightLog(%s, %s)", duration, flight_count)
 
     M.writeHeaderIfNeeded()
-
-    local hFile = io.open(hist_file_name, "a")
-    if hFile == nil then
-        M.m_log.info("failed to write file, probably dir is not exist: %s", hist_file_name)
-        return
-    end
 
     -- flight_date =
     local dt = flight_start_date_time
@@ -82,8 +76,13 @@ function M.addFlightLog(flight_start_date_time, duration, flight_count)
         model_id
     )
     m_log.info("adding flight history line to csv: [%s]", line)
-    io.write(hFile, line)
 
+    local hFile = io.open(hist_file_name, "a")
+    if hFile == nil then
+        M.m_log.info("failed to write file, probably dir is not exist: %s", hist_file_name)
+        return
+    end
+    io.write(hFile, line)
     io.close(hFile)
 end
 
