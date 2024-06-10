@@ -54,7 +54,7 @@
 ]]
 
 local app_name = "Flights"
-local app_ver = "1.1"
+local app_ver = "1.3"
 
 
 ------------------------------------------------------------------------------------------------------------------
@@ -68,7 +68,7 @@ local enable_count_announcement_on_end = 1   -- 0=no voice, 1=play the count upo
 local enable_dbg_dots = 1                    -- 0=do not show dots, 1=show dbg dots
 local use_telemetry = 1                      -- 0=do not use telemetry, 1=use telemetry in state machine
 local use_flights_history = 1                -- 0=do not write flights-history, 1=write flights-history
-local inverted_arm_switch_logic = 1          -- 0=armed when SF down, 1=armed when SF up
+-- local inverted_arm_switch_logic = 1          -- 0=armed when SF down, 1=armed when SF up
 ------------------------------------------------------------------------------------------------------------------
 
 
@@ -84,7 +84,7 @@ local function getSwitchIds(key)
         ["2.7"]  = {SA=112, SB=113, SC=114, SD=115, SE=116, SF=117, CH3 = 204},
         ["2.8"]  = {SA=120, SB=121, SC=122, SD=123, SE=124, SF=125, CH3 = 212},
         ["2.9"]  = {SA=120, SB=121, SC=122, SD=123, SE=124, SF=125, CH3 = 212},
-        ["2.10"] = {SA=127, SB=128, SC=129, SD=130, SE=131, SF=132, CH3 = 229},
+        ["2.10"] = {SA=126, SB=127, SC=128, SD=129, SE=130, SF=131, CH3 = 228},
     }
     local ver, radio, maj, minor, rev, osname = getVersion()
     local os1 = string.format("%d.%d", maj, minor)
@@ -95,12 +95,13 @@ local DEFAULT_ARM_SWITCH_ID = getSwitchIds("SF")      -- arm/safety switch=SF
 local DEFAULT_MOTOR_CHANNEL_ID = getSwitchIds("CH3")  -- motor_channel=CH3
 
 local options = {
-    { "switch", SOURCE, DEFAULT_ARM_SWITCH_ID },
+    { "arm_switch", SOURCE, DEFAULT_ARM_SWITCH_ID },
     { "motor_channel", SOURCE, DEFAULT_MOTOR_CHANNEL_ID },
     { "min_flight_duration", VALUE, default_flight_starting_duration, 2, 120 },
     --{ "enable_sounds"    , BOOL  , 1      },  -- enable sound on adding succ flight, and on end of flight
     { "text_color", COLOR, COLOR_THEME_PRIMARY2 },
     --{ "debug", BOOL, 0 }   -- show status on screen
+    { "non_invert_arm_switch", BOOL, 0 }   -- 0=armed when SF down, 1=armed when SF up
 }
 
 local function log(fmt, ...)
@@ -133,17 +134,17 @@ local function update(wgt, options)
     wgt.status.heli_mode = false -- ignore motor direction detection, and throttle position
 
     --log("TimerNumB:" .. options.Timer)
-    if (wgt.options.switch == nil) then
-        wgt.options.switch = "sf"
+    if (wgt.options.arm_switch == nil) then
+        wgt.options.arm_switch = "sf"
     end
 
-    --log("wgt.options.switch: " .. wgt.options.switch)
-    local fi_sw = getFieldInfo(wgt.options.switch)
+    local fi_sw = getFieldInfo(wgt.options.arm_switch)
     if (fi_sw == nil) then
         wgt.status.switch_name = "--"
     else
         wgt.status.switch_name = fi_sw.name
     end
+    log("wgt.options.arm_switch: %s, name: %s", wgt.options.arm_switch, wgt.status.switch_name)
 
     local fi_mot = getFieldInfo(wgt.options.motor_channel)
     if (fi_mot == nil) then
@@ -157,7 +158,7 @@ local function update(wgt, options)
     log("1111 is_debug: %s, wgt.zone.h: %s", wgt.options.is_debug, wgt.zone.h)
 
     -- for heli, if the motor-sw==switch-sw, then ignore motor direction detection
-    if (wgt.options.switch == wgt.options.motor_channel) then
+    if (wgt.options.arm_switch == wgt.options.motor_channel) then
         wgt.status.heli_mode = true
     end
 
@@ -272,17 +273,17 @@ local function updateMotorStatus(wgt)
 end
 
 local function updateSwitchStatus(wgt)
-    local sw_val = getValue(wgt.options.switch)
-    if inverted_arm_switch_logic == 1 then
+    local sw_val = getValue(wgt.options.arm_switch)
+    if wgt.options.non_invert_arm_switch == 0 then
         wgt.status.switch_on = (sw_val < 0)
     else
         wgt.status.switch_on = (sw_val > 0)
     end
 
     --if wgt.status.switch_on then
-    --    log(string.format("switch status (%s): =ON", wgt.status.switch_name))
+    --    log(string.format("arm_switch status (%s): =ON", wgt.status.switch_name))
     --else
-    --    log(string.format("switch status (%s): =OFF", wgt.status.switch_name))
+    --    log(string.format("arm_switch status (%s): =OFF", wgt.status.switch_name))
     --end
 end
 
@@ -546,14 +547,14 @@ local function refresh(wgt, event, touchState)
     if wgt.options.is_debug == true then
         local dx = 15
         --lcd.drawText(wgt.zone.x + dx, wgt.zone.y + 25, string.format("DEBUG:"), SMLSIZE)
-        lcd.drawText(wgt.zone.x + dx, wgt.zone.y + 20, string.format("%s - switch (%s)", ternary(wgt.status.switch_on), wgt.status.switch_name), SMLSIZE)
+        lcd.drawText(wgt.zone.x + dx, wgt.zone.y + 20, string.format("%s - arm_switch (%s)", ternary(wgt.status.switch_on), wgt.status.switch_name), SMLSIZE)
         if (wgt.status.heli_mode == false) then
             lcd.drawText(wgt.zone.x + dx, wgt.zone.y + 35, string.format("%s - throttle (%s) (inv: %s)", ternary(wgt.status.motor_active), wgt.status.motor_channel_name, wgt.status.motor_channel_direction_inv), SMLSIZE)
         else
             lcd.drawText(wgt.zone.x + dx, wgt.zone.y + 35, string.format("%s - throttle (%s) (heli mode)", ternary(wgt.status.motor_active), wgt.status.motor_channel_name), SMLSIZE)
         end
         lcd.drawText(wgt.zone.x + dx, wgt.zone.y + 50, string.format("%s - telemetry(%s)", ternary(wgt.status.tele_is_available), wgt.tools.tele_src_name), SMLSIZE)
-        lcd.drawText(wgt.zone.x + dx, wgt.zone.y + 65, string.format("duration: %.1f/%d", wgt.status.duration_passed / 1000, wgt.tools.getDurationMili(wgt.status.periodic1) / 1000), SMLSIZE)
+        lcd.drawText(wgt.zone.x + dx, wgt.zone.y + 65, string.format("timer: %.1f/%d", wgt.status.duration_passed / 1000, wgt.tools.getDurationMili(wgt.status.periodic1) / 1000), SMLSIZE)
         lcd.drawText(wgt.zone.x + dx, wgt.zone.y + 80, string.format("flight duration: %.1f", wgt.status.flight_duration), SMLSIZE)
         --lcd.drawText(wgt.zone.x + dx, wgt.zone.y + 110, string.format("state: %s", wgt.status.flight_state), 0)
 
