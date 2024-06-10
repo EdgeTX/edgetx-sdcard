@@ -20,7 +20,7 @@
 ---------------------------------------------------------------------------
 
 local widget, soarGlobals = ...
-local libGUI              = loadGUI()
+local libGUI              = soarGlobals.libGUI
 libGUI.flags              = DBLSIZE
 local colors              = libGUI.colors
 

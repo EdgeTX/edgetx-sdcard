@@ -20,7 +20,7 @@
 ---------------------------------------------------------------------------
 
 local widget, soarGlobals =  ...
-local libGUI =  loadGUI()
+local libGUI =  soarGlobals.libGUI
 libGUI.flags =  MIDSIZE
 local gui = nil
 local colors =  libGUI.colors
@@ -268,7 +268,7 @@ local function setup_gui()
   gui = libGUI.newGUI()
 
   -- Extract Model Type from parametes
-  modelType = widget.options.Type 
+  modelType = widget.options.Type
 
   if modelType == "F3K" or modelType == "F3K_TRAD"  then
     LS_STEP = 10  -- Logical Switch 10

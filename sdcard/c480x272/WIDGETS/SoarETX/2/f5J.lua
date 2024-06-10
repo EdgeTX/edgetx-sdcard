@@ -20,7 +20,7 @@
 ---------------------------------------------------------------------------
 
 local widget, soarGlobals = ...
-local libGUI              = loadGUI()
+local libGUI              = soarGlobals.libGUI
 libGUI.flags              = DBLSIZE
 local colors              = libGUI.colors
 
@@ -291,7 +291,7 @@ function widget.background()
 		if motorOn then
 			GotoState(STATE_MOTOR)
 			-- Reset MotorTime Call and Alt Window Time
-			prevMt = flightTimer.value 
+			prevMt = flightTimer.value
 			offTime = 0
 		end
 	elseif state == STATE_MOTOR then

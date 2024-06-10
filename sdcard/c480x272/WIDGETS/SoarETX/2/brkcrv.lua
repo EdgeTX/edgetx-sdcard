@@ -20,7 +20,7 @@
 ---------------------------------------------------------------------------
 
 local widget, soarGlobals =  ...
-local libGUI =  loadGUI()
+local libGUI =  soarGlobals.libGUI
 libGUI.flags =  0
 local gui =     nil
 local colors =  libGUI.colors
@@ -203,7 +203,7 @@ end -- Setup GUI
 function widget.background()
   if (gui ~= nil) then
     stepOff()
-    gui = nil  
+    gui = nil
   end
 end -- background()
 
