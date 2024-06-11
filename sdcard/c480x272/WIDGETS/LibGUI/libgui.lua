@@ -289,7 +289,7 @@ function M.newGUI()
         local guiFocus = not gui.parent or (focused and gui.parent.editing)
         for idx, element in ipairs(_.elements) do
             -- Clients may provide an update function for elements
-            if element.onUpdate then -- new name the method
+            if element.onUpdate then -- New name for method
                 element.onUpdate(element)
             elseif element.update then -- For backward compatibility 
                 element.update(element)
