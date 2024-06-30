@@ -40,6 +40,9 @@ The contents of this repository are organised by color type and screen size, wit
 
 ### Preparing your SD Card
 
-First, download the SD Card zip for your radio (listed above) from the [releases page](https://github.com/EdgeTX/edgetx-sdcard/releases). Then unzip the archive and put the contents onto a FAT32-formatted SD Card. Finally, download your preferred voicepack language from the [Voice Pack Repo](https://github.com/EdgeTX/edgetx-sdcard-sounds/releases), unzip the archive, and add it to your SD card. 
+Tools like [Buddy](https://buddy.edgetx.org) will do most of this automatically for you with a couple of clicks. 
 
-Alternately, tools like [Flasher](https://github.com/EdgeTX/flasher) and [Buddy](https://buddy.edgetx.org) will do most of this automatically for you with a couple of clicks. 
+However, if you want to do this manually:
+1. Download the appropriate zip file for your radio (either listed above, or in [sdcard.json](https://github.com/EdgeTX/edgetx-sdcard/blob/master/sdcard.json)) from the [releases page](https://github.com/EdgeTX/edgetx-sdcard/releases) (under the expand the Assets heading if you don't see the files). 
+2. Unzip the zip archive and put the contents onto a FAT32-formatted (NOT exFAT!) SD Card (preferably smaller than 32GB). 
+3. If you want the voice pack also, download your preferred voicepack language from the [Voice Pack Repo](https://github.com/EdgeTX/edgetx-sdcard-sounds/releases), unzip the archive, and add it to your SD card. 
