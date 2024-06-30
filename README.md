@@ -7,7 +7,7 @@ This repo contains the SD Card contents for all supported EdgeTX Radios.
 Tools like [Buddy](https://buddy.edgetx.org) will do most of this automatically for you with a couple of clicks. 
 
 However, if you want to do this manually:
-1. Download the appropriate zip file for your radio (either listed below, or in [sdcard.json](https://github.com/EdgeTX/edgetx-sdcard/blob/master/sdcard.json)) from the [releases page](https://github.com/EdgeTX/edgetx-sdcard/releases) (under the expand the Assets heading if you don't see the files). 
+1. Download the appropriate zip file for your radio (either listed below, or in [sdcard.json](https://github.com/EdgeTX/edgetx-sdcard/blob/master/sdcard.json)) from the [releases page](https://github.com/EdgeTX/edgetx-sdcard/releases) (expand the Assets heading if you don't see the files). 
 2. Unzip the zip archive and put the contents onto a FAT32-formatted (NOT exFAT!) SD Card (preferably smaller than 32GB). 
 3. If you want the voice pack also, download your preferred voicepack language from the [Voice Pack Repo](https://github.com/EdgeTX/edgetx-sdcard-sounds/releases), unzip the archive, and add it to your SD card. 
 
