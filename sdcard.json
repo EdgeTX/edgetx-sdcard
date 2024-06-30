@@ -1,6 +1,7 @@
 {
   "targets": [
     ["BETAFPV LiteRadio 3 Pro", "lr3pro-", "bw128x64"],
+    ["Fatfish F16", "f16-", "c480x272"],    
     ["Flysky EL18", "el18-", "c320x480"],
     ["Flysky NV14", "nv14-", "c320x480"],
     ["Flysky PL18", "pl18-", "c480x320"],
