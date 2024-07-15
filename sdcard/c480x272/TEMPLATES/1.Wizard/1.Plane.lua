@@ -676,14 +676,15 @@ local function createModel(event)
     -- input lines
     local expoVal = AdditionalSettingsFields.expo.value
     local is_dual_rate = (AdditionalSettingsFields.is_dual_rate.value == 1)
+    local dr_switch = AdditionalSettingsFields.dr_switch.avail_values[AdditionalSettingsFields.dr_switch.value]
     if (is_dual_rate) then
-        updateInputLine(defaultChannel_0_AIL, 0, expoVal, 100, "SC" .. CHAR_UP)
-        updateInputLine(defaultChannel_0_AIL, 1, expoVal, 75 , "SC-")
-        updateInputLine(defaultChannel_0_AIL, 2, expoVal, 50 , "SC" .. CHAR_DOWN)
+        updateInputLine(defaultChannel_0_AIL, 0, expoVal, 100, dr_switch .. CHAR_UP)
+        updateInputLine(defaultChannel_0_AIL, 1, expoVal, 75 , dr_switch .. "-")
+        updateInputLine(defaultChannel_0_AIL, 2, expoVal, 50 , dr_switch .. CHAR_DOWN)
 
-        updateInputLine(defaultChannel_0_ELE, 0, expoVal, 100, "SC" .. CHAR_UP)
-        updateInputLine(defaultChannel_0_ELE, 1, expoVal, 75 , "SC-")
-        updateInputLine(defaultChannel_0_ELE, 2, expoVal, 50 , "SC" .. CHAR_DOWN)
+        updateInputLine(defaultChannel_0_ELE, 0, expoVal, 100, dr_switch .. CHAR_UP)
+        updateInputLine(defaultChannel_0_ELE, 1, expoVal, 75 , dr_switch .. "-")
+        updateInputLine(defaultChannel_0_ELE, 2, expoVal, 50 , dr_switch .. CHAR_DOWN)
 
         updateInputLine(defaultChannel_0_RUD, 0, expoVal, 100, nil)
     else
