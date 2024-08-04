@@ -32,6 +32,7 @@
     ["Jumper T-Lite", "tlite-", "bw128x64"],
     ["Jumper T-Pro", "tpro-", "bw128x64"],
     ["Jumper T-Pro V2", "tprov2-", "bw128x64"],
+    ["Jumper T-Pro S", "tpros-", "bw128x64"],
     ["RadioMaster Boxer", "boxer-", "bw128x64"],
     ["RadioMaster MT12", "mt12-", "bw128x64"],
     ["RadioMaster Pocket", "pocket-", "bw128x64"],
