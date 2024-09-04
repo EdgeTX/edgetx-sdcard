@@ -2,9 +2,9 @@
 -- SoarETX F3K switch setup, loadable component                          --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Improvements: Frankie Arzu                                            --
--- Date:    2024-04-7                                                    --
--- Version: 1.2.1                                                        --
+-- Improvements: Frankie Arzu, Jonathan Neuhaus                          --
+-- Date:    2024-09-04                                                    --
+-- Version: 1.2.2                                                        --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
 --                                                                       --
@@ -99,7 +99,7 @@ local function init()
     lcd.drawText(10, 2, title.."  "..modelType, bit32.bor(DBLSIZE, colors.primary2))
 
     -- Row background
-    for i = 0, 7 do
+    for i = 0, 8 do
       local y = HEADER + i * LINE
       if i % 2 == 1 then
         lcd.drawFilledRectangle(0, y, LCD_W, LINE, COLOR_THEME_SECONDARY2)
@@ -171,7 +171,7 @@ local function init()
   end
 
   for i, item in ipairs(items) do
-    gui.label(MARGIN, y, w1, HEIGHT, item[1])
+    gui.label(MARGIN, y, w1, HEIGHT, item[1], SMLSIZE)
 
     local swIdx = model.getLogicalSwitch(item[2]).v1
     local selected = 0
@@ -187,7 +187,7 @@ local function init()
       -- Oops, no switch matching current value in LS!
       gui.label(COL2, y, WIDTH, HEIGHT, "???", CENTER + BOLD)
     else
-      local dropDown = gui.dropDown(COL2, y, WIDTH, HEIGHT, swNames, selected, setSwitch, CENTER)
+      local dropDown = gui.dropDown(COL2, y, WIDTH, HEIGHT, swNames, selected, setSwitch, LEFT)
       dropDown.ls = item[2]
     end
 
