@@ -2,9 +2,9 @@
 -- SoarETX F3K switch setup, loadable component                          --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Improvements: Frankie Arzu                                            --
--- Date:    2024-04-7                                                    --
--- Version: 1.2.1                                                        --
+-- Improvements: Frankie Arzu, Jonathan Neuhaus                          --
+-- Date:    2024-09-04                                                   --
+-- Version: 1.2.2                                                        --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
 --                                                                       --
@@ -37,53 +37,53 @@ local WIDTH =   60
 local COL2 =    LCD_W - MARGIN - WIDTH
 
 -- List of 1. Text label 2. logical switch
-local items_F3K = { -- For R3K 
-  { "Allow vario and voice reporting of altitude", 0 }, 
+local items_F3K = { -- For R3K
+  { "Allow vario and voice reporting of altitude", 0 },
   { "Variometer sound", 1 },
-  { "Speed flight mode", 2 }, 
-  { "Float flight mode", 3 }, 
-  { "Report remaining window time every 10 sec.", 4 }, 
-  { "Report current altitude every 10 sec.", 5 }, 
-  { "Launch mode and flight timer control", 6 }, 
+  { "Speed flight mode", 2 },
+  { "Float flight mode", 3 },
+  { "Report remaining window time every 10 sec.", 4 },
+  { "Report current altitude every 10 sec.", 5 },
+  { "Launch mode and flight timer control", 6 },
   { "Data logging (when flight timer is running)", 7 }
 }
 
-local items_F3K_RE = { -- For R3K_RE 
-  { "Allow vario and voice reporting of altitude", 0 }, 
+local items_F3K_RE = { -- For R3K_RE
+  { "Allow vario and voice reporting of altitude", 0 },
   { "Variometer sound", 1 },
-  { "Speed flight mode", 2 }, 
-  { "Report remaining window time every 10 sec.", 4 }, 
-  { "Report current altitude every 10 sec.", 5 }, 
-  { "Launch mode and flight timer control", 6 }, 
+  { "Speed flight mode", 2 },
+  { "Report remaining window time every 10 sec.", 4 },
+  { "Report current altitude every 10 sec.", 5 },
+  { "Launch mode and flight timer control", 6 },
   { "Data logging (when flight timer is running)", 7 }
 }
 
-local items_F5K = {  
-  { "Allow vario and voice reporting of altitude", 0 }, 
+local items_F5K = {
+  { "Allow vario and voice reporting of altitude", 0 },
   { "Variometer sound", 1 },
-  { "Speed flight mode", 2 }, 
-  { "Float flight mode", 3 }, 
+  { "Speed flight mode", 2 },
+  { "Float flight mode", 3 },
   { "Motor ARM ON/OFF", 4},
-  { "Report remaining window time every 10 sec.", 5 }, 
-  { "Report current altitude every 10 sec.", 6 }, 
-  { "Launch mode and flight timer control", 7 }, 
+  { "Report remaining window time every 10 sec.", 5 },
+  { "Report current altitude every 10 sec.", 6 },
+  { "Launch mode and flight timer control", 7 },
   { "Data logging (when flight timer is running)", 8 }
 }
 
 local items_FxJ = {
-    { "Allow vario and voice reporting of altitude", 0 }, 
-    { "Variometer sound", 1 }, 
-    { "Speed flight mode", 2 }, 
-    { "Float flight mode", 3 }, 
-    { "Report remaining window time every 10 sec.", 6 }, 
-    { "Report current altitude every 10 sec.", 7 }, 
-    { "Launch mode (Motor Arm) and flight timer control", 4 }, 
-    { "Start/Stop timer and Motor", 8 }, 
-    { "Data logging (when flight timer is running)", 9 } 
+    { "Allow vario and voice reporting of altitude", 0 },
+    { "Variometer sound", 1 },
+    { "Speed flight mode", 2 },
+    { "Float flight mode", 3 },
+    { "Report remaining window time every 10 sec.", 6 },
+    { "Report current altitude every 10 sec.", 7 },
+    { "Launch mode (Motor Arm) and flight timer control", 4 },
+    { "Start/Stop timer and Motor", 8 },
+    { "Data logging (when flight timer is running)", 9 }
 }
 
 local items_FXY = {
-    { "Allow vario and voice reporting of altitude", 0 } 
+    { "Allow vario and voice reporting of altitude", 0 }
 }
 
 local items = items_FXY
@@ -99,7 +99,7 @@ local function init()
     lcd.drawText(10, 2, title.."  "..modelType, bit32.bor(DBLSIZE, colors.primary2))
 
     -- Row background
-    for i = 0, 7 do
+    for i = 0, 8 do
       local y = HEADER + i * LINE
       if i % 2 == 1 then
         lcd.drawFilledRectangle(0, y, LCD_W, LINE, COLOR_THEME_SECONDARY2)
@@ -171,7 +171,7 @@ local function init()
   end
 
   for i, item in ipairs(items) do
-    gui.label(MARGIN, y, w1, HEIGHT, item[1])
+    gui.label(MARGIN, y, w1, HEIGHT, item[1], SMLSIZE)
     
     local swIdx = model.getLogicalSwitch(item[2]).v1
     local selected = 0
@@ -187,7 +187,7 @@ local function init()
       -- Oops, no switch matching current value in LS!
       gui.label(COL2, y, WIDTH, HEIGHT, "???", CENTER + BOLD)
     else
-      local dropDown = gui.dropDown(COL2, y, WIDTH, HEIGHT, swNames, selected, setSwitch, CENTER)
+      local dropDown = gui.dropDown(COL2, y, WIDTH, HEIGHT, swNames, selected, setSwitch, LEFT)
       dropDown.ls = item[2]
     end
 
