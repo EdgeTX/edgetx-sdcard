@@ -61,7 +61,7 @@ local function tostring(...)
 end
 
 function M.do_log(iLevel, ulevel, fmt, ...)
-    if log.enable_console == false then
+    if log.enable_console == false and log.enable_file == false then
         return
     end
 
