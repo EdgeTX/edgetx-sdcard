@@ -1,7 +1,7 @@
 --[[
 #########################################################################
 #                                                                       #
-# Telemetry Widget script for FrSky Horus/RadioMaster TX16s             #
+# Telemetry Widget script for radiomaster TX16s                         #
 # Copyright "Offer Shmuely"                                             #
 #                                                                       #
 # License GPLv2: http://www.gnu.org/licenses/gpl-2.0.html               #
@@ -36,16 +36,19 @@
 -- Author : Offer Shmuely
 -- Date: 2021-2023
 local app_name = "BattAnalog"
-local app_ver = "0.8"
+local app_ver = "0.9"
 
 local CELL_DETECTION_TIME = 8
 
+local lib_sensors = loadScript("/WIDGETS/" .. app_name .. "/lib_sensors.lua", "tcd")(m_log,app_name)
+local DEFAULT_SOURCE = lib_sensors.findSourceId( {"cell","VFAS","RxBt","A1", "A2"})
+
 local _options = {
-    { "Sensor"            , SOURCE, 0      }, -- default to 'A1'
-    { "Color"             , COLOR , YELLOW },
-    { "Show_Total_Voltage", BOOL  , 0      }, -- 0=Show as average Lipo cell level, 1=show the total voltage (voltage as is)
-    { "Lithium_Ion"       , BOOL  , 0      }, -- 0=LIPO battery, 1=LI-ION (18650/21500)
-    { "Lithium_HV"        , BOOL  , 0      }, -- 0=LIPO battery, 1=LiHV 4.35V
+    {"Sensor"            , SOURCE, DEFAULT_SOURCE },
+    {"Color"             , COLOR , YELLOW },
+    {"Show_Total_Voltage", BOOL  , 0      }, -- 0=Show as average Lipo cell level, 1=show the total voltage (voltage as is)
+    {"Lithium_Ion"       , BOOL  , 0      }, -- 0=LIPO battery, 1=LI-ION (18650/21500)
+    {"Lithium_HV"        , BOOL  , 0      }, -- 0=LIPO battery, 1=LiHV 4.35V
 }
 
 -- Data gathered from commercial lipo sensors
@@ -102,16 +105,15 @@ local percent_list_hv = {
     { {4.229, 91}, {4.237, 92}, {4.246, 93}, {4.254, 94}, {4.264, 95}, {4.278, 96}, {4.302, 97}, {4.320, 98}, {4.339, 99}, {4.350,100} },
 }
 
-local voltageRanges_lipo = {4.3,8.6,12.9,17.2,21.5,25.8,30.1,34.4,38.7,43.0,47.3,51.6}
-local voltageRanges_lion = {4.2,8.4,12.6,16.8,21,25.2,29.4,33.6,37.8,42,46.2,50.4,54.6}
-local voltageRanges_hv   = {4.45,8.9,13.35,17.8,22.25,26.7,31.15,35.6,40.05,44.5,48.95,53.4,57.85}
-
+local voltageRanges_lipo = {4.3, 8.6, 12.9, 17.2, 21.5, 25.8, 30.1, 34.4, 38.7, 43.0, 47.3, 51.6}
+local voltageRanges_lion = {4.2, 8.4, 12.6, 16.8, 21, 25.2, 29.4, 33.6, 37.8, 42, 46.2, 50.4, 54.6}
+local voltageRanges_hv   = {4.45, 8.9, 13.35, 17.8, 22.25, 26.7, 31.15, 35.6, 40.05, 44.5, 48.95, 53.4, 57.85}
 
 local defaultSensor = "RxBt" -- RxBt / A1 / A3/ VFAS / Batt
 
 --------------------------------------------------------------
 local function log(s)
-    --print("[" .. app_name .. "]" .. s)
+    -- print("[" .. app_name .. "]" .. s)
 end
 --------------------------------------------------------------
 
@@ -193,7 +195,7 @@ local function onTelemetryResetEvent(wgt)
     wgt.vMax = 0
     wgt.cellCount = 1
     wgt.cell_detected = false
-    --wgt.tools.periodicStart(wgt.periodic1, CELL_DETECTION_TIME * 1000)
+    -- wgt.tools.periodicStart(wgt.periodic1, CELL_DETECTION_TIME * 1000)
 end
 
 --- This function return the percentage remaining in a single Lipo cel
@@ -216,29 +218,29 @@ local function getCellPercent(wgt, cellValue)
     end
 
     for i1, v1 in ipairs(_percentListSplit) do
-        --log(string.format("sub-list#: %s, head:%f, length: %d, last: %.3f", i1,v1[1][1], #v1, v1[#v1][1]))
-        --is the cellVal < last-value-on-sub-list? (first-val:v1[1], last-val:v1[#v1])
+        -- log(string.format("sub-list#: %s, head:%f, length: %d, last: %.3f", i1,v1[1][1], #v1, v1[#v1][1]))
+        -- is the cellVal < last-value-on-sub-list? (first-val:v1[1], last-val:v1[#v1])
         if (cellValue <= v1[#v1][1]) then
             -- cellVal is in this sub-list, find the exact value
-            --log("this is the list")
+            -- log("this is the list")
             for i2, v2 in ipairs(v1) do
-                --log(string.format("cell#: %s, %.3f--> %d%%", i2,v2[1], v2[2]))
+                -- log(string.format("cell#: %s, %.3f--> %d%%", i2,v2[1], v2[2]))
                 if v2[1] >= cellValue then
                     result = v2[2]
-                    --log(string.format("result: %d%%", result))
-                    --cpuProfilerAdd(wgt, 'cell-perc', t4);
+                    -- log(string.format("result: %d%%", result))
+                    -- cpuProfilerAdd(wgt, 'cell-perc', t4);
                     return result
                 end
             end
         end
     end
 
-    --for i, v in ipairs(_percentListSplit) do
+    -- for i, v in ipairs(_percentListSplit) do
     --  if v[1] >= cellValue then
     --    result = v[2]
     --    break
     --  end
-    --end
+    -- end
     return result
 end
 
@@ -352,9 +354,7 @@ local function calculateBatteryData(wgt)
         wgt.tools.periodicStart(wgt.periodic1, CELL_DETECTION_TIME * 1000)
     end
 
-
 end
-
 
 -- color for battery
 -- This function returns green at 100%, red bellow 30% and graduate in between
@@ -418,8 +418,8 @@ local function drawBattery(wgt, myBatt)
     local th = 4
     lcd.drawFilledRectangle(wgt.zone.x + myBatt.x + myBatt.w / 2 - myBatt.cath_w / 2 + tw / 2, wgt.zone.y + myBatt.y, myBatt.cath_w - tw, myBatt.cath_h, WHITE)
     lcd.drawFilledRectangle(wgt.zone.x + myBatt.x + myBatt.w / 2 - myBatt.cath_w / 2, wgt.zone.y + myBatt.y + th, myBatt.cath_w, myBatt.cath_h - th, WHITE)
-    --lcd.drawText(wgt.zone.x + myBatt.x + 20, wgt.zone.y + myBatt.y + 5, string.format("%2.0f%%", wgt.vPercent), LEFT + MIDSIZE + wgt.text_color)
-    --lcd.drawText(wgt.zone.x + myBatt.x + 20, wgt.zone.y + myBatt.y + 5, string.format("%2.1fV", wgt.mainValue), LEFT + MIDSIZE + wgt.text_color)
+    -- lcd.drawText(wgt.zone.x + myBatt.x + 20, wgt.zone.y + myBatt.y + 5, string.format("%2.0f%%", wgt.vPercent), LEFT + MIDSIZE + wgt.text_color)
+    -- lcd.drawText(wgt.zone.x + myBatt.x + 20, wgt.zone.y + myBatt.y + 5, string.format("%2.1fV", wgt.mainValue), LEFT + MIDSIZE + wgt.text_color)
 end
 
 --- Zone size: 70x39 top bar
@@ -466,7 +466,7 @@ local function refreshZoneMedium(wgt)
     if wgt.options.Show_Total_Voltage == 0 then
         lcd.drawText(wgt.zone.x + wgt.zone.w - 5, wgt.zone.y + wgt.zone.h - 35, string.format("%2.2fV %dS", wgt.secondaryValue, wgt.cellCount), RIGHT + SMLSIZE + wgt.text_color + wgt.no_telem_blink)
     else
-        --lcd.drawText(wgt.zone.x, wgt.zone.y + 40, string.format("%2.2fV", wgt.mainValue), DBLSIZE + wgt.text_color + wgt.no_telem_blink)
+        -- lcd.drawText(wgt.zone.x, wgt.zone.y + 40, string.format("%2.2fV", wgt.mainValue), DBLSIZE + wgt.text_color + wgt.no_telem_blink)
     end
     lcd.drawText(wgt.zone.x + wgt.zone.w - 5, wgt.zone.y + wgt.zone.h - 20, string.format("Min %2.2fV", wgt.vMin), RIGHT + SMLSIZE + wgt.text_color + wgt.no_telem_blink)
 
@@ -503,8 +503,8 @@ local function refreshZoneXLarge(wgt)
     local myBatt = { ["x"] = 10, ["y"] = 0, ["w"] = 80, ["h"] = h, ["segments_h"] = 30, ["color"] = WHITE, ["cath_w"] = 30, ["cath_h"] = 10 }
 
     -- draw right text section
-    --lcd.drawText(x + w, y + myBatt.y + 0, string.format("%2.2f V    %2.0f%%", wgt.mainValue, wgt.vPercent), RIGHT + XXLSIZE + wgt.text_color + wgt.no_telem_blink)
-    --lcd.drawText(x + w, y + myBatt.y +  0, string.format("%2.2f V", wgt.mainValue), RIGHT + XXLSIZE + wgt.text_color + wgt.no_telem_blink)
+    -- lcd.drawText(x + w, y + myBatt.y + 0, string.format("%2.2f V    %2.0f%%", wgt.mainValue, wgt.vPercent), RIGHT + XXLSIZE + wgt.text_color + wgt.no_telem_blink)
+    -- lcd.drawText(x + w, y + myBatt.y +  0, string.format("%2.2f V", wgt.mainValue), RIGHT + XXLSIZE + wgt.text_color + wgt.no_telem_blink)
     lcd.drawText(x + 150, y + myBatt.y + 0, string.format("%2.2f V", wgt.mainValue), XXLSIZE + wgt.text_color + wgt.no_telem_blink)
     lcd.drawText(x + 150, y + myBatt.y + 70, wgt.options.source_name, DBLSIZE + wgt.text_color + wgt.no_telem_blink)
     lcd.drawText(x + w, y + myBatt.y + 80, string.format("%2.0f%%", wgt.vPercent), RIGHT + DBLSIZE + wgt.text_color + wgt.no_telem_blink)
@@ -532,7 +532,7 @@ local function refreshAppMode(wgt, event, touchState)
     end
 
     -- draw right text section
-    --lcd.drawText(x + w - 20, y + myBatt.y + 0, string.format("%2.2f V    %2.0f%%", wgt.mainValue, wgt.vPercent), RIGHT + XXLSIZE + wgt.text_color + wgt.no_telem_blink)
+    -- lcd.drawText(x + w - 20, y + myBatt.y + 0, string.format("%2.2f V    %2.0f%%", wgt.mainValue, wgt.vPercent), RIGHT + XXLSIZE + wgt.text_color + wgt.no_telem_blink)
     lcd.drawText(x + 180, y + 0, wgt.options.source_name, DBLSIZE + wgt.text_color + wgt.no_telem_blink)
     lcd.drawText(x + 180, y + 30, string.format("%2.2f V", wgt.mainValue), XXLSIZE + wgt.text_color + wgt.no_telem_blink)
     lcd.drawText(x + 180, y + 90, string.format("%2.0f %%", wgt.vPercent), XXLSIZE + wgt.text_color + wgt.no_telem_blink)
@@ -565,11 +565,10 @@ local function refresh(wgt, event, touchState)
     background(wgt)
 
     if wgt.options.Lithium_Ion == 1 and wgt.options.Lithium_HV == 1 then
-        lcd.drawText(0,0, "Invalid settings", MIDSIZE + BLINK)
-        lcd.drawText(0,30, "can not set LI-ION & LIHV", 0 +BLINK)
+        lcd.drawText(0, 0, "Invalid settings", MIDSIZE + BLINK)
+        lcd.drawText(0, 30, "can not set LI-ION & LIHV", 0 + BLINK)
         return
     end
-
 
     if wgt.isDataAvailable then
         wgt.no_telem_blink = 0
