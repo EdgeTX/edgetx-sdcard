@@ -1,7 +1,7 @@
 --[[
 #########################################################################
 #                                                                       #
-# Telemetry Widget script for FrSky Horus/RadioMaster TX16s             #
+# Flight Counter Widget for color lcd 480x272                           #
 # Copyright "Offer Shmuely"                                             #
 #                                                                       #
 # License GPLv2: http://www.gnu.org/licenses/gpl-2.0.html               #
@@ -18,7 +18,7 @@
 #########################################################################
 
 
--- Horus Widget that count number of flights
+-- Widget to count number of flights
 -- Offer Shmuely
 -- Date: 2022-2024
 -- flight considered successful: after 30sec the engine above 25%, and telemetry is active (to indicated that the model connected), and safe switch ON
@@ -41,32 +41,30 @@
 
 
 -- Tips:
---
--- if widget size 1/2 or 1/1 (instead in the top bar where it design to) it will enter a debug mode
--- there are two options of voice indication (just copy flight_logged2.wav-->flight_logged.wav, flight_ended2.wav-->flight_ended.wav)
--- you can also put your own
--- if you do not like the sound, just delete the files
+-- widget is desined to be in the top bar
+-- if widget size 1/2 or 1/1 (instead in the top bar) it will enter a debug mode
+-- there are two options of voice indication: (you can also put your own)
+--     copy flight_logged2.wav-->flight_logged.wav
+--     or
+--     flight_ended2.wav-->flight_ended.wav
 -- for Heli, the motor-switch=arm-switch (same value for both)
 -- if you need a reversed arm switch (e.g. !SF) you need to do change it (for now) in the script: inverted_arm_switch_logic=0
 -- if you prefer different logics, do them on logical switches, and put that logical switch in both Arm & motor channel
--- if you do not use telemetry, set the: use_telemetry=0
+-- if your recweiver does not have telemetry, use_telemetry-->off
 
 ]]
 
 local app_name = "Flights"
-local app_ver = "1.3"
+local app_ver = "1.5"
 
 
 ------------------------------------------------------------------------------------------------------------------
 -- configuration
-local default_flight_starting_duration = 30  -- 20 sec to detect flight success
-local default_flight_ending_duration = 8     -- 8 sec to detect flight ended
+local default_flight_starting_duration = 30  -- 30 sec to detect flight success
+local default_flight_ending_duration = 8     --  8 sec to detect flight ended
 local default_min_motor_value = 200
-local enable_sounds = 1                      -- 0=no sound, 1=play blip sound on increment& on flight end
 local enable_count_announcement_on_start = 0 -- 0=no voice, 1=play the count upon increment
 local enable_count_announcement_on_end = 1   -- 0=no voice, 1=play the count upon end of flight
-local enable_dbg_dots = 1                    -- 0=do not show dots, 1=show dbg dots
-local use_telemetry = 1                      -- 0=do not use telemetry, 1=use telemetry in state machine
 local use_flights_history = 1                -- 0=do not write flights-history, 1=write flights-history
 -- local inverted_arm_switch_logic = 1          -- 0=armed when SF down, 1=armed when SF up
 ------------------------------------------------------------------------------------------------------------------
@@ -74,17 +72,17 @@ local use_flights_history = 1                -- 0=do not write flights-history, 
 
 -- imports
 local img = Bitmap.open("/WIDGETS/" .. app_name .. "/logo.png")
-
 local LibLogClass = loadScript("/WIDGETS/" .. app_name .. "/lib_log.lua", "tcd")
 local m_log = LibLogClass(app_name, "/WIDGETS/" .. app_name)
 
 -- for backward compatibility
 local function getSwitchIds(key)
     local OS_SWITCH_ID = {
-        ["2.7"]  = {SA=112, SB=113, SC=114, SD=115, SE=116, SF=117, CH3 = 204},
-        ["2.8"]  = {SA=120, SB=121, SC=122, SD=123, SE=124, SF=125, CH3 = 212},
-        ["2.9"]  = {SA=120, SB=121, SC=122, SD=123, SE=124, SF=125, CH3 = 212},
-        ["2.10"] = {SA=126, SB=127, SC=128, SD=129, SE=130, SF=131, CH3 = 228},
+        ["2.7"]  = {SA=112, SB=113, SC=114, SD=115, SE=116, SF=117, STICK3 = 89, INPUT3 = 3, CH3 = 204},
+        ["2.8"]  = {SA=120, SB=121, SC=122, SD=123, SE=124, SF=125, STICK3 = 89, INPUT3 = 3, CH3 = 212},
+        ["2.9"]  = {SA=120, SB=121, SC=122, SD=123, SE=124, SF=125, STICK3 = 89, INPUT3 = 3, CH3 = 212},
+        ["2.10"] = {SA=126, SB=127, SC=128, SD=129, SE=130, SF=131, STICK3 = 89, INPUT3 = 3, CH3 = 228},
+        ["2.11"] = {SA=126, SB=127, SC=128, SD=129, SE=130, SF=131, STICK3 = 89, INPUT3 = 3, CH3 = 228},
     }
     local ver, radio, maj, minor, rev, osname = getVersion()
     local os1 = string.format("%d.%d", maj, minor)
@@ -97,11 +95,15 @@ local DEFAULT_MOTOR_CHANNEL_ID = getSwitchIds("CH3")  -- motor_channel=CH3
 local options = {
     { "arm_switch", SOURCE, DEFAULT_ARM_SWITCH_ID },
     { "motor_channel", SOURCE, DEFAULT_MOTOR_CHANNEL_ID },
-    { "min_flight_duration", VALUE, default_flight_starting_duration, 2, 120 },
-    --{ "enable_sounds"    , BOOL  , 1      },  -- enable sound on adding succ flight, and on end of flight
+    { "min_flight_duration", VALUE, default_flight_starting_duration, -30, 120 },
     { "text_color", COLOR, COLOR_THEME_PRIMARY2 },
-    --{ "debug", BOOL, 0 }   -- show status on screen
-    { "non_invert_arm_switch", BOOL, 0 }   -- 0=armed when SF down, 1=armed when SF up
+    { "non_invert_arm_switch", BOOL, 0 },   -- 0=armed when SF down, 1=armed when SF up
+
+    { "show_dots",     BOOL, 1},            -- 0=do not show debug dots, 1=show debug dots
+    { "enable_sounds", BOOL, 1},            -- 0=no sound, 1=play blip sound on increment & on flight end
+    { "use_telemetry", BOOL, 1},            -- 0=do not use telemetry, 1=use telemetry in state machine
+    { "auto_debug",    BOOL, 1 }            -- show debug status on screen if widget is large enough
+
 }
 
 local function log(fmt, ...)
@@ -112,6 +114,15 @@ local function update(wgt, options)
     if (wgt == nil) then return end
 
     wgt.options = options
+
+    -- backward compatibility for version that have only 5 options
+    local ver, radio, maj, minor, rev, osname = getVersion()
+    if maj==2 and minor < 11 then
+        wgt.options.show_dots = 1
+        wgt.options.enable_sounds = 1
+        wgt.options.use_telemetry = 1
+        wgt.options.auto_debug = 1
+    end
 
     -- status
     wgt.status = {}
@@ -132,6 +143,13 @@ local function update(wgt, options)
     wgt.status.flight_end_time = 0
     wgt.status.flight_duration = 0
     wgt.status.heli_mode = false -- ignore motor direction detection, and throttle position
+    wgt.status.ground_on_switch = false
+
+    if (wgt.options.min_flight_duration < 0) then
+        wgt.options.min_flight_duration = math.abs(wgt.options.min_flight_duration)
+        wgt.status.ground_on_switch = true
+        default_flight_ending_duration = 1
+    end
 
     --log("TimerNumB:" .. options.Timer)
     if (wgt.options.arm_switch == nil) then
@@ -154,8 +172,8 @@ local function update(wgt, options)
     end
 
     -- auto debug mode if widget size 1/2 or 1/1
-    wgt.options.is_debug = (wgt.zone.h > 140)
-    log("1111 is_debug: %s, wgt.zone.h: %s", wgt.options.is_debug, wgt.zone.h)
+    wgt.options.is_debug = (wgt.options.auto_debug==1 and wgt.zone.h > 140)
+    -- log("auto_debug: %s, is_debug: %s, wgt.zone.h: %s", wgt.options.auto_debug, wgt.options.is_debug, wgt.zone.h)
 
     -- for heli, if the motor-sw==switch-sw, then ignore motor direction detection
     if (wgt.options.arm_switch == wgt.options.motor_channel) then
@@ -219,7 +237,7 @@ end
 ---------------------------------------------------------------------------------------------------
 
 local function updateTelemetryStatus(wgt)
-    if use_telemetry == 0 then
+    if wgt.options.use_telemetry == 0 then
         wgt.status.tele_is_available = true
     else
         wgt.status.tele_is_available = wgt.tools.isTelemetryAvailable()
@@ -302,7 +320,7 @@ local function doNewFlightTasks(wgt)
     log("num_flights updated: " .. new_flight_count)
 
     -- beep
-    if (enable_sounds == 1) then
+    if (wgt.options.enable_sounds == 1) then
         local is_exist_file_10 = wgt.flightHistory.isFileExist("/WIDGETS/" .. app_name .. "/flight_logged_10.wav")
         log("is_exist_file_10: %s", is_exist_file_10)
 
@@ -314,7 +332,7 @@ local function doNewFlightTasks(wgt)
         end
     end
 
-    if (enable_count_announcement_on_start == 1) then
+    if (wgt.options.enable_sounds == 1 and enable_count_announcement_on_start == 1) then
         local num_flights = getFlightCount()
         playNumber(num_flights, 0)
         playFile("/WIDGETS/" .. app_name .. "/flights.wav")
@@ -323,12 +341,12 @@ end
 
 local function doEndOfFlightTasks(wgt)
     log("doEndOfFlightTasks()")
-    if (enable_sounds == 1) then
+    if (wgt.options.enable_sounds == 1) then
         playFile("/WIDGETS/" .. app_name .. "/flight_ended.wav")
     end
 
     local num_flights = getFlightCount()
-    if (enable_count_announcement_on_end == 1) then
+    if (wgt.options.enable_sounds == 1 and enable_count_announcement_on_end == 1) then
         playNumber(num_flights, 0)
         playFile("/WIDGETS/" .. app_name .. "/flights.wav")
     end
@@ -368,7 +386,7 @@ local function background(wgt)
 
     -- **** state: GROUND ***
     if wgt.status.flight_state == "GROUND" then
-            if (wgt.status.motor_active == true) and (wgt.status.switch_on == true) and (use_telemetry==0 or wgt.status.tele_is_available == true) then
+            if (wgt.status.motor_active == true) and (wgt.status.switch_on == true) and (wgt.options.use_telemetry==0 or wgt.status.tele_is_available == true) then
             stateChange(wgt, "FLIGHT_STARTING", wgt.options.min_flight_duration)
             wgt.status.last_flight_count = getFlightCount()
 
@@ -381,7 +399,7 @@ local function background(wgt)
         -- **** state: FLIGHT_STARTING ***
     elseif wgt.status.flight_state == "FLIGHT_STARTING" then
 
-        if (wgt.status.motor_active == false) or (wgt.status.switch_on == false) or (use_telemetry==1 and wgt.status.tele_is_available == false) then
+        if (wgt.status.motor_active == false) or (wgt.status.switch_on == false) or (wgt.options.use_telemetry==1 and wgt.status.tele_is_available == false) then
             stateChange(wgt, "GROUND", 0)
             return
         end
@@ -414,7 +432,13 @@ local function background(wgt)
             log("flight_duration: %s", wgt.status.flight_duration)
         end
 
-        if (use_telemetry==1 and wgt.status.tele_is_available == false) or (use_telemetry==0 and wgt.status.switch_on == false) then
+        -- if  (wgt.status.ground_on_switch and wgt.status.switch_on == false) then
+        --     stateChange(wgt, "FLIGHT_ENDING", 0)
+        if (wgt.options.use_telemetry==1 and wgt.status.tele_is_available == false) or
+            (wgt.options.use_telemetry==0 and wgt.status.switch_on == false)
+            or
+            (wgt.status.ground_on_switch and wgt.status.switch_on == false)
+        then
             stateChange(wgt, "FLIGHT_ENDING", default_flight_ending_duration)
 
             local num_flights = getFlightCount()
@@ -444,8 +468,8 @@ local function background(wgt)
 
         end
 
-        --if (wgt.status.tele_is_available == true) then
-        if (use_telemetry==1 and wgt.status.tele_is_available == true) or (use_telemetry==0 and wgt.status.switch_on == true) then
+        if  (wgt.options.use_telemetry==1 and wgt.status.tele_is_available == true and wgt.status.ground_on_switch==false) or
+            (wgt.options.use_telemetry==0 and wgt.status.switch_on == true and wgt.status.ground_on_switch==false) then
             stateChange(wgt, "FLIGHT_ON", 0)
         end
 
@@ -528,7 +552,7 @@ local function refresh(wgt, event, touchState)
     lcd.drawText(wgt.zone.x, wgt.zone.y + dyh, header, font_size_header + wgt.options.text_color)
 
     -- enable_dbg_dots
-    if (enable_dbg_dots == 1) then
+    if (wgt.options.show_dots == 1) then
         drawTopbarDot(wgt, 0, wgt.status.tele_is_available==true)
         drawTopbarDot(wgt, 1, wgt.status.switch_on==true)
         drawTopbarDot(wgt, 2, wgt.status.motor_active==true)

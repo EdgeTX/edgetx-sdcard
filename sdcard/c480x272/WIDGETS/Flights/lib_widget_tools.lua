@@ -106,39 +106,8 @@ end
 ---------------------------------------------------------------------------------------------------
 
 function M.isTelemetryAvailable()
-    -- select telemetry source
-    if not M.tele_src_id then
-        --log("select telemetry source")
-        local tele_src = getFieldInfo("RSSI")
-        if not tele_src then tele_src = getFieldInfo("1RSS") end
-        if not tele_src then tele_src = getFieldInfo("2RSS") end
-        if not tele_src then tele_src = getFieldInfo("RQly") end
-        if not tele_src then tele_src = getFieldInfo("VFR%") end
-        if not tele_src then tele_src = getFieldInfo("TRSS") end
-        if not tele_src then tele_src = getFieldInfo("RxBt") end
-        if not tele_src then tele_src = getFieldInfo("A1") end
-
-        if tele_src == nil then
-            --log("no telemetry sensor found")
-            M.tele_src_id = nil
-            M.tele_src_name = "---"
-            return false
-        else
-            --log("telemetry sensor found: " .. tele_src.name)
-            M.tele_src_id = tele_src.id
-            M.tele_src_name = tele_src.name
-        end
-    end
-
-    if M.tele_src_id == nil then
-        return false
-    end
-
-    local rx_val = getValue(M.tele_src_id)
-    if rx_val ~= 0 then
-        return true
-    end
-    return false
+    local is_telem = getRSSI()
+    return is_telem > 0
 end
 
 ---------------------------------------------------------------------------------------------------
@@ -178,72 +147,88 @@ function M.detectResetEvent(wgt, callback_onTelemetryResetEvent)
 end
 
 ---------------------------------------------------------------------------------------------------
-function M.getSensorPrecession(sensorName)
 
+function M.getSensorInfoByName(sensorName)
+    local sensors = {}
     for i=0, 30, 1 do
+        local s1 = {}
         local s2 = model.getSensor(i)
-        --type (number) 0 = custom, 1 = calculated
-        --name (string) Name
-        --unit (number) See list of units in the appendix of the OpenTX Lua Reference Guide
-        --prec (number) Number of decimals
-        --id (number) Only custom sensors
-        --instance (number) Only custom sensors
-        --formula (number) Only calculated sensors. 0 = Add etc. see list of formula choices in Companion popup
 
-        --log("getSensorPrecession: %d. name: %s, unit: %s , prec: %s , id: %s , instance: %s ", i, s2.name, s2.unit, s2.prec, s2.id, s2.instance)
+        --type (number) 0 = custom, 1 = calculated
+        s1.type = s2.type
+        --name (string) Name
+        s1.name = s2.name
+        --unit (number) See list of units in the appendix of the OpenTX Lua Reference Guide
+        s1.unit = s2.unit
+        --prec (number) Number of decimals
+        s1.prec = s2.prec
+        --id (number) Only custom sensors
+        s1.id = s2.id
+        --instance (number) Only custom sensors
+        s1.instance = s2.instance
+        --formula (number) Only calculated sensors. 0 = Add etc. see list of formula choices in Companion popup
+        s1.formula = s2.formula
+
+        -- log("getSensorInfo: %d. name: %s, unit: %s , prec: %s , id: %s , instance: %s ", i, s2.name, s2.unit, s2.prec, s2.id, s2.instance)
 
         if s2.name == sensorName then
-            return s2.prec
+            return s1
         end
     end
 
-    return -1
+    return nil
+ end
+
+ function M.getSensorPrecession(sensorName)
+    local sensorInfo = M.getSensorInfoByName(sensorName)
+    if (sensorInfo == nil) then
+        log("getSensorPrecession: not found sensor [%s]", sensorName)
+        return -1
+    end
+
+    log("getSensorPrecession: name: %s, prec: %s , id: %s", sensorInfo.name, sensorInfo.prec, sensorInfo.id)
+    return sensorInfo.prec
 end
 
---function M.getSensors()
---    local sensors = {}
---    for i=0, 30, 1 do
---        local s1 = {}
---        local s2 = model.getSensor(i)
---
---        --type (number) 0 = custom, 1 = calculated
---        s1.type = s2.type
---        --name (string) Name
---        s1.name = s2.name
---        --unit (number) See list of units in the appendix of the OpenTX Lua Reference Guide
---        s1.unit = s2.unit
---        --prec (number) Number of decimals
---        s1.prec = s2.prec
---        --id (number) Only custom sensors
---        s1.id = s2.id
---        --instance (number) Only custom sensors
---        s1.instance = s2.instance
---        --formula (number) Only calculated sensors. 0 = Add etc. see list of formula choices in Companion popup
---        s1.formula = s2.formula
---
---        s1.appendix
---
---        log("getSensorPrecession: %d. name: %s, unit: %s , prec: %s , id: %s , instance: %s ", i, s2.name, s2.unit, s2.prec, s2.id, s2.instance)
---
---        if s2.name == sensorName then
---            return s2.prec
---        end
---    end
---
---    return -1
---end
+
+-- function M.getSensorId(sensorName)
+--     local sensorInfo = M.getSensorInfoByName(sensorName)
+--     if (sensorInfo == nil) then
+--         log("getSensorId: not found sensor [%s]", sensorName)
+--         return -1
+--     end
+
+--     log("getSensorId: name: %s, prec: %s , id: %s", sensorInfo.name, sensorInfo.prec, sensorInfo.id)
+--     return sensorInfo.id
+-- end
+
+
+function M.isSensorExist(sensorName)
+    local sensorInfo = M.getSensorInfoByName(sensorName)
+    local is_exist = (sensorInfo ~= nil)
+    log("getSensorInfo: [%s] is_exist: %s", sensorName, is_exist)
+    return is_exist
+ end
 
 ---------------------------------------------------------------------------------------------------
 -- workaround for bug in getFiledInfo()  -- ???? why?
 function M.cleanInvalidCharFromGetFiledInfo(sourceName)
-
-    if string.byte(string.sub(sourceName, 1, 1)) > 127 then
+     if string.byte(string.sub(sourceName, 1, 1)) > 127 then
         sourceName = string.sub(sourceName, 2, -1)
     end
     if string.byte(string.sub(sourceName, 1, 1)) > 127 then
         sourceName = string.sub(sourceName, 2, -1)
     end
+    return sourceName
+end
 
+-- workaround for bug in getSourceName()
+function M.getSourceNameCleaned(source)
+    local sourceName = getSourceName(source)
+    if (sourceName == nil) then
+        return "N/A"
+    end
+    local sourceName = M.cleanInvalidCharFromGetFiledInfo(sourceName)
     return sourceName
 end
 
