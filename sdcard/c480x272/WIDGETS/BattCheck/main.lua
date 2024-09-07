@@ -1,6 +1,6 @@
 ---- #########################################################################
 ---- #                                                                       #
----- # Telemetry Widget script for FrSky Horus/RadioMaster TX16s             #
+---- # Telemetry Widget script for radiomaster TX16s                         #
 ---- # Copyright (C) EdgeTX                                                  #
 -----#                                                                       #
 ---- # License GPLv2: http://www.gnu.org/licenses/gpl-2.0.html               #
@@ -20,10 +20,13 @@
 -- 3djc & Offer Shmuely
 -- Date: 2022
 local app_name = "BattCheck"
-local app_ver = "0.8"
+local app_ver = "0.9"
+
+local lib_sensors = loadScript("/WIDGETS/" .. app_name .. "/lib_sensors.lua", "tcd")(m_log,app_name)
+local DEFAULT_SOURCE = lib_sensors.findSourceId( {"Cels"})
 
 local _options = {
-    { "Sensor"      , SOURCE, 0      }, -- default to 'Cels'
+    { "Sensor"      , SOURCE, DEFAULT_SOURCE }, -- default to 'Cels'
     { "Color"       , COLOR , YELLOW },
     { "Shadow"      , BOOL  , 0      },
     { "LowestCell"  , BOOL  , 1      }, -- 0=main voltage display shows all-cell-voltage, 1=main voltage display shows lowest-cell
