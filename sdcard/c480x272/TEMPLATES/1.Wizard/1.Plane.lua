@@ -31,11 +31,11 @@ local pages = {}
 chdir("/TEMPLATES/1.Wizard")
 
 -- load common Bitmaps
-local ImgMarkBg = Bitmap.open("img/mark_bg.png")
-local BackgroundImg = Bitmap.open("img/background.png")
-local ImgPlane = Bitmap.open("img/plane/plane.png")
-local ImgPageUp = Bitmap.open("img/pageup.png")
-local ImgPageDn = Bitmap.open("img/pagedn.png")
+local ImgMarkBg = bitmap.open("img/mark_bg.png")
+local BackgroundImg = bitmap.open("img/background.png")
+local ImgPlane = bitmap.open("img/plane/plane.png")
+local ImgPageUp = bitmap.open("img/pageup.png")
+local ImgPageDn = bitmap.open("img/pagedn.png")
 
 local STICK_NUMBER_AIL = 3
 local STICK_NUMBER_ELE = 1
@@ -256,7 +256,7 @@ local ImgEngine
 local function runMotorConfig(event)
     lcd.clear()
     if ImgEngine == nil then
-        ImgEngine = Bitmap.open("img/plane/prop.png")
+        ImgEngine = bitmap.open("img/plane/prop.png")
     end
     lcd.drawBitmap(BackgroundImg, 0, 0)
     lcd.drawBitmap(ImgPageDn, 455, 95)
@@ -306,8 +306,8 @@ local ImgAilL
 local function runAilConfig(event)
     lcd.clear()
     if ImgAilR == nil then
-        ImgAilR = Bitmap.open("img/plane/rail.png")
-        ImgAilL = Bitmap.open("img/plane/lail.png")
+        ImgAilR = bitmap.open("img/plane/rail.png")
+        ImgAilL = bitmap.open("img/plane/lail.png")
     end
     lcd.drawBitmap(BackgroundImg, 0, 0)
     lcd.drawBitmap(ImgPageUp, 0, 95)
@@ -355,7 +355,7 @@ local ImgFlp
 local function runFlapsConfig(event)
     lcd.clear()
     if ImgFlp == nil then
-        ImgFlp = Bitmap.open("img/plane/flap.png")
+        ImgFlp = bitmap.open("img/plane/flap.png")
     end
     lcd.drawBitmap(BackgroundImg, 0, 0)
     lcd.drawBitmap(ImgPageUp, 0, 95)
@@ -407,9 +407,9 @@ local ImgTailRud
 local function runTailConfig(event)
     lcd.clear()
     if ImgTail == nil then
-        ImgTail = Bitmap.open("img/plane/tail.png")
-        ImgVTail = Bitmap.open("img/plane/vtail.png")
-        ImgTailRud = Bitmap.open("img/plane/tail_rud.png")
+        ImgTail = bitmap.open("img/plane/tail.png")
+        ImgVTail = bitmap.open("img/plane/vtail.png")
+        ImgTailRud = bitmap.open("img/plane/tail_rud.png")
     end
     lcd.drawBitmap(BackgroundImg, 0, 0)
     lcd.drawBitmap(ImgPageUp, 0, 95)
@@ -476,7 +476,7 @@ local ImgFlp
 local function runGearConfig(event)
     lcd.clear()
     if ImgFlp == nil then
-        ImgFlp = Bitmap.open("img/plane/flap.png")
+        ImgFlp = bitmap.open("img/plane/flap.png")
     end
     lcd.drawBitmap(BackgroundImg, 0, 0)
     lcd.drawBitmap(ImgPageUp, 0, 95)
@@ -551,7 +551,7 @@ local ImgSummary
 local function runConfigSummary(event)
     lcd.clear()
     if ImgSummary == nil then
-        ImgSummary = Bitmap.open("img/summary.png")
+        ImgSummary = bitmap.open("img/summary.png")
     end
 
     lcd.drawBitmap(BackgroundImg, 0, 0)

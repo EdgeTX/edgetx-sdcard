@@ -1,9 +1,9 @@
 local toolName = "TNS|Wizard Loader|TNE"
 
-local BackgroundImg = Bitmap.open("/SCRIPTS/WIZARD/img/background.png")
-local planeIcon = Bitmap.open("/SCRIPTS/WIZARD/img/icons/plane.png")
-local gliderIcon = Bitmap.open("/SCRIPTS/WIZARD/img/icons/glider.png")
-local multirotorIcon = Bitmap.open("/SCRIPTS/WIZARD/img/icons/multirotor.png")
+local BackgroundImg = bitmap.open("/SCRIPTS/WIZARD/img/background.png")
+local planeIcon = bitmap.open("/SCRIPTS/WIZARD/img/icons/plane.png")
+local gliderIcon = bitmap.open("/SCRIPTS/WIZARD/img/icons/glider.png")
+local multirotorIcon = bitmap.open("/SCRIPTS/WIZARD/img/icons/multirotor.png")
 
 local w, h
 local selWizard = 1

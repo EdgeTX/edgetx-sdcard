@@ -73,7 +73,7 @@ local use_flights_history = 1                -- 0=do not write flights-history, 
 
 
 -- imports
-local img = Bitmap.open("/WIDGETS/" .. app_name .. "/logo.png")
+local img = bitmap.open("/WIDGETS/" .. app_name .. "/logo.png")
 
 local LibLogClass = loadScript("/WIDGETS/" .. app_name .. "/lib_log.lua", "tcd")
 local m_log = LibLogClass(app_name, "/WIDGETS/" .. app_name)

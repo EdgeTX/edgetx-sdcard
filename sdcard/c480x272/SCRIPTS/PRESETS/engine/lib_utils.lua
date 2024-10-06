@@ -28,9 +28,9 @@ M.defaultChannel_0_THR = defaultChannel(M.STICK_NUMBER_THR)
 M.defaultChannel_0_RUD = defaultChannel(M.STICK_NUMBER_RUD)
 
 local script_folder = m_script_folder
-local ImgBackground = Bitmap.open(script_folder .. "img/background.png")
-local ImgPageUp = Bitmap.open(script_folder .. "img/pageup.png")
-local ImgPageDn = Bitmap.open(script_folder .. "img/pagedn.png")
+local ImgBackground = bitmap.open(script_folder .. "img/background.png")
+local ImgPageUp = bitmap.open(script_folder .. "img/pageup.png")
+local ImgPageDn = bitmap.open(script_folder .. "img/pagedn.png")
 
 -----------------------------------------------------------------
 

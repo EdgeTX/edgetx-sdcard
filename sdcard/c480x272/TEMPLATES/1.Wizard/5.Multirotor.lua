@@ -34,10 +34,10 @@ local STICK_NUMBER_RUD = 0
 
 chdir("/TEMPLATES/1.Wizard")
 -- load common Bitmaps
-local ImgMarkBg = Bitmap.open("img/mark_bg.png")
-local BackgroundImg = Bitmap.open("img/background.png")
-local ImgPageUp = Bitmap.open("img/pageup.png")
-local ImgPageDn = Bitmap.open("img/pagedn.png")
+local ImgMarkBg = bitmap.open("img/mark_bg.png")
+local BackgroundImg = bitmap.open("img/background.png")
+local ImgPageUp = bitmap.open("img/pageup.png")
+local ImgPageDn = bitmap.open("img/pagedn.png")
 
 
 -- Change display attribute to current field
@@ -152,7 +152,7 @@ local ThrottleBackground
 local function runThrottleConfig(event)
   lcd.clear()
   if ThrottleBackground == nil then
-    ThrottleBackground = Bitmap.open("img/multirotor/throttle.png")
+    ThrottleBackground = bitmap.open("img/multirotor/throttle.png")
   end
   lcd.drawBitmap(ThrottleBackground, 0, 0)
   lcd.drawBitmap(ImgPageDn, 455, 95)
@@ -173,7 +173,7 @@ local RollBackground
 local function runRollConfig(event)
   lcd.clear()
   if RollBackground == nil then
-    RollBackground = Bitmap.open("img/multirotor/roll.png")
+    RollBackground = bitmap.open("img/multirotor/roll.png")
   end
   lcd.drawBitmap(RollBackground, 0, 0)
   lcd.drawBitmap(ImgPageUp, 0, 95)
@@ -195,7 +195,7 @@ local PitchBackground
 local function runPitchConfig(event)
   lcd.clear()
   if PitchBackground == nil then
-    PitchBackground = Bitmap.open("img/multirotor/pitch.png")
+    PitchBackground = bitmap.open("img/multirotor/pitch.png")
   end
   lcd.drawBitmap(PitchBackground, 0, 0)
   lcd.drawBitmap(ImgPageUp, 0, 95)
@@ -217,7 +217,7 @@ local YawBackground
 local function runYawConfig(event)
   lcd.clear()
   if YawBackground == nil then
-    YawBackground = Bitmap.open("img/multirotor/yaw.png")
+    YawBackground = bitmap.open("img/multirotor/yaw.png")
   end
   lcd.drawBitmap(YawBackground, 0, 0)
   lcd.drawBitmap(ImgPageUp, 0, 95)
@@ -239,7 +239,7 @@ local ArmBackground
 local function runArmConfig(event)
   lcd.clear()
   if ArmBackground == nil then
-    ArmBackground = Bitmap.open("img/multirotor/arm.png")
+    ArmBackground = bitmap.open("img/multirotor/arm.png")
   end
   lcd.drawBitmap(ArmBackground, 0, 0)
   lcd.drawBitmap(ImgPageUp, 0, 95)
@@ -261,7 +261,7 @@ local BeeperBackground
 local function runBeeperConfig(event)
   lcd.clear()
   if BeeperBackground == nil then
-    BeeperBackground = Bitmap.open("img/multirotor/beeper.png")
+    BeeperBackground = bitmap.open("img/multirotor/beeper.png")
   end
   lcd.drawBitmap(BeeperBackground, 0, 0)
   lcd.drawBitmap(ImgPageUp, 0, 95)
@@ -283,7 +283,7 @@ local ModeBackground
 local function runModeConfig(event)
   lcd.clear()
   if ModeBackground == nil then
-    ModeBackground = Bitmap.open("img/multirotor/mode.png")
+    ModeBackground = bitmap.open("img/multirotor/mode.png")
   end
   lcd.drawBitmap(ModeBackground, 0, 0)
   lcd.drawBitmap(ImgPageUp, 0, 95)
@@ -319,7 +319,7 @@ local ImgSummary
 local function runConfigSummary(event)
   lcd.clear()
   if ImgSummary == nil then
-    ImgSummary = Bitmap.open("img/summary.png")
+    ImgSummary = bitmap.open("img/summary.png")
   end
   fields = ConfigSummaryFields
   lcd.drawBitmap(BackgroundImg, 0, 0)

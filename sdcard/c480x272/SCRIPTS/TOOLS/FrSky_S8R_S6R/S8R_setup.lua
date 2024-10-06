@@ -381,7 +381,7 @@ local function runConfigPage(event, touchState)
         if fields[1][4] ~= nil then
             if LCD_W == 480 then
                 if wingBitmaps[1 + fields[1][4]] == nil then
-                    wingBitmaps[1 + fields[1][4]] = Bitmap.open(wingBitmapsFile[1 + fields[1][4]])
+                    wingBitmaps[1 + fields[1][4]] = bitmap.open(wingBitmapsFile[1 + fields[1][4]])
                 end
                 lcd.drawBitmap(wingBitmaps[1 + fields[1][4]], 10, 90)
             else
@@ -391,7 +391,7 @@ local function runConfigPage(event, touchState)
         if fields[2][4] ~= nil then
             if LCD_W == 480 then
                 if mountBitmaps[1 + fields[2][4]] == nil then
-                    mountBitmaps[1 + fields[2][4]] = Bitmap.open(mountBitmapsFile[1 + fields[2][4]])
+                    mountBitmaps[1 + fields[2][4]] = bitmap.open(mountBitmapsFile[1 + fields[2][4]])
                 end
                 lcd.drawBitmap(mountBitmaps[1 + fields[2][4]], 190, 110)
             else

@@ -39,7 +39,7 @@
 
 local delayMillis = 100
 local nextPlayTime = getTime()
-local img = Bitmap.open("/SCRIPTS/TOOLS/Model Locator (by RSSI).png")
+local img = bitmap.open("/SCRIPTS/TOOLS/Model Locator (by RSSI).png")
 
 --------------------------------------------------------------
 local function log(s)
