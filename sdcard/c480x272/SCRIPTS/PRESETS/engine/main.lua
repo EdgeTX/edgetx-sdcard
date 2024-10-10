@@ -75,10 +75,10 @@ local STATE = {
 }
 local state = STATE.SPLASH
 
-local ImgSplash = Bitmap.open(script_folder .. "img/splash.png")
-local ImgSummary = Bitmap.open(script_folder .. "img/summary.png")
-local ImgBackground = Bitmap.open(script_folder .. "img/background.png")
-local ImgBackground2 = Bitmap.open(script_folder .. "img/background2.png")
+local ImgSplash = bitmap.open(script_folder .. "img/splash.png")
+local ImgSummary = bitmap.open(script_folder .. "img/summary.png")
+local ImgBackground = bitmap.open(script_folder .. "img/background.png")
+local ImgBackground2 = bitmap.open(script_folder .. "img/background2.png")
 
 ---------------------------------------------------------------------------------------------------
 local function getVer()
@@ -131,7 +131,7 @@ local function on_change_preset_selection(i)
     log("Selected model-name: " .. dd_preset_folder_name)
 
     preset_info = m_utils.readMeta("/SCRIPTS/PRESETS/scripts/" .. dd_preset_folder_name .. "/meta.ini")
-    preset_info.icon = Bitmap.open("/SCRIPTS/PRESETS/scripts/" .. dd_preset_folder_name .. "/icon.png")
+    preset_info.icon = bitmap.open("/SCRIPTS/PRESETS/scripts/" .. dd_preset_folder_name .. "/icon.png")
 
     log("Category: %s", preset_info["category"])
     log("preset_selection: %s", preset_info["name"])

@@ -50,7 +50,7 @@
 local app_name = "Flights"
 
 -- imports
-local img = Bitmap.open("/WIDGETS/" .. app_name .. "/logo.png")
+local img = bitmap.open("/WIDGETS/" .. app_name .. "/logo.png")
 
 -- const
 local default_flight_starting_duration = 30 -- 20 sec to detect fight success

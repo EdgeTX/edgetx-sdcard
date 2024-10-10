@@ -134,7 +134,7 @@ local function refreshPage(event)
         local position = calibrationPositions[1 + calibrationStep]
         lcd.drawText(50, 50, "Place the receiver in the following position", TEXT_COLOR)
         if calibBitmaps[calibrationStep + 1] == nil then
-            calibBitmaps[calibrationStep + 1] = Bitmap.open(calibBitmapsFile[calibrationStep + 1])
+            calibBitmaps[calibrationStep + 1] = bitmap.open(calibBitmapsFile[calibrationStep + 1])
         end
 
         lcd.drawBitmap(calibBitmaps[calibrationStep + 1], 40, 70, 150)
@@ -194,8 +194,8 @@ local function refreshPage(event)
         end
     else
         lcd.drawText(160, 50, "Calibration completed", 0)
-        lcd.drawBitmap(Bitmap.open("img/done.bmp"), 200, 100)
-        lcd.drawBitmap(Bitmap.open("img/done.png"), 310, 60)
+        lcd.drawBitmap(bitmap.open("img/done.bmp"), 200, 100)
+        lcd.drawBitmap(bitmap.open("img/done.png"), 310, 60)
         lcd.drawText(160, 220, "Hold [RTN] to exit", attr)
     end
     if calibrationStep > 6 and (event == EVT_VIRTUAL_ENTER or event == EVT_VIRTUAL_EXIT) then
