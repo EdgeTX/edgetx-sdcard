@@ -4,11 +4,13 @@ on:
   push:
     branches:
       - master
+      - 2.10
     paths-ignore:
       - "**/README.md"
   pull_request:
     branches:
       - master
+      - 2.10
     paths-ignore:
       - "**/README.md"
     tags:
