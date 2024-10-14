@@ -24,25 +24,30 @@ jobs:
         run: |
           chmod +x generate.sh
           ./generate.sh
+      - name: Compose release filename
+        run: echo "artifact_name=sdcard-${GITHUB_REF##*/}" >> $GITHUB_ENV
       - name: Upload a Build Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: sdcard-latest
+          name: "${{ env.artifact_name }}"
           path: |
             dist/*
             sdcard.json
 
   upload-release:
-    if: github.event_name != 'pull_request' && startsWith(github.ref, 'refs/tags/v')
+    if: github.event_name != 'pull_request'
     needs: build-artifact
     runs-on: ubuntu-latest
     steps:
+      - name: Compose release filename
+        run: echo "artifact_name=sdcard-${GITHUB_REF##*/}" >> $GITHUB_ENV
       - uses: actions/download-artifact@v4
         with:
-          name: sdcard-latest
+          name: "${{ env.artifact_name }}"
           path: .
-      - name: Deploy release
+      - name: Deploy Latest Release
         uses: crowbarmaster/GH-Automatic-Releases@latest
+        if: github.ref == 'refs/heads/master'
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           automatic_release_tag: "latest"
