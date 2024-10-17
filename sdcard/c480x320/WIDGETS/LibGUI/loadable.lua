@@ -128,6 +128,9 @@ local menuItems = {
 
 gui.menu(COL4, TOP + ROW, WIDTH, 5 * ROW, menuItems, function(menu) playNumber(menu.selected, 0) end)
 
+-- momentary button
+gui.momentaryButton(COL1, TOP + 5 * ROW, WIDTH, HEIGHT, "Momentary");
+
 -- Horizontal slider
 gui.label(COL1, TOP + 6 * ROW, WIDTH, HEIGHT, "Horizontal slider:", BOLD)
 local horizontalSliderLabel = gui.label(COL1 + 2 * WIDTH, TOP + 7 * ROW, 30, HEIGHT, "", RIGHT)
