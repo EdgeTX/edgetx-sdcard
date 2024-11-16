@@ -18,11 +18,12 @@
 
 -- Model Locator by RSSI
 -- Offer Shmuely (based on code from Scott Bauer 6/21/2015)
--- Date: 2022
--- ver: 0.3
+-- Date: 2022-2024
+-- ver: 0.5
+local app_ver = "0.5"
 
 -- This widget help to find a lost/crashed model based on the RSSI (if still available)
--- The widget produce audio representation (variometer style) of the RSSI from the lost model
+-- The widget produce audio representation (vario-meter style) of the RSSI from the lost model
 -- The widget also  display the RSSI in a visible colorized bar (0-100%)
 
 -- There are two way to use it
@@ -137,7 +138,6 @@ local function getSignalValues()
     --    return v, 0, 100
     --end
 
-    lcd.drawText(30, 3, "Signal: not found in RSSI/1RSS/2RSS", 0)
     return nil, 0, 0
 end
 
@@ -145,19 +145,21 @@ end
 local function main(event, touchState)
     lcd.clear()
 
-    local signalValue, signalMin, signalMax = getSignalValues()
-    -- log(signalValue)
-    if signalValue == nil then
-        return
-    end
-    log("signalValue:" .. signalValue .. ", signalMin: " .. signalMin .. ", signalMax: " .. signalMax)
-
     -- background
     --lcd.drawBitmap(img, 0, 20, 30)
     lcd.drawBitmap(img, 250, 50, 40)
 
     -- Title
     lcd.drawText(3, 3, "RSSI Model Locator", 0)
+    lcd.drawText(LCD_W - 50, 3, "ver: " .. app_ver .. "", SMLSIZE)
+
+    local signalValue, signalMin, signalMax = getSignalValues()
+    -- log(signalValue)
+    if signalValue == nil then
+        lcd.drawText(30, 50, "No signal found (expected: RSSI/1RSS/2RSS)", 0 + BLINK)
+        return 0
+    end
+    log("signalValue:" .. signalValue .. ", signalMin: " .. signalMin .. ", signalMax: " .. signalMax)
 
     --if (rssi > 42) then
     --  lcd.setColor(CUSTOM_COLOR, YELLOW) -- RED / YELLOW
