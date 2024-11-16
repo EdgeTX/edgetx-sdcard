@@ -18,17 +18,15 @@
 chdir("/SCRIPTS/TOOLS/FrSky_S8R_S6R")
 
 local VALUE = 0
-
 local refreshState = 0
 local refreshIndex = 0
 local calibrationState = 0
 local calibrationStep = 0
 local modifications = {}
-
 local calibrationPositions = { "up", "down", "left", "right", "forward", "back" }
-
 local calibBitmaps = {}
-local calibBitmapsFile = { "img/up.png", "img/down.png", "img/left.png", "img/right.png", "img/forward.png", "img/back.png" }
+local calibBitmapsFile = { "img/rx_up.png", "img/rx_down.png", "img/rx_left.png", "img/rx_right.png", "img/rx_forward.png", "img/rx_back.png" }
+local telemetryPopTimeout = 0
 
 local fields = {
     { "X", VALUE, 0x9E, 0, -100, 100, "%" },
@@ -43,12 +41,6 @@ local fields_needed_state = {
     {-100,    0,    0}, -- 4
     {   0, -100,    0}, -- 5
     {   0,  100,    0}, -- 6
-    --{{"X",   0},{"Y",   0},{"Z", 100}}, -- 1
-    --{{"X",   0},{"Y",   0},{"Z",-100}}, -- 2
-    --{{"X", 100},{"Y",   0},{"Z",   0}}, -- 3
-    --{{"X",-100},{"Y",   0},{"Z",   0}}, -- 4
-    --{{"X",   0},{"Y",-100},{"Z",   0}}, -- 5
-    --{{"X",   0},{"Y", 100},{"Z",   0}}, -- 6
 }
 
 local function telemetryRead(field)
@@ -58,8 +50,6 @@ end
 local function telemetryWrite(field, value)
     return sportTelemetryPush(0x17, 0x31, 0x0C30, field + value * 256)
 end
-
-local telemetryPopTimeout = 0
 
 local function refreshNext()
     if refreshState == 0 then
@@ -175,22 +165,22 @@ local function refreshPage(event)
             -- expected pos
             lcd.drawFilledRectangle(prog_m + x_pos_expected - mark_w_half +1, 80 + 25 * index - 0 +1, mark_w -2, 18 -2, LIGHTGREY);
             -- current pos (+ shade)
-            lcd.drawFilledRectangle(prog_m + x_pos - mark_w_half +1 +4, 80 + 25 * index - 0 +1 +4, mark_w -8, 18 -8, GREY);
-            lcd.drawFilledRectangle(prog_m + x_pos - mark_w_half    +4, 80 + 25 * index - 0    +4, mark_w -8, 18 -8, bg_color);
+            lcd.drawFilledRectangle(prog_m + x_pos - mark_w_half +1 +2, 80 + 25 * index - 0 +1 +2, mark_w -4, 18 -4, GREY);
+            lcd.drawFilledRectangle(prog_m + x_pos - mark_w_half    +2, 80 + 25 * index - 0    +2, mark_w -4, 18 -4, bg_color);
             -- middle mark
             lcd.drawFilledRectangle(prog_m -1, 80 + 25 * index - 0, 2, 18, BLACK);
         end
 
         if (is_all_v_align) then
             if calibrationState == 0 then
-                lcd.drawFilledRectangle(150, 215, 200, 30, GREEN);
+                lcd.drawFilledRectangle(150, 225, 200, 30, GREEN);
             else
-                lcd.drawFilledRectangle(150, 215, 200, 30, ORANGE);
+                lcd.drawFilledRectangle(150, 225, 200, 30, ORANGE);
             end
-            lcd.drawText(160, 220, "Ready! press [Enter]")
+            lcd.drawText(160, 230, "Ready! press [Enter]")
         else
-            lcd.drawFilledRectangle(150, 215, 200, 30, BLACK);
-            lcd.drawText(160, 220, "Press [Enter] when 3 greens", WHITE)
+            lcd.drawFilledRectangle(150, 225, 215, 30, BLACK);
+            lcd.drawText(160, 230, "Press [Enter] when 3 greens", WHITE)
         end
     else
         lcd.drawText(160, 50, "Calibration completed", 0)
@@ -233,6 +223,8 @@ local function run(event)
 
     local result = refreshPage(event)
     refreshNext()
+    --lcd.drawText(10, 220, "refreshState: " .. refreshState, GREY + SMLSIZE)
+    --lcd.drawText(10, 240, "calibrationState: " .. calibrationState, GREY + SMLSIZE)
 
     return result
 end
