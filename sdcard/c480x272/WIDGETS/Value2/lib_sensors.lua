@@ -63,4 +63,41 @@ function M.trim_safe(s)
     --string.gsub(text, ",,", ", ,")
 end
 
+function M.findSourceId(sourceNameList)
+    local interesting_sources = {}
+    for i = 200, 400 do
+        local name = getSourceName(i)
+        if name ~= nil then
+            -- workaround for bug in getFiledInfo()  -- ???? why?
+            if string.byte(string.sub(name, 1, 1)) > 127 then name = string.sub(name, 2, -1) end
+            if string.byte(string.sub(name, 1, 1)) > 127 then name = string.sub(name, 2, -1) end
+
+            for _, sourceName in ipairs(sourceNameList) do
+                -- print(string.format("init_compare_source: [%s(%d)][%s] (is =? %s)", name, i, sourceName, (name == sourceName)))
+                if (string.lower(name) == string.lower(sourceName)) then
+                    print(string.format("init_compare_source (collecting): [%s(%d)] == [%s]", name, i, sourceName))
+                    interesting_sources[#interesting_sources + 1] = {i,name}
+                end
+            end
+        end
+    end
+
+    -- find the source with highest priority
+    for _, sourceName in ipairs(sourceNameList) do
+        for _, source in ipairs(interesting_sources) do
+            local idx = source[1]
+            local name = source[2]
+            -- print(string.format("init_compare_source: is_needed? [%s(%d)]", name, idx))
+            if (string.lower(name) == string.lower(sourceName)) then
+                print(string.format("init_compare_source: we have: %s", sourceName))
+                print(string.format("init_compare_source (found): [%s(%d)] == [%s]", name, idx, sourceName))
+                return idx
+            end
+        end
+        print(string.format("init_compare_source: we do not have: %s", sourceName))
+    end
+    return 1
+end
+
+
 return M
