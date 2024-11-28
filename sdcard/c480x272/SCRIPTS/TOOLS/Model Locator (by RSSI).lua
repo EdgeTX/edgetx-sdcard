@@ -88,23 +88,29 @@ local function getRangeColor(value, red_value, green_value)
 end
 
 local function getSignalValues()
+    -- try to get transmitter power
+    local txPowerField = getFieldInfo("TPWR")
+    local txPowerValue = nil
+    if txPowerField then
+        txPowerValue = getValue("TPWR")
+    end
 
     -- try regular Frsky RSSI
     local fieldinfo = getFieldInfo("RSSI")
     if fieldinfo then
         local v = getValue("RSSI")
         log("RSSI: " .. v)
-        return v, 0, 100, "Using signal: Frsky RSSI", nil
+        return v, 0, 100, txPowerValue, "Using signal: Frsky RSSI", nil
     end
 
     -- try expressLRS antenna 1
     local fieldinfo = getFieldInfo("1RSS")
     if fieldinfo then
-        local v = getValue("1RSS")
+        local v = getValue(fieldinfo.id)
         if v == 0 then
             v = -115
         end
-        return v, -115, 20, "Using signal: elrs 1RSS", "Set tx power to 25mW non dynamic"
+        return v, -115, 20, txPowerValue, "Using signal: elrs 1RSS", "Set tx power to 25mW non dynamic"
     end
 
     -- try expressLRS antenna 2
@@ -114,7 +120,7 @@ local function getSignalValues()
         if v == 0 then
             v = -115
         end
-        return v, -115, 20, "Using signal: elrs 2RSS", "Set tx power to 25mW non dynamic"
+        return v, -115, 20, txPowerValue, "Using signal: elrs 2RSS", "Set tx power to 25mW non dynamic"
     end
 
     ---- try UNI-ACSST firmware VFR
@@ -149,13 +155,19 @@ local function main(event, touchState)
     lcd.drawText(10, 3, "RSSI Model Locator", WHITE)
     lcd.drawText(LCD_W - 50, 3, "ver: " .. app_ver .. "", SMLSIZE + GREEN)
 
-    local signalValue, signalMin, signalMax, line1, line2 = getSignalValues()
+    local signalValue, signalMin, signalMax, txPower, line1, line2 = getSignalValues()
     -- log(signalValue)
     if signalValue == nil then
         lcd.drawText(30, 50, "No signal found (expected: RSSI/1RSS/2RSS)", 0 + BLINK)
         return 0
     end
+
+    
     lcd.drawText(3, 60, line2 or "", RED)
+    if txPower then
+        lcd.drawText(3, 75, "Current TX Power: " .. tostring(txPower) .. "mW", (txPower == 25) and DARKGREEN or RED)
+    end
+    
     lcd.drawText(10, LCD_H-22, line1, WHITE)
 
     log("signalValue:" .. signalValue .. ", signalMin: " .. signalMin .. ", signalMax: " .. signalMax)
