@@ -19,8 +19,8 @@
 -- Model Locator by RSSI
 -- Offer Shmuely (based on code from Scott Bauer 6/21/2015)
 -- Date: 2022-2024
--- ver: 0.5
-local app_ver = "0.5"
+-- ver: 0.6
+local app_ver = "0.6"
 
 -- This widget help to find a lost/crashed model based on the RSSI (if still available)
 -- The widget produce audio representation (vario-meter style) of the RSSI from the lost model
