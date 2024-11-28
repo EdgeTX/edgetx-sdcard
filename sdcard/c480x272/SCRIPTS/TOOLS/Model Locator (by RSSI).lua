@@ -41,6 +41,7 @@ local app_ver = "0.5"
 local delayMillis = 100
 local nextPlayTime = getTime()
 local img = bitmap.open("/SCRIPTS/TOOLS/Model Locator (by RSSI).png")
+local useHaptic = true
 
 --------------------------------------------------------------
 local function log(s)
@@ -106,7 +107,7 @@ local function getSignalValues()
     -- try expressLRS antenna 1
     local fieldinfo = getFieldInfo("1RSS")
     if fieldinfo then
-        local v = getValue(fieldinfo.id)
+        local v = getValue("1RSS")
         if v == 0 then
             v = -115
         end
@@ -164,11 +165,13 @@ local function main(event, touchState)
 
     
     lcd.drawText(3, 60, line2 or "", RED)
+    
     if txPower then
         lcd.drawText(3, 75, "Current TX Power: " .. tostring(txPower) .. "mW", (txPower == 25) and DARKGREEN or RED)
     end
-    
+
     lcd.drawText(10, LCD_H-22, line1, WHITE)
+    lcd.drawText(300, LCD_H-22, "[ENTER] to toggle haptic", WHITE)
 
     log("signalValue:" .. signalValue .. ", signalMin: " .. signalMin .. ", signalMax: " .. signalMax)
 
@@ -176,8 +179,7 @@ local function main(event, touchState)
     lcd.setColor(CUSTOM_COLOR, getRangeColor(signalPercent, 0, 100))
 
     -- draw current value
-    lcd.drawNumber(40, 100, signalValue, XXLSIZE + CUSTOM_COLOR)
-    lcd.drawText(130, 140, "db", 0 + CUSTOM_COLOR)
+    lcd.drawText(3, 90, tostring(signalValue) .. "db", XXLSIZE + CUSTOM_COLOR)
 
     -- draw main bar
     local xMin = 10
@@ -192,9 +194,17 @@ local function main(event, touchState)
         lcd.drawFilledRectangle(xx, yMin - h, 15, h, CUSTOM_COLOR)
     end
 
+    -- toggle haptic
+    if event == EVT_VIRTUAL_ENTER then
+        useHaptic = not useHaptic
+    end
+
     -- beep
     if getTime() >= nextPlayTime then
         playFile("/SCRIPTS/TOOLS/Model Locator (by RSSI).wav")
+        if useHaptic then
+            playHaptic(7, 0, 1)
+        end
         nextPlayTime = getTime() + delayMillis - signalPercent
     end
 
