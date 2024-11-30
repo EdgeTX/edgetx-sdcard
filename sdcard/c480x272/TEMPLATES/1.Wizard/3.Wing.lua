@@ -16,8 +16,8 @@
 ---- #########################################################################
 
 -- Author: Offer Shmuely
--- Date: 2023
--- version: 1.1
+-- Date: 2023-2024
+-- version: 1.3
 
 local VALUE = 0
 local COMBO = 1
@@ -380,8 +380,12 @@ local function runConfigSummary(event)
         drawNextLine("Arm switch", nil, switchName)
     end
 
-    drawNextLine("Dual Rate", nil, ElevronFields.is_dual_rate.avail_values[1 + ElevronFields.is_dual_rate.value])
-
+    drawNextLine("Dual Rate", nil, 
+        ElevronFields.is_dual_rate.avail_values[1 + ElevronFields.is_dual_rate.value] ..
+          (ElevronFields.is_dual_rate.value == 1 and
+            " (" .. ElevronFields.dr_switch.avail_values[1 + ElevronFields.dr_switch.value] .. ")" or 
+            "")
+    )
 
     lcd.drawFilledRectangle(60-10, 250-2, 240, 25, YELLOW)
     lcd.drawText(60, 250, "Hold [Enter] to apply changes...", COLOR_THEME_PRIMARY1)
@@ -444,14 +448,15 @@ local function createModel(event)
     -- expo
     local expoVal = ElevronFields.expo.value
     local is_dual_rate = (ElevronFields.is_dual_rate.value == 1)
+    local dr_switch = ElevronFields.dr_switch.avail_values[1 + ElevronFields.dr_switch.value]
     if (is_dual_rate) then
-        updateInputLine(defaultChannel_0_AIL, 0, expoVal, 100, "SC" .. CHAR_UP)
-        updateInputLine(defaultChannel_0_AIL, 1, expoVal, 75 , "SC-")
-        updateInputLine(defaultChannel_0_AIL, 2, expoVal, 50 , "SC" .. CHAR_DOWN)
+        updateInputLine(defaultChannel_0_AIL, 0, expoVal, 100, dr_switch .. CHAR_UP)
+        updateInputLine(defaultChannel_0_AIL, 1, expoVal, 75 , dr_switch .. "-")
+        updateInputLine(defaultChannel_0_AIL, 2, expoVal, 50 , dr_switch .. CHAR_DOWN)
 
-        updateInputLine(defaultChannel_0_ELE, 0, expoVal, 100, "SC" .. CHAR_UP)
-        updateInputLine(defaultChannel_0_ELE, 1, expoVal, 75 , "SC-")
-        updateInputLine(defaultChannel_0_ELE, 2, expoVal, 50 , "SC" .. CHAR_DOWN)
+        updateInputLine(defaultChannel_0_ELE, 0, expoVal, 100, dr_switch .. CHAR_UP)
+        updateInputLine(defaultChannel_0_ELE, 1, expoVal, 75 , dr_switch .. "-")
+        updateInputLine(defaultChannel_0_ELE, 2, expoVal, 50 , dr_switch .. CHAR_DOWN)
     else
         updateInputLine(defaultChannel_0_AIL, 0, expoVal, 100, nil)
         updateInputLine(defaultChannel_0_ELE, 0, expoVal, 100, nil)
