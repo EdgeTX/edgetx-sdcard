@@ -39,9 +39,11 @@ local app_ver = "0.6"
 --    triangulate the two lines, and it will be :-)
 
 local delayMillis = 100
+local targetTXPower = 25
 local nextPlayTime = getTime()
 local img = bitmap.open("/SCRIPTS/TOOLS/Model Locator (by RSSI).png")
-local useHaptic = true
+local useHaptic = false
+
 
 --------------------------------------------------------------
 local function log(s)
@@ -111,7 +113,7 @@ local function getSignalValues()
         if v == 0 then
             v = -115
         end
-        return v, -115, 20, txPowerValue, "Using signal: elrs 1RSS", "Set tx power to 25mW non dynamic"
+        return v, -115, 20, txPowerValue, "Using signal: elrs 1RSS", "Set TX Power to 25mW Non-Dynamic"
     end
 
     -- try expressLRS antenna 2
@@ -121,7 +123,7 @@ local function getSignalValues()
         if v == 0 then
             v = -115
         end
-        return v, -115, 20, txPowerValue, "Using signal: elrs 2RSS", "Set tx power to 25mW non dynamic"
+        return v, -115, 20, txPowerValue, "Using signal: elrs 2RSS", "Set TX Power to 25mW Non-Dynamic"
     end
 
     ---- try UNI-ACSST firmware VFR
@@ -163,11 +165,12 @@ local function main(event, touchState)
         return 0
     end
 
-    
-    lcd.drawText(3, 60, line2 or "", RED)
-    
     if txPower then
-        lcd.drawText(3, 75, "Current TX Power: " .. tostring(txPower) .. "mW", (txPower == 25) and DARKGREEN or RED)
+        lcd.drawText(3, 60, "Current TX Power: " .. tostring(txPower) .. "mW", (txPower == targetTXPower) and DARKGREEN or RED)
+
+        if txPower ~= targetTXPower then
+            lcd.drawText(3, 75, line2 or "", RED + BLINK)
+        end
     end
 
     lcd.drawText(10, LCD_H-22, line1, WHITE)
