@@ -44,7 +44,6 @@ local nextPlayTime = getTime()
 local img = bitmap.open("/SCRIPTS/TOOLS/Model Locator (by RSSI).png")
 local useHaptic = false
 
-
 --------------------------------------------------------------
 local function log(s)
   -- print("locator: " .. s)
@@ -113,7 +112,7 @@ local function getSignalValues()
         if v == 0 then
             v = -115
         end
-        return v, -115, 20, txPowerValue, "Using signal: elrs 1RSS", "Set TX Power to 25mW Non-Dynamic"
+        return v, -115, 20, txPowerValue, "Using signal: ELRS 1RSS", "Set TX Power to 25mW Non-Dynamic"
     end
 
     -- try expressLRS antenna 2
@@ -123,7 +122,7 @@ local function getSignalValues()
         if v == 0 then
             v = -115
         end
-        return v, -115, 20, txPowerValue, "Using signal: elrs 2RSS", "Set TX Power to 25mW Non-Dynamic"
+        return v, -115, 20, txPowerValue, "Using signal: ELRS 2RSS", "Set TX Power to 25mW Non-Dynamic"
     end
 
     ---- try UNI-ACSST firmware VFR
