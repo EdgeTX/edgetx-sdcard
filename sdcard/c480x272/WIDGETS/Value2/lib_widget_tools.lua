@@ -17,6 +17,7 @@ local FONT_8 = 0 -- Default 8px
 local FONT_6 = SMLSIZE -- 6px
 
 local FONT_LIST = {FONT_6, FONT_8, FONT_12, FONT_16, FONT_38}
+M.FONT_LIST = {FONT_6, FONT_8, FONT_12, FONT_16, FONT_38}
 
 ---------------------------------------------------------------------------------------------------
 local function log(fmt, ...)
@@ -106,6 +107,11 @@ end
 ---------------------------------------------------------------------------------------------------
 
 function M.isTelemetryAvailable()
+    local is_telem = getRSSI()
+    return is_telem > 0
+end
+
+function M.isTelemetryAvailableOld()
     -- select telemetry source
     if not M.tele_src_id then
         --log("select telemetry source")
@@ -151,7 +157,6 @@ end
 -- on event detection, the function onTelemetryResetEvent() will be trigger
 --
 function M.detectResetEvent(wgt, callback_onTelemetryResetEvent)
-
     local currMinRSSI = getValue('RSSI-')
     if (currMinRSSI == nil) then
         log("telemetry reset event: can not be calculated")
@@ -178,72 +183,88 @@ function M.detectResetEvent(wgt, callback_onTelemetryResetEvent)
 end
 
 ---------------------------------------------------------------------------------------------------
-function M.getSensorPrecession(sensorName)
 
+function M.getSensorInfoByName(sensorName)
+    local sensors = {}
     for i=0, 30, 1 do
+        local s1 = {}
         local s2 = model.getSensor(i)
-        --type (number) 0 = custom, 1 = calculated
-        --name (string) Name
-        --unit (number) See list of units in the appendix of the OpenTX Lua Reference Guide
-        --prec (number) Number of decimals
-        --id (number) Only custom sensors
-        --instance (number) Only custom sensors
-        --formula (number) Only calculated sensors. 0 = Add etc. see list of formula choices in Companion popup
 
-        --log("getSensorPrecession: %d. name: %s, unit: %s , prec: %s , id: %s , instance: %s ", i, s2.name, s2.unit, s2.prec, s2.id, s2.instance)
+        --type (number) 0 = custom, 1 = calculated
+        s1.type = s2.type
+        --name (string) Name
+        s1.name = s2.name
+        --unit (number) See list of units in the appendix of the OpenTX Lua Reference Guide
+        s1.unit = s2.unit
+        --prec (number) Number of decimals
+        s1.prec = s2.prec
+        --id (number) Only custom sensors
+        s1.id = s2.id
+        --instance (number) Only custom sensors
+        s1.instance = s2.instance
+        --formula (number) Only calculated sensors. 0 = Add etc. see list of formula choices in Companion popup
+        s1.formula = s2.formula
+
+        log("getSensorInfo: %d. name: %s, unit: %s , prec: %s , id: %s , instance: %s ", i, s2.name, s2.unit, s2.prec, s2.id, s2.instance)
 
         if s2.name == sensorName then
-            return s2.prec
+            return s1
         end
     end
 
-    return -1
+    return nil
+ end
+
+ function M.getSensorPrecession(sensorName)
+    local sensorInfo = M.getSensorInfoByName(sensorName)
+    if (sensorInfo == nil) then
+        log("getSensorPrecession: not found sensor [%s]", sensorName)
+        return -1
+    end
+
+    log("getSensorPrecession: name: %s, prec: %s , id: %s", sensorInfo.name, sensorInfo.prec, sensorInfo.id)
+    return sensorInfo.prec
 end
 
---function M.getSensors()
---    local sensors = {}
---    for i=0, 30, 1 do
---        local s1 = {}
---        local s2 = model.getSensor(i)
---
---        --type (number) 0 = custom, 1 = calculated
---        s1.type = s2.type
---        --name (string) Name
---        s1.name = s2.name
---        --unit (number) See list of units in the appendix of the OpenTX Lua Reference Guide
---        s1.unit = s2.unit
---        --prec (number) Number of decimals
---        s1.prec = s2.prec
---        --id (number) Only custom sensors
---        s1.id = s2.id
---        --instance (number) Only custom sensors
---        s1.instance = s2.instance
---        --formula (number) Only calculated sensors. 0 = Add etc. see list of formula choices in Companion popup
---        s1.formula = s2.formula
---
---        s1.appendix
---
---        log("getSensorPrecession: %d. name: %s, unit: %s , prec: %s , id: %s , instance: %s ", i, s2.name, s2.unit, s2.prec, s2.id, s2.instance)
---
---        if s2.name == sensorName then
---            return s2.prec
---        end
---    end
---
---    return -1
---end
+
+-- function M.getSensorId(sensorName)
+--     local sensorInfo = M.getSensorInfoByName(sensorName)
+--     if (sensorInfo == nil) then
+--         log("getSensorId: not found sensor [%s]", sensorName)
+--         return -1
+--     end
+
+--     log("getSensorId: name: %s, prec: %s , id: %s", sensorInfo.name, sensorInfo.prec, sensorInfo.id)
+--     return sensorInfo.id
+-- end
+
+
+function M.isSensorExist(sensorName)
+    local sensorInfo = M.getSensorInfoByName(sensorName)
+    local is_exist = (sensorInfo ~= nil)
+    log("getSensorInfo: [%s] is_exist: %s", sensorName, is_exist)
+    return is_exist
+ end
 
 ---------------------------------------------------------------------------------------------------
 -- workaround for bug in getFiledInfo()  -- ???? why?
 function M.cleanInvalidCharFromGetFiledInfo(sourceName)
-
-    if string.byte(string.sub(sourceName, 1, 1)) > 127 then
+     if string.byte(string.sub(sourceName, 1, 1)) > 127 then
         sourceName = string.sub(sourceName, 2, -1)
     end
     if string.byte(string.sub(sourceName, 1, 1)) > 127 then
         sourceName = string.sub(sourceName, 2, -1)
     end
+    return sourceName
+end
 
+-- workaround for bug in getSourceName()
+function M.getSourceNameCleaned(source)
+    local sourceName = getSourceName(source)
+    if (sourceName == nil) then
+        return "N/A"
+    end
+    local sourceName = M.cleanInvalidCharFromGetFiledInfo(sourceName)
     return sourceName
 end
 
@@ -277,6 +298,36 @@ function M.lcdSizeTextFixed(txt, font_size)
         v_offset = -3
     end
     return ts_w, ts_h +2*v_offset, v_offset
+end
+
+function M.getFontSize(wgt, txt, max_w, max_h, max_font_size)
+    local w, h, v_offset = M.lcdSizeTextFixed(txt, FONT_38)
+    if w <= max_w and h <= max_h then
+        -- log("[%s] FONT_38 %dx%d", txt, w, h, txt)
+        return FONT_38, w, h, v_offset
+    end
+
+    w, h, v_offset = M.lcdSizeTextFixed(txt, FONT_16)
+    if w <= max_w and h <= max_h then
+        -- log("[%s] FONT_16 %dx%d", txt, w, h, txt)
+        return FONT_16, w, h, v_offset
+    end
+
+    w, h, v_offset = M.lcdSizeTextFixed(txt, FONT_12)
+    if w <= max_w and h <= max_h then
+        -- log("[%s] FONT_12 %dx%d", txt, w, h, txt)
+        return FONT_12, w, h, v_offset
+    end
+
+    w, h, v_offset = M.lcdSizeTextFixed(txt, FONT_8)
+    if w <= max_w and h <= max_h then
+        -- log("[%s] FONT_8 %dx%d", txt, w, h, txt)
+        return FONT_8, w, h, v_offset
+    end
+
+    w, h, v_offset = M.lcdSizeTextFixed(txt, FONT_6)
+    -- log("[%s] FONT_6 %dx%d", txt, w, h, txt)
+    return FONT_6, w, h, v_offset
 end
 
 ------------------------------------------------------------------------------------------------------
@@ -318,6 +369,33 @@ function M.drawBadgedTextCenter(txt, txtX, txtY, font_size, text_color, bg_color
     --lcd.drawLine(txtX, txtY-20, txtX, txtY+20, SOLID, RED) -- dbg
 end
 
+------------------------------------------------------------------------------------------------------
+-- usage:
+--log("bbb----------------------------------------------------------")
+--wgt.tools.heap_dump(wgt, 0, 60)
+--log("ccc----------------------------------------------------------")
+function M.heap_dump(tbl, indent, max_dept)
+    local spaces = string.rep("  ", indent)
+    if max_dept == 0 then
+        log(spaces .. "---- max dept ----")
+        return
+    end
+    max_dept = max_dept -1
+    indent = indent or 0
+
+    for key, value in pairs(tbl) do
+        if key ~= "_G" then
+            if type(value) == "table" then
+                --log(spaces .. key .. " (table) = {")
+                log(spaces .. key .. " = {")
+                M.heap_dump(value, indent + 1, max_dept)
+                log(spaces .. "}")
+            else
+                log(spaces .. key .. " = " .. tostring(value))
+            end
+        end
+    end
+end
 ------------------------------------------------------------------------------------------------------
 
 return M

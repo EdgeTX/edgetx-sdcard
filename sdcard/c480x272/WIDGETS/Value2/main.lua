@@ -1,7 +1,7 @@
 --[[
 #########################################################################
 #                                                                       #
-# Telemetry Widget script for FrSky Horus/RadioMaster TX16s             #
+# Telemetry Widget script for radiomaster TX16s                         #
 # Copyright "Offer Shmuely"                                             #
 #                                                                       #
 # License GPLv2: http://www.gnu.org/licenses/gpl-2.0.html               #
@@ -27,15 +27,14 @@
 
 
 -- Author : Offer Shmuely
--- Date: 2021-2023
+-- Date: 2021-2024
 local app_name = "Value2"
-local app_ver = "0.8"
+local app_ver = "0.9"
 
 
 -- imports
 local LibLogClass = loadScript("/WIDGETS/" .. app_name .. "/lib_log.lua", "tcd")
 local LibWidgetToolsClass = loadScript("/WIDGETS/" .. app_name .. "/lib_widget_tools.lua", "tcd")
---local WidgetTransitionClass = loadScript("/WIDGETS/" .. app_name .. "/lib_widget_transition.lua", "tcd")
 local UtilsSensorsClass = loadScript("/WIDGETS/" .. app_name .. "/lib_sensors.lua", "tcd")
 
 local m_log = LibLogClass(app_name, "/WIDGETS/" .. app_name)
@@ -47,43 +46,8 @@ local FONT_12 = MIDSIZE -- 12px
 local FONT_8 = 0 -- Default 8px
 local FONT_6 = SMLSIZE -- 6px
 
--- for backward compatibility
---local function getSensorId(sensorName)
---    for i=0, 30, 1 do
---        local s2 = model.getSensor(i)
---        --if s2.name == sensorName then
---            local sensor_id = s2.id
---            print(string.format("getSensorPrecession: a id: %d", sensor_id))
---            if sensor_id > 61440 then
---                sensor_id = sensor_id - 61440 --F000
---            end
---            print(string.format("getSensorPrecession: b id: %d", sensor_id))
---            local instance_hex_value = s2.instance
---            local instance_dec_value = tonumber(instance_hex_value, 16)
---            print(string.format("getSensorPrecession: c s2.instance: %d --> %d", s2.instance, instance_dec_value))
---            sensor_id = sensor_id + instance_dec_value
---            print(string.format("getSensorPrecession: d sensor_id: %d", sensor_id))
---            print(string.format("getSensorPrecession: %d. name: %s, unit: %s , prec: %s , id: %s , instance: %s, sensor_id: %s ", i, s2.name, s2.unit, s2.prec, s2.id, s2.instance, sensor_id))
---            --return sensor_id
---        --end
---    end
---    return -1
---end
-
--- for backward compatibility
-local function getSensorId(key)
-    local OS_SWITCH_ID = {
-        ["2.7"]  = {RSSI=253, CELS=0  , TxBt=243, RxBt=256},
-        ["2.8"]  = {RSSI=261, CELS=300, TxBt=251, RxBt=0  },
-        ["2.9"]  = {RSSI=294, CELS=121, TxBt=251, RxBt=291},
-        ["2.10"] = {RSSI=0  , CELS=0  , TxBt=0  , RxBt=0  },
-    }
-    local ver, radio, maj, minor, rev, osname = getVersion()
-    local os1 = string.format("%d.%d", maj, minor)
-    return OS_SWITCH_ID[os1][key]
-end
-
-local DEFAULT_SOURCE = getSensorId("RxBt")
+local lib_sensors = loadScript("/WIDGETS/" .. app_name .. "/lib_sensors.lua", "tcd")(m_log,app_name)
+local DEFAULT_SOURCE = lib_sensors.findSourceId( {"RQLY", "VFR", "cell","cels","RSSI","RxBt"})
 
 local options = {
     { "Source", SOURCE, DEFAULT_SOURCE },
@@ -119,14 +83,13 @@ local function update(wgt, options)
     --wgt.transitions = WidgetTransitionClass(m_log,app_name)
     wgt.utils_sensors = UtilsSensorsClass(m_log,app_name)
 
-    -- ***
     wgt.fieldinfo = getFieldInfo(wgt.options.Source)
-    wgt.source_name = getSourceName(wgt.options.Source)
-    -- workaround for bug in getFiledInfo()
+    wgt.source_name = wgt.tools.getSourceNameCleaned(wgt.options.Source)
     if (wgt.source_name == nil) then
         wgt.source_name = "N/A"
     end
-    wgt.source_name = wgt.tools.cleanInvalidCharFromGetFiledInfo(wgt.source_name)
+
+    wgt.isTypeSensor = false
 
     if (wgt.fieldinfo == nil) then
         log("getFieldInfo(%s)==nil", wgt.options.Source)
@@ -162,6 +125,9 @@ local function update(wgt, options)
         --log("source_min_id: %d, source_max_id: %d", wgt.source_min_id, wgt.source_max_id)
     end
 
+
+    wgt.isTypeSensor = wgt.tools.isSensorExist(wgt.source_name)
+
 end
 
 local function create(zone, options)
@@ -174,8 +140,8 @@ local function create(zone, options)
 end
 
 local function prettyPrintNone(val, precession)
-    log("prettyPrintNone - val:%s", val)
-    log("prettyPrintNone - precession:%s", precession)
+    -- log("prettyPrintNone - val:%s", val)
+    -- log("prettyPrintNone - precession:%s", precession)
     if val == nil then
         return "N/A (nil)"
     end
@@ -205,50 +171,20 @@ local function getFontSizeHeader(wgt, txt, max_h)
     local font_size
     if max_h > 115 then
         font_size = FONT_16
-        log("getFontSizeHeader: [%s] FONT_16 h: %d", txt, max_h)
+        -- log("getFontSizeHeader: [%s] FONT_16 h: %d", txt, max_h)
     elseif max_h > 80 then
         font_size = FONT_12
-        log("getFontSizeHeader: [%s] FONT_12 h: %d", txt, max_h)
+        -- log("getFontSizeHeader: [%s] FONT_12 h: %d", txt, max_h)
     elseif max_h > 50 then
         font_size = FONT_8
-        log("getFontSizeHeader: [%s] FONT_8 h: %d", txt, max_h)
+        -- log("getFontSizeHeader: [%s] FONT_8 h: %d", txt, max_h)
     else
         font_size = FONT_6
-        log("getFontSizeHeader: [%s] FONT_6 h: %d", txt, max_h)
+        -- log("getFontSizeHeader: [%s] FONT_6 h: %d", txt, max_h)
     end
 
     local w, h, v_offset = wgt.tools.lcdSizeTextFixed(txt, font_size)
     return font_size, w, h, v_offset
-end
-
-local function getFontSize(wgt, txt, max_w, max_h, max_font_size)
-    local w, h, v_offset = wgt.tools.lcdSizeTextFixed(txt, FONT_38)
-    if w <= max_w and h <= max_h then
-        log("[%s] FONT_38 %dx%d", txt, w, h, txt)
-        return FONT_38, w, h, v_offset
-    end
-
-    w, h, v_offset = wgt.tools.lcdSizeTextFixed(txt, FONT_16)
-    if w <= max_w and h <= max_h then
-        log("[%s] FONT_16 %dx%d", txt, w, h, txt)
-        return FONT_16, w, h, v_offset
-    end
-
-    w, h, v_offset = wgt.tools.lcdSizeTextFixed(txt, FONT_12)
-    if w <= max_w and h <= max_h then
-        log("[%s] FONT_12 %dx%d", txt, w, h, txt)
-        return FONT_12, w, h, v_offset
-    end
-
-    w, h, v_offset = wgt.tools.lcdSizeTextFixed(txt, FONT_8)
-    if w <= max_w and h <= max_h then
-        log("[%s] FONT_8 %dx%d", txt, w, h, txt)
-        return FONT_8, w, h, v_offset
-    end
-
-    w, h, v_offset = wgt.tools.lcdSizeTextFixed(txt, FONT_6)
-    log("[%s] FONT_6 %dx%d", txt, w, h, txt)
-    return FONT_6, w, h, v_offset
 end
 
 local function getFontSizeMinMax(wgt, txt, max_w, max_h, max_font_size)
@@ -265,14 +201,15 @@ local function getFontSizeMinMax(wgt, txt, max_w, max_h, max_font_size)
 end
 
 local function getFontSizePrint(wgt, txt, max_w, max_h)
-    local fs, w, h, v_correction = getFontSize(wgt, txt, max_w, max_h)
+    local fs, w, h, v_correction = wgt.tools.getFontSize(wgt, txt, max_w, max_h)
     log("getFontSize: [%s] - fs: %d, w: %d, h: %d", txt, fs, w, h)
     return fs, w, h, v_correction
 end
 
 local function calcWidgetValues(wgt)
-    if (wgt.last_value ~= nil and wgt.tools.isTelemetryAvailable() == false) then
-        log("overriding value with last_value: %s", wgt.last_value)
+    if (wgt.isTypeSensor and wgt.last_value ~= nil and wgt.tools.isTelemetryAvailable() == false) then
+    -- if (wgt.last_value ~= nil and wgt.tools.isTelemetryAvailable() == false) then
+            -- log("overriding value with last_value: %s", wgt.last_value)
         return
     end
 
@@ -343,7 +280,7 @@ local function refresh_widget_with_telem(wgt)
     -- draw value
     --local str_v = string.format("%s%s", prettyPrintNone(wgt.last_value, wgt.precession), wgt.unit)
     local str_v = prettyPrintNone(wgt.last_value, wgt.precession)
-    local font_size_v, ts_v_w, ts_v_h, ts_v_v_offset = getFontSize(wgt, str_v, wgt.zone.w, wgt.zone.h - ts_h_h - 0)
+    local font_size_v, ts_v_w, ts_v_h, ts_v_v_offset = wgt.tools.getFontSize(wgt, str_v, wgt.zone.w, wgt.zone.h - ts_h_h - 0)
 
     local dx = (wgt.zone.w - ts_v_w) / 2
     lcd.drawText     (wgt.zone.x + dx, wgt.zone.y + last_y + ts_v_v_offset, str_v, font_size_v + wgt.options.TextColor)
@@ -379,10 +316,7 @@ local function refresh_widget_with_telem(wgt)
     end
 
     local dx = (wgt.zone.w - ts_mm_w) / 2
-    lcd.setColor(CUSTOM_COLOR, lcd.RGB(0x8B8D8B))
-    --lcd.drawFilledRectangle(wgt.zone.x + dx, wgt.zone.y + wgt.zone.h - ts_h3, ts_w3, ts_h3, LIGHTGREY)
-    --wgt.tools.drawBadgedText(val_str_minmax, wgt.zone.x + dx, wgt.zone.y + wgt.zone.h - ts_h3, font_size_minmax, wgt.options.TextColor, CUSTOM_COLOR)
-    wgt.tools.drawBadgedText(str_minmax, wgt.zone.x + dx, last_y, font_size_minmax, wgt.options.TextColor, CUSTOM_COLOR)
+    wgt.tools.drawBadgedText(str_minmax, wgt.zone.x + dx, last_y, font_size_minmax, wgt.options.TextColor, lcd.RGB(0x8B8D8B))
     --lcd.drawText(wgt.zone.x + dx, wgt.zone.y + wgt.zone.h - ts_h3, val_str_minmax, font_size_minmax + wgt.options.TextColor)
 end
 
@@ -390,13 +324,14 @@ local function refresh_widget_no_telem(wgt)
     -- end of flight
 
     local last_y = 1
-    lcd.setColor(CUSTOM_COLOR, lcd.RGB(0xA4A5A4))
+    local valueColor = (wgt.isTypeSensor) and lcd.RGB(0xA4A5A4) or wgt.options.TextColor
+    local bkgColor = (wgt.isTypeSensor) and lcd.RGB(0xA4A5A4) or wgt.options.TextColor
 
     -- draw header
     local header_txt = wgt.source_name .. " " .. wgt.options.Suffix
     local font_size_header, ts_h_w, ts_h_h, v_offset = getFontSizeHeader(wgt, header_txt, wgt.zone.h)
     log("val: font_size_header: %d, ts_h_h: %d, lastY: %d", wgt.zone.y, ts_h_h, last_y)
-    lcd.drawText(wgt.zone.x + 5, wgt.zone.y + last_y + v_offset, header_txt, font_size_header + BLACK)
+    lcd.drawText(wgt.zone.x + 5, wgt.zone.y + last_y + v_offset, header_txt, font_size_header + wgt.options.TextColor)
     --lcd.drawRectangle(wgt.zone.x, wgt.zone.y + last_y, ts_h_w, ts_h_h, BLUE)
     last_y = last_y + ts_h_h + 3
 
@@ -409,42 +344,44 @@ local function refresh_widget_no_telem(wgt)
     if (wgt.options.Show_MinMax == 1) then
         if (wgt.last_value_min ~= -1 and wgt.last_value_max ~= -1) and (wgt.zone.h > 50) then
             val_str_mm = string.format("%s..%s %s", prettyPrintNone(wgt.last_value_min, wgt.precession), prettyPrintNone(wgt.last_value_max, wgt.precession), wgt.unit)
-            font_size_mm, ts_mm_w, ts_mm_h, v_offset = getFontSize(wgt, val_str_mm, wgt.zone.w, wgt.zone.h - last_y)
-            --local dx = (wgt.zone.w - ts_mm_w) / 2
-            --if (ts_mm_h <= wgt.zone.h - last_y) and (ts_mm_w <= wgt.zone.w) then
-            --    wgt.tools.drawBadgedText(val_str_mm, wgt.zone.x + dx - 5, wgt.zone.h - ts_mm_h, font_size_mm, wgt.options.TextColor, CUSTOM_COLOR)
-            --    --log("wgt.zone.y: %d, wgt.zone.h: %d, ts_mm_h: %d", wgt.zone.y,wgt.zone.h,ts_mm_h)
-            --end
+            font_size_mm, ts_mm_w, ts_mm_h, v_offset = wgt.tools.getFontSize(wgt, val_str_mm, wgt.zone.w, wgt.zone.h - last_y)
+            local dx = (wgt.zone.w - ts_mm_w) / 2
+            if (ts_mm_h <= wgt.zone.h - last_y) and (ts_mm_w <= wgt.zone.w) then
+               wgt.tools.drawBadgedText(val_str_mm, wgt.zone.x + dx - 5, wgt.zone.h - ts_mm_h +v_offset, font_size_mm, wgt.options.TextColor, bkgColor)
+               --log("wgt.zone.y: %d, wgt.zone.h: %d, ts_mm_h: %d", wgt.zone.y,wgt.zone.h,ts_mm_h)
+            end
         end
     end
 
     -- draw value
     --local str_v = string.format("%s %s", prettyPrintNone(wgt.last_value, wgt.precession), wgt.unit)
     local str_v = prettyPrintNone(wgt.last_value, wgt.precession)
-    local font_size_v, ts_v_w, ts_v_h, v_offset = getFontSize(wgt, str_v, wgt.zone.w, wgt.zone.h - ts_h_h - ts_mm_h)
+    local font_size_v, ts_v_w, ts_v_h, v_offset = wgt.tools.getFontSize(wgt, str_v, wgt.zone.w, wgt.zone.h - ts_h_h -(ts_mm_h-v_offset))
+    -- log("val: wgt.zone.h:%d, ts_h_h:%d, (ts_mm_h:%d, v_offset: %d)", wgt.zone.h, ts_h_h,ts_mm_h,v_offset)
     local dx = (wgt.zone.w - ts_v_w) / 2
-    lcd.drawText(wgt.zone.x + dx, wgt.zone.y + last_y + v_offset, str_v, font_size_v + CUSTOM_COLOR)
+    lcd.drawText(wgt.zone.x + dx, wgt.zone.y + last_y + v_offset, str_v, font_size_v + valueColor)
     --lcd.drawRectangle(wgt.zone.x, wgt.zone.y + last_y, ts_v_w, ts_v_h, BLUE)
 
     -- draw unit
     local font_size_u = wgt.tools.getFontSizeRelative(font_size_v, -2)
     local ts_u_w, ts_u_h, ts_u_v_offset = wgt.tools.lcdSizeTextFixed(wgt.unit, font_size_u)
-    lcd.drawText     (wgt.zone.x + dx + ts_v_w, wgt.zone.y + last_y + (ts_v_h - ts_u_h) + ts_u_v_offset, wgt.unit, font_size_u + CUSTOM_COLOR)
+    lcd.drawText     (wgt.zone.x + dx + ts_v_w, wgt.zone.y + last_y + (ts_v_h - ts_u_h) + ts_u_v_offset, wgt.unit, font_size_u + valueColor)
     --lcd.drawRectangle(wgt.zone.x + dx + ts_v_w, wgt.zone.y + last_y + (ts_v_h - ts_u_h)                , ts_u_w, ts_u_h, BLUE)
 
-    last_y = last_y + ts_v_h + 5
+    -- last_y = last_y + ts_v_h + 5
 
-
-    -- draw min max
-    if (wgt.options.Show_MinMax == 1) then
-        local dx = (wgt.zone.w - ts_mm_w) / 2
-        if (wgt.last_value_min ~= -1 and wgt.last_value_max ~= -1) and (wgt.zone.h > 50) then
-            if (ts_mm_h <= wgt.zone.h - last_y) and (ts_mm_w <= wgt.zone.w) then
-                wgt.tools.drawBadgedText(val_str_mm, wgt.zone.x + dx - 5, wgt.zone.y + last_y, font_size_mm, wgt.options.TextColor, CUSTOM_COLOR)
-                --log("wgt.zone.y: %d, wgt.zone.h: %d, ts_mm_h: %d", wgt.zone.y,wgt.zone.h,ts_mm_h)
-            end
-        end
-    end
+    -- -- draw min max
+    -- if (wgt.options.Show_MinMax == 1) then
+    --     local dx = (wgt.zone.w - ts_mm_w) / 2
+    --     log("last_value_min: %d, last_value_max: %d, wgt.zone.h: %d", wgt.last_value_min,wgt.last_value_max,wgt.zone.h)
+    --     if (wgt.last_value_min ~= -1 and wgt.last_value_max ~= -1) and (wgt.zone.h > 50) then
+    --         log("aaa222 if (ts_mm_h:%d <= wgt.zone.h:%d - last_y:%d)", ts_mm_h, wgt.zone.h, last_y)
+    --         if (ts_mm_h <= wgt.zone.h - last_y) and (ts_mm_w <= wgt.zone.w) then
+    --             wgt.tools.drawBadgedText(val_str_mm, wgt.zone.x + dx - 5, wgt.zone.y + last_y, font_size_mm, wgt.options.TextColor, bkgColor)
+    --             --log("wgt.zone.y: %d, wgt.zone.h: %d, ts_mm_h: %d", wgt.zone.y,wgt.zone.h,ts_mm_h)
+    --         end
+    --     end
+    -- end
 
 end
 
@@ -466,6 +403,7 @@ local function refresh(wgt, event, touchState)
 
     -- widget load (debugging)
     -- lcd.drawText(wgt.zone.x + wgt.zone.w, wgt.zone.y, string.format("load: %d%%", getUsage()), FONT_6 + GREY + RIGHT) -- ???
+    -- lcd.drawText(wgt.zone.x + wgt.zone.w, wgt.zone.y+20, string.format("isTypeSensor: %s", wgt.isTypeSensor), FONT_6 + GREY + RIGHT) -- ???
 end
 
 return { name = app_name, options = options, create = create, update = update, background = background, refresh = refresh }
