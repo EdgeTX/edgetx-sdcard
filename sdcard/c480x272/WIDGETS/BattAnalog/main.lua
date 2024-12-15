@@ -1,7 +1,7 @@
 --[[
 #########################################################################
 #                                                                       #
-# Telemetry Widget script for radiomaster TX16s                         #
+# Telemetry Widget script for RadioMaster TX16S                         #
 # Copyright "Offer Shmuely"                                             #
 #                                                                       #
 # License GPLv2: http://www.gnu.org/licenses/gpl-2.0.html               #
@@ -46,7 +46,7 @@ local useLvgl = true
 local _options = {
     {"sensor"            , SOURCE, DEFAULT_SOURCE },
     {"batt_type"         , CHOICE, 1 , {"LiPo", "LiPo-HV (high voltage)", "Li-Ion"} },
-    {"cbCellCount"        , CHOICE, 1 , {"Auto Detection", "1 cell", "2 cell", "3 cell", "4 cell", "5 cell", "6 cell", "8 cell", "10 cell", "12 cell", "14 cell"} },
+    {"cbCellCount"       , CHOICE, 1 , {"Auto Detection", "1 cell", "2 cell", "3 cell", "4 cell", "5 cell", "6 cell", "8 cell", "10 cell", "12 cell", "14 cell"} },
     {"isTotalVoltage"    , BOOL  , 0      }, -- 0=Show as average Lipo cell level, 1=show the total voltage (voltage as is)
     {"color"             , COLOR , YELLOW },
 }
