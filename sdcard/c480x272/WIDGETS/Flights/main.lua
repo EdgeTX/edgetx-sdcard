@@ -97,7 +97,7 @@ local options = {
     --{ "arm_switch", SOURCE, DEFAULT_ARM_SWITCH_ID },
     { "arm_switch_id"       , SWITCH, DEFAULT_ARM_SWITCH_ID },
     { "motor_channel"       , SOURCE, DEFAULT_MOTOR_CHANNEL_ID },
-    { "heli_mode"           , BOOL, 0},
+    { "heli_mode"           , BOOL, 0},            -- ignore motor direction detection, and throttle position
     { "text_color"          , COLOR, YELLOW},--, COLOR_THEME_PRIMARY2 },
     { "min_flight_duration" , VALUE, default_flight_starting_duration, -30, 120 },
     { "enable_sounds"       , BOOL, 1},            -- 0=no sound, 1=play blip sound on increment & on flight end
@@ -114,7 +114,6 @@ local function translate(nam)
         enable_sounds = "Enable sounds",
         use_telemetry = "Use telemetry",
         auto_debug = "Auto debug",
-
     }
     return translations[nam]
 end
@@ -129,13 +128,10 @@ local function update(wgt, options)
     wgt.options = options
     wgt.use_telemetry = wgt.options.use_telemetry
     wgt.enable_sounds = wgt.options.enable_sounds
-    wgt.heli_mode = false -- ignore motor direction detection, and throttle position
-    -- for heli, if the motor-sw==switch-sw, then ignore motor direction detection
     wgt.heli_mode = wgt.options.heli_mode == 1
     if (wgt.options.arm_switch_id == wgt.options.motor_channel) then
         wgt.heli_mode = true
     end
-
 
     -- status
     wgt.status = {}
@@ -581,7 +577,7 @@ local function refresh(wgt, event, touchState)
         if (wgt.heli_mode == false) then
             lcd.drawText(wgt.zone.x + dx, wgt.zone.y + 50, string.format("%s - throttle (%s) (inv: %s)", ternary(wgt.status.motor_active), wgt.status.motor_channel_name, wgt.status.motor_channel_direction_inv), SMLSIZE)
         else
-            lcd.drawText(wgt.zone.x + dx, wgt.zone.y + 50, string.format("%s - heli mode arm (ignore throttle)", ternary(wgt.status.motor_active), wgt.status.motor_channel_name), SMLSIZE)
+            lcd.drawText(wgt.zone.x + dx, wgt.zone.y + 50, string.format("%s - heli mode arm (ignore throttle)", ternary(wgt.status.motor_active)), SMLSIZE)
         end
         lcd.drawText(wgt.zone.x + dx, wgt.zone.y + 65, string.format("timer: %.1f/%d", wgt.status.duration_passed / 1000, wgt.tools.getDurationMili(wgt.status.periodic1) / 1000), SMLSIZE)
         lcd.drawText(wgt.zone.x + dx, wgt.zone.y + 80, string.format("flight duration: %.1f", wgt.status.flight_duration), SMLSIZE)
@@ -606,4 +602,12 @@ local function refresh(wgt, event, touchState)
 
 end
 
-return { name = app_name, options = options, create = create, update = update, background = background, refresh = refresh, translate = translate }
+return {
+    name = app_name,
+    options = options,
+    create = create,
+    update = update,
+    background = background,
+    refresh = refresh,
+    translate = translate
+}
