@@ -117,7 +117,7 @@ local function run(event)
 
     local signalPercent = 100 * ((signalValue - signalMin) / (signalMax - signalMin))
 
-    lcd.drawText(0, 24, tostring(signalValue) .. "db", DBLSIZE)
+    lcd.drawText(0, 24, tostring(signalValue) .. "dB", DBLSIZE)
 
     -- draw main bar
     local xMin = 10
