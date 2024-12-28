@@ -118,23 +118,6 @@ local function getDxByStick(stk)
 end
 
 local function refresh(wgt, event, touchState)
-    local is_need_update = false
-
-    local dw = getDxByStick("ail")
-    wgt.batt_width = wgt.batt_width + dw
-    wgt.batt_width = math.max(10, math.min(480, wgt.batt_width))
-    is_need_update = is_need_update or (dw ~= 0)
-
-    local dh = getDxByStick("ele")
-    wgt.batt_height = wgt.batt_height - dh
-    wgt.batt_height = math.max(10, math.min(272, wgt.batt_height))
-    is_need_update = is_need_update or (dh ~= 0)
-
-    if (is_need_update == true) then
-        wgt.zone.w = wgt.batt_width
-        wgt.zone.h = wgt.batt_height
-        wgt.update_ui()
-    end
 
     wgt.refresh(event, touchState)
 end
