@@ -186,6 +186,10 @@ local function update(wgt, options)
         log(string.format("wgt.options.text_color (fixed): %s", wgt.options.text_color))
     end
 
+    local ver, radio, maj, minor, rev, osname = getVersion()
+    wgt.is_valid_ver = (maj == 2 and minor >= 11)
+
+
 end
 
 local function create(zone, options)
@@ -502,6 +506,12 @@ end
 local function refresh(wgt, event, touchState)
     if (wgt == nil) then log("refresh(nil)") return end
     if (wgt.options == nil) then log("refresh(wgt.options=nil)") return end
+
+    if wgt.is_valid_ver==false then
+        local err = "!! v2.11 !! \nneeded\n\nthis widget \nis supported only \non ver 2.11 and above"
+        lcd.drawText(0, 0, err, 0 + RED)
+        return
+    end
 
     background(wgt)
 
