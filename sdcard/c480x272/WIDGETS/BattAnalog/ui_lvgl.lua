@@ -232,7 +232,7 @@ local function layoutTextZoneNormal(batSize)
     sec_dh = ts_h + 5
     line_space = ts_h * 0
     sec_x = math.min(sec_x, wgt.zone.w -ts_w -space)
-    txtSizes.source = {y=wgt.zone.h +v_offset -space +line_space -sec_dh*3, visible=(function() return wgt.options.isTotalVoltage == 0 end), visible = true}
+    txtSizes.source = {y=wgt.zone.h +v_offset -space +line_space -sec_dh*3, visible=(function() return wgt.options.isTotalVoltage == 0 end)}
 
 
     -- vSec + cell count
