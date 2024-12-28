@@ -36,7 +36,7 @@
 -- Author : Offer Shmuely
 -- Date: 2021-2024
 local app_name = "BattAnalog"
-local app_ver = "1.1"
+local app_ver = "1.2"
 
 local CELL_DETECTION_TIME = 8
 local lib_sensors = loadScript("/WIDGETS/" .. app_name .. "/lib_sensors.lua", "tcd")(m_log,app_name)
@@ -87,6 +87,20 @@ local function update(wgt, options)
     wgt.batt_width = wgt.zone.w
     -- wgt.log("batt_11  width: " .. wgt.batt_width .. ", height: " .. wgt.batt_height)
 
+
+    local ver, radio, maj, minor, rev, osname = getVersion()
+    wgt.is_valid_ver = (maj == 2 and minor >= 11)
+    if wgt.is_valid_ver==false then
+        local lytIvalidVer = {
+            {
+                type=LVGL_DEF.type.LABEL, x=0, y=0, font=0,
+                text="!! this widget \nis supported only \non ver 2.11 and above",
+                color=RED
+            }
+        }
+        lvgl.build(lytIvalidVer)
+        return
+    end
 
     wgt.update_logic(wgt, options)
     wgt.update_ui()
