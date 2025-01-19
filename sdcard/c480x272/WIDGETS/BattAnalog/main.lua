@@ -36,7 +36,7 @@
 -- Author : Offer Shmuely
 -- Date: 2021-2024
 local app_name = "BattAnalog"
-local app_ver = "1.1"
+local app_ver = "1.2"
 
 local CELL_DETECTION_TIME = 8
 local lib_sensors = loadScript("/WIDGETS/" .. app_name .. "/lib_sensors.lua", "tcd")(m_log,app_name)
@@ -88,6 +88,20 @@ local function update(wgt, options)
     -- wgt.log("batt_11  width: " .. wgt.batt_width .. ", height: " .. wgt.batt_height)
 
 
+    local ver, radio, maj, minor, rev, osname = getVersion()
+    wgt.is_valid_ver = (maj == 2 and minor >= 11)
+    if wgt.is_valid_ver==false then
+        local lytIvalidVer = {
+            {
+                type=LVGL_DEF.type.LABEL, x=0, y=0, font=0,
+                text="!! this widget \nis supported only \non ver 2.11 and above",
+                color=RED
+            }
+        }
+        lvgl.build(lytIvalidVer)
+        return
+    end
+
     wgt.update_logic(wgt, options)
     wgt.update_ui()
 end
@@ -104,23 +118,6 @@ local function getDxByStick(stk)
 end
 
 local function refresh(wgt, event, touchState)
-    local is_need_update = false
-
-    local dw = getDxByStick("ail")
-    wgt.batt_width = wgt.batt_width + dw
-    wgt.batt_width = math.max(10, math.min(480, wgt.batt_width))
-    is_need_update = is_need_update or (dw ~= 0)
-
-    local dh = getDxByStick("ele")
-    wgt.batt_height = wgt.batt_height - dh
-    wgt.batt_height = math.max(10, math.min(272, wgt.batt_height))
-    is_need_update = is_need_update or (dh ~= 0)
-
-    if (is_need_update == true) then
-        wgt.zone.w = wgt.batt_width
-        wgt.zone.h = wgt.batt_height
-        wgt.update_ui()
-    end
 
     wgt.refresh(event, touchState)
 end
