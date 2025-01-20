@@ -1,3 +1,4 @@
+---- "TNS|Model Locator by RSSI|TNE"
 ---- #########################################################################
 ---- #                                                                       #
 ---- # Telemetry Widget script for FrSky Horus/Radio Master TX16s            #

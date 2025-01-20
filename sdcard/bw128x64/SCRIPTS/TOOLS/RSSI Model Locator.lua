@@ -1,3 +1,4 @@
+---- "TNS|Model Locator by RSSI|TNE"
 ---- #########################################################################
 ---- #                                                                       #
 ---- # Telemetry Widget script for b&w 128x64 radios                         #
