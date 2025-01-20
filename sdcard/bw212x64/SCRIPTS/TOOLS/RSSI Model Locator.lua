@@ -144,7 +144,7 @@ local function run(event)
 
     -- beep
     if getTime() >= nextPlayTime then
-        playFile("/SCRIPTS/TOOLS/modloc.wav.wav")
+        playFile("/SCRIPTS/TOOLS/modloc.wav")
         if useHaptic then
             playHaptic(7, 0, 1)
         end
