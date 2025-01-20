@@ -143,7 +143,7 @@ local function run(event)
 
     -- beep
     if getTime() >= nextPlayTime then
-        playFile("/SCRIPTS/TOOLS/Model Locator (by RSSI).wav")
+        playFile("/SCRIPTS/TOOLS/modloc.wav")
         if useHaptic then
             playHaptic(7, 0, 1)
         end
