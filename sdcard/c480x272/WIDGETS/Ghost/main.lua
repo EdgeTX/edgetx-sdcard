@@ -46,9 +46,9 @@ end
 
 local function create(zone, options)
   local wgt = { zone=zone, options=options}
-  backgroundBitmap = Bitmap.open("/WIDGETS/Ghost/img/background.png")
-  orangeLed = Bitmap.open("/WIDGETS/Ghost/img/orange.png")
-  greenLed = Bitmap.open("/WIDGETS/Ghost/img/green.png")
+  backgroundBitmap = bitmap.open("/WIDGETS/Ghost/img/background.png")
+  orangeLed = bitmap.open("/WIDGETS/Ghost/img/orange.png")
+  greenLed = bitmap.open("/WIDGETS/Ghost/img/green.png")
   offsetX = (wgt.zone.w - 178) / 2
   offsetY = (wgt.zone.h - 148) / 2
   return wgt

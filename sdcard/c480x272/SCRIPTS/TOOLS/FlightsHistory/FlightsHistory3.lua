@@ -68,8 +68,8 @@ local STATE = {
 }
 local state = STATE.SPLASH
 
-local img_bg1 = Bitmap.open("/SCRIPTS/TOOLS/FlightsHistory/bg1.png")
-local img_bg2 = Bitmap.open("/SCRIPTS/TOOLS/FlightsHistory/bg2.png")
+local img_bg1 = bitmap.open("/SCRIPTS/TOOLS/FlightsHistory/bg1.png")
+local img_bg2 = bitmap.open("/SCRIPTS/TOOLS/FlightsHistory/bg2.png")
 
 -- Instantiate a new GUI object
 local ctx1 = m_libgui.newGUI()

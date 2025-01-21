@@ -38,8 +38,8 @@ local error_desc = nil
 local script_folder = "/SCRIPTS/TOOLS/FlightsHistory/"
 
 local function validate_image(file_name)
-    local img1 = Bitmap.open(script_folder .. file_name)
-    local w, h = Bitmap.getSize(img1)
+    local img1 = bitmap.open(script_folder .. file_name)
+    local w, h = bitmap.getSize(img1)
     if w == 0 and h == 0  then
         error_desc = "File not found: " .. script_folder .. file_name
     end

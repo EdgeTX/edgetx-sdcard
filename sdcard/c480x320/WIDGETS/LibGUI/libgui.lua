@@ -500,6 +500,64 @@ function M.newGUI()
 
     -----------------------------------------------------------------------------------------------
 
+    -- create a momentary button
+    function gui.momentaryButton(x, y, w, h, title, callBack, flags)
+        local self = {
+          title = title,
+          callBack = callBack or _.doNothing,
+          flags = bit32.bor(flags or M.flags, CENTER, VCENTER),
+          disabled = false,
+          hidden = false
+        }
+    
+        function self.draw(focused)
+          local fg = M.colors.primary2
+          local bg = M.colors.focus
+          local border = M.colors.active
+    
+          if self.value then
+            fg = M.colors.primary3
+            bg = M.colors.active
+            border = M.colors.focus
+          end
+    
+          gui.drawFilledRectangle(x, y, w, h, bg)
+          gui.drawText(x + w / 2, y + h / 2, self.title, bit32.bor(fg, self.flags))
+    
+          if focused then
+            gui.drawRectangle(x - 2, y - 2, w + 4, h + 4, border, 2)
+          end
+    
+          if self.disabled then
+            gui.drawFilledRectangle(x, y, w, h, GREY, 7)
+          end
+        end
+       
+        function self.onEvent(event, touchState)
+            if (event == EVT_TOUCH_FIRST) then
+              if (self.covers(touchState.x, touchState.y)) then
+                gui.editing = true;
+                self.value = true;
+                return self.callBack(self);
+              end
+            elseif (event == EVT_VIRTUAL_ENTER_LONG) then
+              gui.editing = true;
+              self.value = true;
+              return self.callBack(self);
+            elseif ((event == EVT_TOUCH_BREAK) or (event == EVT_VIRTUAL_EXIT)) then
+              gui.editing = false;
+              self.value = false;
+              return self.callBack(self);
+            end
+        end
+
+        addElement(self, x, y, w, h)
+    
+        return self
+    end
+
+    -----------------------------------------------------------------------------------------------
+
     -- Create a toggle button that turns on/off. callBack gets true/false
     function gui.toggleButton(x, y, w, h, title, value, callBack, flags)
         local self = {

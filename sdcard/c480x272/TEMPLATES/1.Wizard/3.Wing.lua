@@ -16,8 +16,8 @@
 ---- #########################################################################
 
 -- Author: Offer Shmuely
--- Date: 2023
--- version: 1.1
+-- Date: 2023-2024
+-- version: 1.3
 
 local VALUE = 0
 local COMBO = 1
@@ -31,11 +31,11 @@ local pages = {}
 chdir("/TEMPLATES/1.Wizard")
 
 -- load common Bitmaps
-local ImgMarkBg = Bitmap.open("img/mark_bg.png")
-local BackgroundImg = Bitmap.open("img/background.png")
-local ImgPlane = Bitmap.open("img/wing/plane.png")
-local ImgPageUp = Bitmap.open("img/pageup.png")
-local ImgPageDn = Bitmap.open("img/pagedn.png")
+local ImgMarkBg = bitmap.open("img/mark_bg.png")
+local BackgroundImg = bitmap.open("img/background.png")
+local ImgPlane = bitmap.open("img/wing/plane.png")
+local ImgPageUp = bitmap.open("img/pageup.png")
+local ImgPageDn = bitmap.open("img/pagedn.png")
 
 local STICK_NUMBER_AIL = 3
 local STICK_NUMBER_ELE = 1
@@ -253,7 +253,7 @@ local ImgEngine
 local function runMotorConfig(event)
     lcd.clear()
     if ImgEngine == nil then
-        ImgEngine = Bitmap.open("img/wing/prop.png")
+        ImgEngine = bitmap.open("img/wing/prop.png")
     end
     lcd.drawBitmap(BackgroundImg, 0, 0)
     lcd.drawBitmap(ImgPageDn, 455, 95)
@@ -307,8 +307,8 @@ local ImgAilL
 local function runElevronConfig(event)
     lcd.clear()
     if ImgAilR == nil then
-        ImgAilR = Bitmap.open("img/wing/rail.png")
-        ImgAilL = Bitmap.open("img/wing/lail.png")
+        ImgAilR = bitmap.open("img/wing/rail.png")
+        ImgAilL = bitmap.open("img/wing/lail.png")
     end
     lcd.drawBitmap(BackgroundImg, 0, 0)
     lcd.drawBitmap(ImgPageUp, 0, 95)
@@ -353,7 +353,7 @@ local ImgSummary
 local function runConfigSummary(event)
     lcd.clear()
     if ImgSummary == nil then
-        ImgSummary = Bitmap.open("img/summary.png")
+        ImgSummary = bitmap.open("img/summary.png")
     end
 
     lcd.drawBitmap(BackgroundImg, 0, 0)
@@ -380,8 +380,12 @@ local function runConfigSummary(event)
         drawNextLine("Arm switch", nil, switchName)
     end
 
-    drawNextLine("Dual Rate", nil, ElevronFields.is_dual_rate.avail_values[1 + ElevronFields.is_dual_rate.value])
-
+    drawNextLine("Dual Rate", nil, 
+        ElevronFields.is_dual_rate.avail_values[1 + ElevronFields.is_dual_rate.value] ..
+          (ElevronFields.is_dual_rate.value == 1 and
+            " (" .. ElevronFields.dr_switch.avail_values[1 + ElevronFields.dr_switch.value] .. ")" or 
+            "")
+    )
 
     lcd.drawFilledRectangle(60-10, 250-2, 240, 25, YELLOW)
     lcd.drawText(60, 250, "Hold [Enter] to apply changes...", COLOR_THEME_PRIMARY1)
@@ -444,14 +448,15 @@ local function createModel(event)
     -- expo
     local expoVal = ElevronFields.expo.value
     local is_dual_rate = (ElevronFields.is_dual_rate.value == 1)
+    local dr_switch = ElevronFields.dr_switch.avail_values[1 + ElevronFields.dr_switch.value]
     if (is_dual_rate) then
-        updateInputLine(defaultChannel_0_AIL, 0, expoVal, 100, "SC" .. CHAR_UP)
-        updateInputLine(defaultChannel_0_AIL, 1, expoVal, 75 , "SC-")
-        updateInputLine(defaultChannel_0_AIL, 2, expoVal, 50 , "SC" .. CHAR_DOWN)
+        updateInputLine(defaultChannel_0_AIL, 0, expoVal, 100, dr_switch .. CHAR_UP)
+        updateInputLine(defaultChannel_0_AIL, 1, expoVal, 75 , dr_switch .. "-")
+        updateInputLine(defaultChannel_0_AIL, 2, expoVal, 50 , dr_switch .. CHAR_DOWN)
 
-        updateInputLine(defaultChannel_0_ELE, 0, expoVal, 100, "SC" .. CHAR_UP)
-        updateInputLine(defaultChannel_0_ELE, 1, expoVal, 75 , "SC-")
-        updateInputLine(defaultChannel_0_ELE, 2, expoVal, 50 , "SC" .. CHAR_DOWN)
+        updateInputLine(defaultChannel_0_ELE, 0, expoVal, 100, dr_switch .. CHAR_UP)
+        updateInputLine(defaultChannel_0_ELE, 1, expoVal, 75 , dr_switch .. "-")
+        updateInputLine(defaultChannel_0_ELE, 2, expoVal, 50 , dr_switch .. CHAR_DOWN)
     else
         updateInputLine(defaultChannel_0_AIL, 0, expoVal, 100, nil)
         updateInputLine(defaultChannel_0_ELE, 0, expoVal, 100, nil)
