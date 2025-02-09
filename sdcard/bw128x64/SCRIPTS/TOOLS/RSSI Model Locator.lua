@@ -1,7 +1,7 @@
 ---- "TNS|Model Locator by RSSI|TNE"
 ---- #########################################################################
 ---- #                                                                       #
----- # Telemetry Widget script for FrSky Horus/Radio Master TX16s            #
+---- # Telemetry Widget script for b&w 128x64 radios                         #
 ---- # Copyright (C) EdgeTX                                                  #
 -----#                                                                       #
 ---- # License GPLv2: http://www.gnu.org/licenses/gpl-2.0.html               #
@@ -18,14 +18,14 @@
 ---- #########################################################################
 
 -- Model Locator by RSSI
--- Offer Shmuely (based on code from Scott Bauer 6/21/2015)
+-- AegisCrusader & Offer Shmuely (based on code from Scott Bauer 6/21/2015)
 -- Date: 2022-2024
 -- ver: 0.6
 local app_ver = "0.6"
 
 -- This widget help to find a lost/crashed model based on the RSSI (if still available)
 -- The widget produce audio representation (vario-meter style) of the RSSI from the lost model
--- The widget also  display the RSSI in a visible colorized bar (0-100%)
+-- The widget also displays the RSSI in a visible bar
 
 -- There are two way to use it
 -- 1. The simple way:
@@ -42,53 +42,7 @@ local app_ver = "0.6"
 local delayMillis = 100
 local targetTXPower = 25
 local nextPlayTime = getTime()
-local img = bitmap.open("/SCRIPTS/TOOLS/Model Locator (by RSSI).png")
 local useHaptic = false
-
---------------------------------------------------------------
-local function log(s)
-  -- print("locator: " .. s)
-end
---------------------------------------------------------------
-
-
--- init_func is called once when model is loaded
-local function init()
-    return 0
-end
-
--- This function returns green at gvalue, red at rvalue and graduate in between
-local function getRangeColor(value, red_value, green_value)
-    local range = math.abs(green_value - red_value)
-    if range == 0 then
-        return lcd.RGB(0, 0xdf, 0)
-    end
-    if value == nil then
-        return lcd.RGB(0, 0xdf, 0)
-    end
-
-    if green_value > red_value then
-        if value > green_value then
-            return lcd.RGB(0, 0xdf, 0)
-        end
-        if value < red_value then
-            return lcd.RGB(0xdf, 0, 0)
-        end
-        g = math.floor(0xdf * (value - red_value) / range)
-        r = 0xdf - g
-        return lcd.RGB(r, g, 0)
-    else
-        if value > green_value then
-            return lcd.RGB(0, 0xdf, 0)
-        end
-        if value < red_value then
-            return lcd.RGB(0xdf, 0, 0)
-        end
-        r = math.floor(0xdf * (value - green_value) / range)
-        g = 0xdf - r
-        return lcd.RGB(r, g, 0)
-    end
-end
 
 local function getSignalValues()
     -- try to get transmitter power
@@ -102,7 +56,6 @@ local function getSignalValues()
     local fieldinfo = getFieldInfo("RSSI")
     if fieldinfo then
         local v = getValue("RSSI")
-        log("RSSI: " .. v)
         return v, 0, 100, txPowerValue, "Using signal: Frsky RSSI", nil
     end
 
@@ -113,7 +66,7 @@ local function getSignalValues()
         if v == 0 then
             v = -115
         end
-        return v, -115, 20, txPowerValue, "Using signal: ELRS 1RSS", "Set TX Power to 25mW Non-Dynamic"
+        return v, -115, 20, txPowerValue, "Using signal: ELRS 1RSS", "Set TX PWR 25mW No Dyn"
     end
 
     -- try expressLRS antenna 2
@@ -123,79 +76,66 @@ local function getSignalValues()
         if v == 0 then
             v = -115
         end
-        return v, -115, 20, txPowerValue, "Using signal: ELRS 2RSS", "Set TX Power to 25mW Non-Dynamic"
+        return v, -115, 20, txPowerValue, "Using signal: ELRS 2RSS", "Set TX PWR 25mW No Dyn"
     end
-
-    ---- try UNI-ACSST firmware VFR
-    --local fieldinfo = getFieldInfo("VFR")
-    --if fieldinfo then
-    --    local v = getValue("VFR")
-    --    log("RSSI: " .. v)
-    --    lcd.drawText(3, 30, "Signal: VFR", 0)
-    --    return v, 0, 100
-    --end
-    --
-    ---- try elrs RQLY
-    --local fieldinfo = getFieldInfo("RQLY")
-    --if fieldinfo then
-    --    local v = getValue("RQLY")
-    --    log("RQLY: " .. v)
-    --    lcd.drawText(3, 30, "Signal: RQLY", 0)
-    --    return v, 0, 100
-    --end
 
     return nil, 0, 0
 end
 
-
-local function main(event, touchState)
+local function init()
     lcd.clear()
-    lcd.drawBitmap(img, LCD_W-120, 30, 20)
+end
 
-    -- Title
-    lcd.drawFilledRectangle(0,0, LCD_W, 30, BLACK)
-    lcd.drawFilledRectangle(0,LCD_H-25, LCD_W, 25, GREY)
-    lcd.drawText(10, 3, "RSSI Model Locator", WHITE)
-    lcd.drawText(LCD_W - 50, 3, "ver: " .. app_ver .. "", SMLSIZE + GREEN)
+local function run(event)
+    -- exit script
+    if event == EVT_VIRTUAL_EXIT then
+        return 2
+    end
+
+    lcd.clear()
 
     local signalValue, signalMin, signalMax, txPower, line1, line2 = getSignalValues()
-    -- log(signalValue)
+
+    lcd.drawText(0, 0, "Model Locator by RSSI", BOLD)
+
     if signalValue == nil then
-        lcd.drawText(30, 50, "No signal found (expected: RSSI/1RSS/2RSS)", 0 + BLINK)
+        lcd.drawText(0, 24, "No signal, expected:", 0 + BLINK)
+        lcd.drawText(0, 32, "RSSI/1RSS/2RSS", 0 + BLINK)
         return 0
     end
 
     if txPower then
-        lcd.drawText(3, 60, "Current TX Power: " .. tostring(txPower) .. "mW", (txPower == targetTXPower) and DARKGREEN or RED)
+        lcd.drawText(0, 16, "Current TX PWR: " .. tostring(txPower) .. "mW")
 
         if txPower ~= targetTXPower then
-            lcd.drawText(3, 75, line2 or "", RED + BLINK)
+            lcd.drawText(0, 8, line2 or "", BLINK)
+        else
+            lcd.drawText(0, 8, "[ENTER] to toggle haptic")
         end
+    else
+        lcd.drawText(0, 8, "[ENTER] to toggle haptic")
     end
 
-    lcd.drawText(10, LCD_H-22, line1, WHITE)
-    lcd.drawText(300, LCD_H-22, "[ENTER] to toggle haptic", WHITE)
-
-    log("signalValue:" .. signalValue .. ", signalMin: " .. signalMin .. ", signalMax: " .. signalMax)
-
     local signalPercent = 100 * ((signalValue - signalMin) / (signalMax - signalMin))
-    lcd.setColor(CUSTOM_COLOR, getRangeColor(signalPercent, 0, 100))
 
-    -- draw current value
-    lcd.drawText(3, 90, tostring(signalValue) .. "dB", XXLSIZE + CUSTOM_COLOR)
+    lcd.drawText(0, 24, tostring(signalValue) .. "dB", DBLSIZE)
 
     -- draw main bar
     local xMin = 10
-    local yMin = LCD_H - 30
+    local yMin = LCD_H - 10
     local xMax = LCD_W
     local h = 0
     local rssiAsX = (signalPercent * xMax) / 100
-    log("signalPercent:" .. signalPercent .. ", signalValue: " .. signalValue .. ", rssiAsX: " .. rssiAsX)
-    for xx = xMin, rssiAsX, 20 do
-        lcd.setColor(CUSTOM_COLOR, getRangeColor(xx, xMin, xMax - 40))
-        h = h + 10
-        lcd.drawFilledRectangle(xx, yMin - h, 15, h, CUSTOM_COLOR)
+
+    for xx = xMin, rssiAsX, 7 do
+        h = h + 2
+        lcd.drawFilledRectangle(xx, yMin - h, 5, h)
     end
+
+    lcd.drawFilledRectangle(0, LCD_H - 10, LCD_W, 1)
+
+    -- current signal type
+    lcd.drawText(0, LCD_H - 8, line1)
 
     -- toggle haptic
     if event == EVT_VIRTUAL_ENTER then
@@ -204,7 +144,7 @@ local function main(event, touchState)
 
     -- beep
     if getTime() >= nextPlayTime then
-        playFile("/SCRIPTS/TOOLS/Model Locator (by RSSI).wav")
+        playFile("/SCRIPTS/TOOLS/modloc.wav")
         if useHaptic then
             playHaptic(7, 0, 1)
         end
@@ -214,5 +154,4 @@ local function main(event, touchState)
     return 0
 end
 
-return { init = init, run = main }
-
+return {init = init, run = run}
