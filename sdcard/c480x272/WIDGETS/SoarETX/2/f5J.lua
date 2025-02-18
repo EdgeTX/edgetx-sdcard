@@ -391,7 +391,7 @@ local function SetupScreenTask()
 	print("SetupScreenTask:Begin")
 	local y
 	-- Info text label
-	screenTask.labelInfo = screenTask.label(RGT - 250, BOT_ROW, 250, HEIGHT, " Info ", libGUI.flags + RIGHT)
+	screenTask.labelInfo = screenTask.label(RGT - 250, BOT_ROW, 250, HEIGHT, " Info ", RIGHT)
 
 
 	-- Add timers

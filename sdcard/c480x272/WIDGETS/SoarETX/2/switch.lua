@@ -171,7 +171,7 @@ local function init()
   end
 
   for i, item in ipairs(items) do
-    gui.label(MARGIN, y, w1, HEIGHT, item[1], SMLSIZE)
+    gui.label(MARGIN, y, w1, HEIGHT, item[1])
 
     local swIdx = model.getLogicalSwitch(item[2]).v1
     local selected = 0

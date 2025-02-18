@@ -82,7 +82,6 @@ local mixes = mixes_F3K
 -------------------------------- Setup GUI --------------------------------
 
 local function init()
-  libGUI.flags = 0
   gui = libGUI.newGUI()
   -- Extract Model Type from parametes
   modelType = widget.options.Type
@@ -168,7 +167,7 @@ local function init()
       return value
     end
 
-    local number = gui.number(x + W1, y, W2, HEIGHT, 0, changeGV, RIGHT + libGUI.flags)
+    local number = gui.number(x + W1, y, W2, HEIGHT, 0, changeGV, RIGHT)
 
     function number.update()
       number.value = model.getGlobalVariable(gv, fm)
@@ -194,7 +193,7 @@ local function init()
   end
 
   local batP = soarGlobals.getParameter(soarGlobals.batteryParameter)
-  gui.number(x + W1, y, W2, HEIGHT, batP + 100, changeBattery, RIGHT + PREC1 + libGUI.flags)
+  gui.number(x + W1, y, W2, HEIGHT, batP + 100, changeBattery, RIGHT + PREC1)
 end -- init()
 
 function widget.background()

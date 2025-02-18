@@ -21,7 +21,6 @@
 
 local widget, soarGlobals =  ...
 local libGUI =  soarGlobals.libGUI
-libGUI.flags =  MIDSIZE
 local gui
 local colors =  libGUI.colors
 local title =   "Outputs"
