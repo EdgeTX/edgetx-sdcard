@@ -2,8 +2,8 @@
 -- SoarETX flaperon alignment, loadable component                        --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Date:    2022-06-26                                                   --
--- Version: 1.0.1                                                        --
+-- Date:    2024-01-20                                                   --
+-- Version: 1.2.4                                                        --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
 --                                                                       --
@@ -21,7 +21,6 @@
 
 local widget, soarGlobals =  ...
 local libGUI =  soarGlobals.libGUI
-libGUI.flags =  MIDSIZE
 local gui = nil
 local colors =  libGUI.colors
 local title =   "Wing alignment"
@@ -265,6 +264,7 @@ end -- Reset()
 -------------------------------- Setup GUI --------------------------------
 
 local function setup_gui()
+  libGUI.flags =  0
   gui = libGUI.newGUI()
 
   -- Extract Model Type from parametes

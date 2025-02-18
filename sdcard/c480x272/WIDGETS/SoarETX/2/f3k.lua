@@ -2,8 +2,8 @@
 -- SoarETX F3K score keeper, loadable component                          --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Date:    2023-01-23                                                   --
--- Version: 1.0.2                                                        --
+-- Date:    2025-01-20                                                   --
+-- Version: 1.2.4                                                        --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
 --                                                                       --
@@ -21,7 +21,6 @@
 
 local widget, soarGlobals = ...
 local libGUI = soarGlobals.libGUI
-libGUI.flags = DBLSIZE
 local colors = libGUI.colors
 local activeGUI
 

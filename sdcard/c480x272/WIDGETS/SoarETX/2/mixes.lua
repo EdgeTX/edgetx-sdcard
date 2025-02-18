@@ -2,8 +2,8 @@
 -- SoarETX F3K configure mixes and battery warning, loadable component   --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Date:    2022-02-09                                                   --
--- Version: 1.0.0                                                        --
+-- Date:    2025-01-20                                                   --
+-- Version: 1.2.4                                                        --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
 --                                                                       --
@@ -21,8 +21,7 @@
 
 local widget, soarGlobals =  ...
 local libGUI =  soarGlobals.libGUI
-libGUI.flags =  0
-local gui = libGUI.newGUI()
+local gui    =  nil
 local colors =  libGUI.colors
 local title =   "Mixes & Battery"
 local modelType = ""
@@ -82,7 +81,9 @@ local mixes = mixes_F3K
 
 -------------------------------- Setup GUI --------------------------------
 
-do
+local function init()
+  libGUI.flags = 0
+  gui = libGUI.newGUI()
   -- Extract Model Type from parametes
   modelType = widget.options.Type
 
@@ -194,20 +195,24 @@ do
 
   local batP = soarGlobals.getParameter(soarGlobals.batteryParameter)
   gui.number(x + W1, y, W2, HEIGHT, batP + 100, changeBattery, RIGHT + PREC1 + libGUI.flags)
-end -- Setup GUI
+end -- init()
 
 function widget.background()
+  gui = nil
 end -- background()
 
 function widget.refresh(event, touchState)
   if not event then
+    gui = nil
     lcd.drawFilledRectangle(6, 6, widget.zone.w - 12, widget.zone.h - 12, colors.focus)
     lcd.drawRectangle(7, 7, widget.zone.w - 14, widget.zone.h - 14, colors.primary2, 1)
     lcd.drawText(widget.zone.w / 2, widget.zone.h / 2, title, CENTER + VCENTER + MIDSIZE + colors.primary2)
     return
+  elseif gui == nil then
+    init()
+    return
   end
 
   fm = getFlightMode()
-
   gui.run(event, touchState)
 end -- refresh(...)

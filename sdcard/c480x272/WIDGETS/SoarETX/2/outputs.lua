@@ -2,8 +2,8 @@
 -- SoarETX outputs configuration widget, loadable part                   --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Date:    2022-02-19                                                   --
--- Version: 1.0.0                                                        --
+-- Date:    2025-01-20                                                   --
+-- Version: 1.2.4                                                        --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
 --                                                                       --
@@ -255,6 +255,7 @@ end -- MoveOutput()
 
 local function init()
   -- Start building GUI from scratch
+  libGUI.flags = 0
   gui = libGUI.newGUI()
   gui.showPrompt(warningPrompt)
 

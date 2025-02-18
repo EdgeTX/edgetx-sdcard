@@ -22,7 +22,6 @@
 
 local widget, soarGlobals =  ...
 local libGUI =  soarGlobals.libGUI
-libGUI.flags =  0
 local gui
 local colors =  libGUI.colors
 local title  =   "Switches"
@@ -91,6 +90,7 @@ local items = items_FXY
 -------------------------------- Setup GUI --------------------------------
 
 local function init()
+  libGUI.flags = 0
   gui = libGUI.newGUI()
 
   function gui.fullScreenRefresh()

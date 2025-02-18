@@ -2,8 +2,8 @@
 -- SoarETX F3K score keeper, loadable component                          --
 --                                                                       --
 -- Author:  Frankie Arzu/ Jesper Frickmann      			             --
--- Date:    2024-01-15                                                   --
--- Version: 1.2.0                                                        --
+-- Date:    2025-01-20                                                   --
+-- Version: 1.2.4                                                        --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
 --                                                                       --
@@ -21,7 +21,6 @@
 
 local widget, soarGlobals = ...
 local libGUI              = soarGlobals.libGUI
-libGUI.flags              = DBLSIZE
 local colors              = libGUI.colors
 
 -- GUIs for the different screens and popups
@@ -354,7 +353,7 @@ end -- background()
 function libGUI.widgetRefresh()
 	local COL1  = (widget.zone.w / 2) - 198
 	local COL2  = COL1 + 30
-	local COL3  = COL1 + 125
+	local COL3  = COL1 + 120
 	local RGT   = COL1 + 400
 
 	-- Draw scores

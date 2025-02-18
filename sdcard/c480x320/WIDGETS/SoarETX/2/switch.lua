@@ -21,8 +21,7 @@
 ---------------------------------------------------------------------------
 
 local widget, soarGlobals =  ...
-local libGUI =  loadGUI()
-libGUI.flags =  0
+local libGUI =  soarGlobals.libGUI
 local gui
 local colors =  libGUI.colors
 local title  =   "Switches"
@@ -91,6 +90,7 @@ local items = items_FXY
 -------------------------------- Setup GUI --------------------------------
 
 local function init()
+  libGUI.flags = 0
   gui = libGUI.newGUI()
 
   function gui.fullScreenRefresh()
@@ -130,11 +130,11 @@ local function init()
   -- Build the list of drop downs
   local y = HEADER + 2
   local w1 = COL2 - MARGIN
-  
+
   -- Build lists of physical switch position indices and names
   local swIndices = { }
   local swNames = { }
-  
+
   for swIdx, swName in switches() do
     if string.find(swName,"^!?S[A-H][+-]?") then
       i = #swIndices + 1
@@ -149,9 +149,9 @@ local function init()
     lsTbl.v1 = swIdx
     model.setLogicalSwitch(dropDown.ls, lsTbl)
   end
-  
+
   -- Extract Model Type from parametes
-  modelType = widget.options.Type 
+  modelType = widget.options.Type
 
   if modelType == "F3K" or modelType == "F3K_FH" or modelType == "F3K_TRAD" then
     items = items_F3K
@@ -162,11 +162,11 @@ local function init()
     HEIGHT =  20
     LINE   = 25
   elseif modelType == "F3J" or modelType == "F5J" then
-    items = items_FxJ 
+    items = items_FxJ
     HEIGHT =  20  -- Make it smaller to fit extra line
     LINE   = 25
   else
-    items = items_FXY 
+    items = items_FXY
     modelType = "F??"
   end
 
@@ -175,14 +175,14 @@ local function init()
     
     local swIdx = model.getLogicalSwitch(item[2]).v1
     local selected = 0
-    
+
     for i, idx in ipairs(swIndices) do
       if swIdx == idx then
         selected = i
         break
       end
     end
-    
+
     if selected == 0 then
       -- Oops, no switch matching current value in LS!
       gui.label(COL2, y, WIDTH, HEIGHT, "???", CENTER + BOLD)
@@ -210,6 +210,6 @@ function widget.refresh(event, touchState)
     init()
     return
   end
-  
+
   gui.run(event, touchState)
 end -- refresh(...)
