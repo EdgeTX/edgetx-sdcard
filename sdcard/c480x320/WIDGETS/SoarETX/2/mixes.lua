@@ -194,7 +194,7 @@ local function init()
 
   local batP = soarGlobals.getParameter(soarGlobals.batteryParameter)
   gui.number(x + W1, y, W2, HEIGHT, batP + 100, changeBattery, RIGHT + PREC1)
-end -- Setup GUI
+end -- init()
 
 function widget.background()
   gui = nil

@@ -90,7 +90,6 @@ local items = items_FXY
 -------------------------------- Setup GUI --------------------------------
 
 local function init()
-  libGUI.flags = 0
   gui = libGUI.newGUI()
 
   function gui.fullScreenRefresh()

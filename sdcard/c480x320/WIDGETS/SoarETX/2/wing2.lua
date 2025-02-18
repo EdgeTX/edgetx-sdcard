@@ -264,7 +264,6 @@ end -- Reset()
 -------------------------------- Setup GUI --------------------------------
 
 local function setup_gui()
-  libGUI.flags =  0
   gui = libGUI.newGUI()
 
   -- Extract Model Type from parametes

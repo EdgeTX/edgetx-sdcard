@@ -254,7 +254,6 @@ end -- MoveOutput()
 
 local function init()
   -- Start building GUI from scratch
-  libGUI.flags = 0
   gui = libGUI.newGUI()
   gui.showPrompt(warningPrompt)
 
