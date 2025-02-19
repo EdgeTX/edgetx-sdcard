@@ -442,7 +442,7 @@ local function createModel(event)
     lcd.drawBitmap(BackgroundImg, 0, 0)
     lcd.drawBitmap(ImgSummary, 300, 60)
     model.defaultInputs()
-    model.deleteInput(3, 0) -- delete rudder
+    model.deleteInput(defaultChannel(STICK_NUMBER_RUD), 0) -- delete rudder
     model.deleteMixes()
 
     -- expo
