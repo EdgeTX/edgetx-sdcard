@@ -2,8 +2,8 @@
 -- SoarETX F3K score keeper, loadable component                          --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Date:    2023-01-23                                                   --
--- Version: 1.0.2                                                        --
+-- Date:    2025-01-20                                                   --
+-- Version: 1.2.4                                                        --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
 --                                                                       --
@@ -21,7 +21,6 @@
 
 local widget, soarGlobals = ...
 local libGUI = soarGlobals.libGUI
-libGUI.flags = DBLSIZE
 local colors = libGUI.colors
 local activeGUI
 
@@ -967,7 +966,7 @@ do -- Setup score keeper screen for F3K and Practice tasks
   screenTask.button3 = screenTask.button(COL2, y, BUTTON_W, HEIGHT, "Start", callBack)
 
   -- Info text label
-  screenTask.labelInfo = screenTask.label(RGT - 250, BOT_ROW, 250, HEIGHT, "", libGUI.flags + RIGHT)
+  screenTask.labelInfo = screenTask.label(RGT - 250, BOT_ROW, 250, HEIGHT, "", RIGHT)
 
   -- Add timers
   y = TOP
@@ -1007,7 +1006,7 @@ do -- Prompt asking to save scores and exit task window
     lcd.drawRectangle(x0, y0, PROMPT_W, PROMPT_H, colors.primary1, 3)
   end
 
-  promptSaveScores.label(x0, TOP, PROMPT_W, HEIGHT, "Save scores?", libGUI.flags + CENTER)
+  promptSaveScores.label(x0, TOP, PROMPT_W, HEIGHT, "Save scores?", CENTER)
 
   local function callBack(button)
     if button == promptSaveScores.buttonYes then

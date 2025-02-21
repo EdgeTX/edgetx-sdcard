@@ -2,8 +2,8 @@
 -- SoarETX F3J score keeper, loadable component                          --
 --                                                                       --
 -- Author:  Frankie Arzu / Jesper Frickmann                              --
--- Date:    2024-01-15                                                   --
--- Version: 1.2.0                                                        --
+-- Date:    2025-01-20                                                   --
+-- Version: 1.2.4                                                        --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
 --                                                                       --
@@ -21,7 +21,6 @@
 
 local widget, soarGlobals = ...
 local libGUI              = soarGlobals.libGUI
-libGUI.flags              = DBLSIZE
 local colors              = libGUI.colors
 
 -- GUIs for the different screens and popups
@@ -327,7 +326,7 @@ local function SetupScreenTask()
   print("SetupScreenTask:Begin")
   local y
   -- Info text label
-  screenTask.labelInfo = screenTask.label(RGT - 250, BOT_ROW, 250, HEIGHT, " Info ", libGUI.flags + RIGHT)
+  screenTask.labelInfo = screenTask.label(RGT - 250, BOT_ROW, 250, HEIGHT, " Info ", RIGHT)
 
   -- Add timers
   y = TOP

@@ -1,9 +1,9 @@
 ---------------------------------------------------------------------------
 -- SoarETX Center ailerons, loadable component                           --
 --                                                                       --
--- Author:  Jesper Frickmann                                             --
--- Date:    2022-02-19                                                   --
--- Version: 1.0.0                                                        --
+-- Author:  Jesper Frickmann + Frankie Arzu                              --
+-- Date:    2025-01-20                                                   --
+-- Version: 1.2.4                                                        --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
 --                                                                       --
@@ -21,7 +21,6 @@
 
 local widget, soarGlobals =  ...
 local libGUI =  soarGlobals.libGUI
-libGUI.flags =  0
 local gui =     libGUI.newGUI()
 local colors =  libGUI.colors
 local title =   "Center ailerons"

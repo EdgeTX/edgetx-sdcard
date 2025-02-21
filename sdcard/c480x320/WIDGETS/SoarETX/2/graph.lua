@@ -2,8 +2,8 @@
 -- SoarETX graph of log data                                             --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Date:    2022-08-28                                                   --
--- Version: 1.0.1                                                        --
+-- Date:    2024-01-20                                                   --
+-- Version: 1.2.4                                                        --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
 --                                                                       --
@@ -20,8 +20,7 @@
 ---------------------------------------------------------------------------
 local widget, soarGlobals =  ...
 
-local libGUI =    loadGUI()
-libGUI.flags =    0
+local libGUI =    soarGlobals.libGUI
 local colors =    libGUI.colors
 local title =     "Graph"
 
@@ -256,6 +255,7 @@ end
 
 -- Common GUI setup
 local function setupGUI(title)
+  libGUI.flags = 0
   local gui = libGUI.newGUI()
   gui.title = title
 

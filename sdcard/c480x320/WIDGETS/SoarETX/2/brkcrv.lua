@@ -1,10 +1,9 @@
 ---------------------------------------------------------------------------
 -- SoarETX Adjust airbrake curves for flaps and ailerons                 --
 --                                                                       --
--- Author:  Jesper Frickmann                                             --
--- Improvements: Frankie Arzu                                            --
--- Date:    2024-01-15                                                   --
--- Version: 1.2.0                                                        --
+-- Author:  Jesper Frickmann + Frankie Arzu                              --
+-- Date:    2025-01-20                                                   --
+-- Version: 1.2.4                                                        --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
 --                                                                       --
@@ -21,8 +20,7 @@
 ---------------------------------------------------------------------------
 
 local widget, soarGlobals =  ...
-local libGUI =  loadGUI()
-libGUI.flags =  0
+local libGUI =  soarGlobals.libGUI
 local gui =     nil
 local colors =  libGUI.colors
 local title =   "Airbrake curves"
@@ -143,7 +141,7 @@ end
 -------------------------------- Setup GUI --------------------------------
 
 local function setup_gui()
-
+  libGUI.flags =  0
   gui = libGUI.newGUI()
   function gui.fullScreenRefresh()
     lcd.clear(COLOR_THEME_SECONDARY3)
@@ -204,7 +202,7 @@ end -- Setup GUI
 function widget.background()
   if (gui ~= nil) then
     stepOff()
-    gui = nil  
+    gui = nil
   end
 end -- background()
 

@@ -2,8 +2,8 @@
 -- SoarETX outputs configuration widget, loadable part                   --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Date:    2022-02-19                                                   --
--- Version: 1.0.0                                                        --
+-- Date:    2025-01-20                                                   --
+-- Version: 1.2.4                                                        --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
 --                                                                       --
@@ -21,7 +21,6 @@
 
 local widget, soarGlobals =  ...
 local libGUI =  soarGlobals.libGUI
-libGUI.flags =  MIDSIZE
 local gui
 local colors =  libGUI.colors
 local title =   "Outputs"

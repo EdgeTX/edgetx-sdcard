@@ -2,8 +2,8 @@
 -- SoarETX flaps and aileron alignment, loadable component               --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Date:    2022-08-20                                                   --
--- Version: 1.0.0                                                        --
+-- Date:    2024-01-20                                                   --
+-- Version: 1.2.4                                                        --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
 --                                                                       --
@@ -21,7 +21,6 @@
 
 local widget, soarGlobals =  ...
 local libGUI =  soarGlobals.libGUI
-libGUI.flags =  MIDSIZE
 local gui = nil
 local colors =  libGUI.colors
 local title =   "Wing alignment"

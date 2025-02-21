@@ -2,9 +2,8 @@
 -- SoarETX flaps and aileron alignment, loadable component               --
 --                                                                       --
 -- Author:  Jesper Frickmann                                             --
--- Improvements: Frankie Arzu                                            --
--- Date:    2024-01-15                                                   --
--- Version: 1.2.0                                                        --
+-- Date:    2024-01-20                                                   --
+-- Version: 1.2.4                                                        --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
 --                                                                       --
@@ -21,8 +20,7 @@
 ---------------------------------------------------------------------------
 
 local widget, soarGlobals =  ...
-local libGUI =  loadGUI()
-libGUI.flags =  MIDSIZE
+local libGUI =  soarGlobals.libGUI
 local gui = nil
 local colors =  libGUI.colors
 local title =   "Wing alignment"
@@ -44,7 +42,7 @@ local BUTTON_Y =  (LCD_H + TOP + HEIGHT - BUTTON_H) / 2
 -- Other constants
 local INP_STEP = getFieldInfo("input8").id  -- Step input
 local LS_STEP = nil                         -- Set this LS to apply step input and adjust
-local GV_ADJUST = nil 
+local GV_ADJUST = nil
 local N = 5                                 -- Number of curve points
 local MAX_Y = 1500                          -- Max output value
 local MINDIF = 100                          -- Minimum difference between lower, center and upper values
@@ -288,16 +286,16 @@ local function setup_gui()
   gui = libGUI.newGUI()
 
   -- Extract Model Type from parametes
-  modelType = widget.options.Type 
+  modelType = widget.options.Type
   if modelType == "F3K_FH" then
     LS_STEP = 10 -- L11
   elseif modelType == "F3J" or modelType == "F5J" then
-    GV_ADJUST = 7 -- GV8:Adj 
+    GV_ADJUST = 7 -- GV8:Adj
   else
     LS_STEP = nil
     modelType = "F??"
   end
-  
+
   function gui.fullScreenRefresh()
     lcd.clear(COLOR_THEME_SECONDARY3)
 
