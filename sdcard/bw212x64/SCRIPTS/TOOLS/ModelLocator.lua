@@ -1,7 +1,7 @@
----- "TNS|Model Locator by RSSI|TNE"
+---- TNS|Model Locator|TNE
 ---- #########################################################################
 ---- #                                                                       #
----- # Telemetry Widget script for b&w 128x64 radios                         #
+---- # Telemetry Widget script for b&w 212x64 radios                         #
 ---- # Copyright (C) EdgeTX                                                  #
 -----#                                                                       #
 ---- # License GPLv2: http://www.gnu.org/licenses/gpl-2.0.html               #
@@ -127,7 +127,7 @@ local function run(event)
     local h = 0
     local rssiAsX = (signalPercent * xMax) / 100
 
-    for xx = xMin, rssiAsX, 7 do
+    for xx = xMin, rssiAsX, 8 do
         h = h + 2
         lcd.drawFilledRectangle(xx, yMin - h, 5, h)
     end
