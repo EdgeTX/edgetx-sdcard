@@ -36,6 +36,9 @@ local ImgPageUp = bitmap.open("img/pageup.png")
 local ImgPageDn = bitmap.open("img/pagedn.png")
 local ImgSummary = bitmap.open("img/summary.png")
 
+local PAGE_UP_HEIGHT = 65
+local PAGE_UP_WIDTH = 25
+
 -- Change display attribute to current field
 local function addField(step)
   local field = fields[current]
@@ -150,7 +153,7 @@ local function runTypeConfig(event)
   fields = TypeFields
   lcd.drawBitmap(BackgroundImg,0,0)
   lcd.drawBitmap(TypeBackground, 230, 0)
-  lcd.drawBitmap(ImgPageDn, 455, 95)
+  lcd.drawBitmap(ImgPageDn, LCD_W-PAGE_UP_WIDTH, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
   lcd.drawText(40, 20, "What Type of Helicopter ?")
   lcd.drawFilledRectangle(40, 45, 200, 30, TEXT_BGCOLOR)
   fields[2][4] = 0
@@ -177,8 +180,8 @@ local function runStyleConfig(event)
   end
   lcd.drawBitmap(BackgroundImg,0,0)
   lcd.drawBitmap(StyleBackground, 215, 0)
-  lcd.drawBitmap(ImgPageUp, 0, 95)
-  lcd.drawBitmap(ImgPageDn, 455, 95)
+  lcd.drawBitmap(ImgPageUp, 0, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
+  lcd.drawBitmap(ImgPageDn, LCD_W-PAGE_UP_WIDTH, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
   fields = StyleFields
   lcd.drawText(40, 20, "Your Flying Style")
   lcd.drawFilledRectangle(40, 45, 100, 30, TEXT_BGCOLOR)
@@ -202,8 +205,8 @@ local function runSwitchConfig(event)
   end
   lcd.drawBitmap(BackgroundImg,0,0)
   lcd.drawBitmap(SwitchBackground, 270, 0)
-  lcd.drawBitmap(ImgPageUp, 0, 95)
-  lcd.drawBitmap(ImgPageDn, 455, 95)
+  lcd.drawBitmap(ImgPageUp, 0, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
+  lcd.drawBitmap(ImgPageDn, LCD_W-PAGE_UP_WIDTH, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
   fields = SwitchFields
   lcd.drawText(40, 20, "FM (Idle Up)")
   lcd.drawFilledRectangle(40, 45, 100, 30, TEXT_BGCOLOR)
@@ -234,8 +237,8 @@ local function runThrConfig(event)
   end
   lcd.drawBitmap(BackgroundImg,0,0)
   lcd.drawBitmap(ThrBackground, 215, 0)
-  lcd.drawBitmap(ImgPageUp, 0, 95)
-  lcd.drawBitmap(ImgPageDn, 455, 95)
+  lcd.drawBitmap(ImgPageUp, 0, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
+  lcd.drawBitmap(ImgPageDn, LCD_W-PAGE_UP_WIDTH, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
   fields = ThrFields
   lcd.drawText(40, 20, "Throttle Channel")
   lcd.drawFilledRectangle(40, 45, 100, 30, TEXT_BGCOLOR)
@@ -259,8 +262,8 @@ local function runCurveConfig(event)
   end
   lcd.drawBitmap(BackgroundImg,0,0)
   lcd.drawBitmap(CurveBackground, 200, 0)
-  lcd.drawBitmap(ImgPageUp, 0, 95)
-  lcd.drawBitmap(ImgPageDn, 455, 95)
+  lcd.drawBitmap(ImgPageUp, 0, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
+  lcd.drawBitmap(ImgPageDn, LCD_W-PAGE_UP_WIDTH, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
   fields = CurveFields
   lcd.drawText(40, 20, "Throttle Curve FM0")
   lcd.drawFilledRectangle(40, 45, 100, 30, TEXT_BGCOLOR)
@@ -288,8 +291,8 @@ local function runAilerConfig(event)
   end
   lcd.drawBitmap(BackgroundImg,0,0)
   lcd.drawBitmap(AilerBackground, 220, 0)
-  lcd.drawBitmap(ImgPageUp, 0, 95)
-  lcd.drawBitmap(ImgPageDn, 455, 95)
+  lcd.drawBitmap(ImgPageUp, 0, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
+  lcd.drawBitmap(ImgPageDn, LCD_W-PAGE_UP_WIDTH, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
   fields = AilerFields
   lcd.drawText(40, 20, "Aileron Channel")
   lcd.drawFilledRectangle(40, 45, 100, 30, TEXT_BGCOLOR)
@@ -311,8 +314,8 @@ local function runEleConfig(event)
   end
   lcd.drawBitmap(BackgroundImg,0,0)
   lcd.drawBitmap(EleBackground, 220, 0)
-  lcd.drawBitmap(ImgPageUp, 0, 95)
-  lcd.drawBitmap(ImgPageDn, 455, 95)
+  lcd.drawBitmap(ImgPageUp, 0, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
+  lcd.drawBitmap(ImgPageDn, LCD_W-PAGE_UP_WIDTH, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
   fields = EleFields
   lcd.drawText(40, 20, "Elevator Channel")
   lcd.drawFilledRectangle(40, 45, 100, 30, TEXT_BGCOLOR)
@@ -334,8 +337,8 @@ local function runRudConfig(event)
   end
   lcd.drawBitmap(BackgroundImg,0,0)
   lcd.drawBitmap(RudBackground, 220, 0)
-  lcd.drawBitmap(ImgPageUp, 0, 95)
-  lcd.drawBitmap(ImgPageDn, 455, 95)
+  lcd.drawBitmap(ImgPageUp, 0, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
+  lcd.drawBitmap(ImgPageDn, LCD_W-PAGE_UP_WIDTH, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
   fields = RudFields
   lcd.drawText(40, 20, "Rudder (Tail) Channel")
   lcd.drawFilledRectangle(40, 45, 100, 30, TEXT_BGCOLOR)
@@ -378,7 +381,7 @@ local function runConfigSummary(event)
   lcd.clear()
   fields = ConfigSummaryFields
   lcd.drawBitmap(BackgroundImg, 0, 0)
-  lcd.drawBitmap(ImgPageUp, 0, 95)
+  lcd.drawBitmap(ImgPageUp, 0, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
   lineIndex = 10
 
   -- Type
@@ -589,7 +592,7 @@ end
 local function onEnd(event)
   lcd.clear()
   lcd.drawBitmap(BackgroundImg, 0, 0)
-  lcd.drawBitmap(ImgSummary, 300, 60)
+  lcd.drawBitmap(ImgSummary, 150, 260)
 
   lcd.drawText(70, 90, "Model successfully created !")
   lcd.drawText(100, 130, "Hold [RTN] to exit.", Text_Color)
@@ -625,10 +628,10 @@ local function run(event, touchState)
     selectPage(-1)
   elseif event == EVT_VIRTUAL_NEXT_PAGE and page < #pages - 2 then
     selectPage(1)
-  elseif event == EVT_TOUCH_FIRST and (touchState.x <= 40 and touchState.y >= 100 and touchState.y <= 160) then
+  elseif event == EVT_TOUCH_FIRST and (touchState.x <= 40 and touchState.y >= (LCD_H/2)-(PAGE_UP_HEIGHT/2) and touchState.y <= (LCD_H/2)+(PAGE_UP_HEIGHT/2)) then
     print(string.format("(%s) %s - %s", page, touchState.x, touchState.y))
     selectPage(-1)
-  elseif event == EVT_TOUCH_FIRST and (touchState.x >= LCD_W - 40 and touchState.y >= 100 and touchState.y <= 160) then
+  elseif event == EVT_TOUCH_FIRST and (touchState.x >= LCD_W - 40 and touchState.y >= (LCD_H/2)-(PAGE_UP_HEIGHT/2) and touchState.y <= (LCD_H/2)+(PAGE_UP_HEIGHT/2)) then
     print(string.format("(%s) %s - %s", page, touchState.x, touchState.y))
     if page ~= (#pages - 2) then
       selectPage(1)

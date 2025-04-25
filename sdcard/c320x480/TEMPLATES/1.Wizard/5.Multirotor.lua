@@ -39,6 +39,9 @@ local BackgroundImg = bitmap.open("img/background.png")
 local ImgPageUp = bitmap.open("img/pageup.png")
 local ImgPageDn = bitmap.open("img/pagedn.png")
 
+local PAGE_UP_HEIGHT = 65
+local PAGE_UP_WIDTH = 25
+
 
 -- Change display attribute to current field
 local function addField(step)
@@ -155,7 +158,7 @@ local function runThrottleConfig(event)
     ThrottleBackground = bitmap.open("img/multirotor/throttle.png")
   end
   lcd.drawBitmap(ThrottleBackground, 0, 0)
-  lcd.drawBitmap(ImgPageDn, 455, 95)
+  lcd.drawBitmap(ImgPageDn, LCD_W-PAGE_UP_WIDTH, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
   fields = ThrottleFields
   lcd.drawText(40, 20, "Assign Throttle channel", TEXT_COLOR)
   lcd.drawFilledRectangle(40, 45, 100, 30, TEXT_BGCOLOR)
@@ -176,8 +179,8 @@ local function runRollConfig(event)
     RollBackground = bitmap.open("img/multirotor/roll.png")
   end
   lcd.drawBitmap(RollBackground, 0, 0)
-  lcd.drawBitmap(ImgPageUp, 0, 95)
-  lcd.drawBitmap(ImgPageDn, 455, 95)
+  lcd.drawBitmap(ImgPageUp, 0, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
+  lcd.drawBitmap(ImgPageDn, LCD_W-PAGE_UP_WIDTH, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
   fields = RollFields
   lcd.drawText(40, 20, "Assign Roll channel", TEXT_COLOR)
   lcd.drawFilledRectangle(40, 45, 100, 30, TEXT_BGCOLOR)
@@ -198,8 +201,8 @@ local function runPitchConfig(event)
     PitchBackground = bitmap.open("img/multirotor/pitch.png")
   end
   lcd.drawBitmap(PitchBackground, 0, 0)
-  lcd.drawBitmap(ImgPageUp, 0, 95)
-  lcd.drawBitmap(ImgPageDn, 455, 95)
+  lcd.drawBitmap(ImgPageUp, 0, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
+  lcd.drawBitmap(ImgPageDn, LCD_W-PAGE_UP_WIDTH, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
   fields = PitchFields
   lcd.drawText(40, 20, "Assign Pitch channel", TEXT_COLOR)
   lcd.drawFilledRectangle(40, 45, 100, 30, TEXT_BGCOLOR)
@@ -220,8 +223,8 @@ local function runYawConfig(event)
     YawBackground = bitmap.open("img/multirotor/yaw.png")
   end
   lcd.drawBitmap(YawBackground, 0, 0)
-  lcd.drawBitmap(ImgPageUp, 0, 95)
-  lcd.drawBitmap(ImgPageDn, 455, 95)
+  lcd.drawBitmap(ImgPageUp, 0, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
+  lcd.drawBitmap(ImgPageDn, LCD_W-PAGE_UP_WIDTH, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
   fields = YawFields
   lcd.drawText(40, 20, "Assign Yaw channel", TEXT_COLOR)
   lcd.drawFilledRectangle(40, 45, 100, 30, TEXT_BGCOLOR)
@@ -242,8 +245,8 @@ local function runArmConfig(event)
     ArmBackground = bitmap.open("img/multirotor/arm.png")
   end
   lcd.drawBitmap(ArmBackground, 0, 0)
-  lcd.drawBitmap(ImgPageUp, 0, 95)
-  lcd.drawBitmap(ImgPageDn, 455, 95)
+  lcd.drawBitmap(ImgPageUp, 0, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
+  lcd.drawBitmap(ImgPageDn, LCD_W-PAGE_UP_WIDTH, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
   fields = ArmFields
   lcd.drawText(40, 20, "Assign Arm switch", TEXT_COLOR)
   lcd.drawFilledRectangle(40, 45, 100, 30, TEXT_BGCOLOR)
@@ -264,8 +267,8 @@ local function runBeeperConfig(event)
     BeeperBackground = bitmap.open("img/multirotor/beeper.png")
   end
   lcd.drawBitmap(BeeperBackground, 0, 0)
-  lcd.drawBitmap(ImgPageUp, 0, 95)
-  lcd.drawBitmap(ImgPageDn, 455, 95)
+  lcd.drawBitmap(ImgPageUp, 0, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
+  lcd.drawBitmap(ImgPageDn, LCD_W-PAGE_UP_WIDTH, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
   fields = BeeperFields
   lcd.drawText(40, 20, "Assign Beeper switch", TEXT_COLOR)
   lcd.drawFilledRectangle(40, 45, 100, 30, TEXT_BGCOLOR)
@@ -286,8 +289,8 @@ local function runModeConfig(event)
     ModeBackground = bitmap.open("img/multirotor/mode.png")
   end
   lcd.drawBitmap(ModeBackground, 0, 0)
-  lcd.drawBitmap(ImgPageUp, 0, 95)
-  lcd.drawBitmap(ImgPageDn, 455, 95)
+  lcd.drawBitmap(ImgPageUp, 0, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
+  lcd.drawBitmap(ImgPageDn, LCD_W-PAGE_UP_WIDTH, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
   fields = ModeFields
   lcd.drawText(40, 20, "Assign Mode switch", TEXT_COLOR)
   lcd.drawFilledRectangle(40, 45, 100, 30, TEXT_BGCOLOR)
@@ -323,8 +326,8 @@ local function runConfigSummary(event)
   end
   fields = ConfigSummaryFields
   lcd.drawBitmap(BackgroundImg, 0, 0)
-  lcd.drawBitmap(ImgPageUp, 0, 95)
-  lcd.drawBitmap(ImgSummary, 300, 60)
+  lcd.drawBitmap(ImgPageUp, 0, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
+  lcd.drawBitmap(ImgSummary, 150, 260)
   lineIndex = 40
   -- throttle
   drawNextChanelLine("Throttle channel", ThrottleFields[1][5])
@@ -362,7 +365,7 @@ end
 local function createModel(event)
   lcd.clear()
   lcd.drawBitmap(BackgroundImg, 0, 0)
-  lcd.drawBitmap(ImgSummary, 300, 60)
+  lcd.drawBitmap(ImgSummary, 150, 260)
   model.defaultInputs()
   model.deleteMixes()
   -- throttle
@@ -384,7 +387,7 @@ end
 local function onEnd(event)
   lcd.clear()
   lcd.drawBitmap(BackgroundImg, 0, 0)
-  lcd.drawBitmap(ImgSummary, 300, 60)
+  lcd.drawBitmap(ImgSummary, 150, 260)
 
   lcd.drawText(70, 90, "Model successfully created !", COLOR_THEME_PRIMARY1)
   lcd.drawText(100, 130, "Hold [RTN] to exit.", COLOR_THEME_PRIMARY1)
@@ -419,10 +422,10 @@ local function run(event, touchState)
     selectPage(-1)
   elseif event == EVT_VIRTUAL_NEXT_PAGE and page < #pages - 2 then
     selectPage(1)
-  elseif event == EVT_TOUCH_FIRST and (touchState.x <= 40 and touchState.y >= 100 and touchState.y <= 160) then
+  elseif event == EVT_TOUCH_FIRST and (touchState.x <= 40 and touchState.y >= (LCD_H/2)-(PAGE_UP_HEIGHT/2) and touchState.y <= (LCD_H/2)+(PAGE_UP_HEIGHT/2)) then
     print(string.format("(%s) %s - %s", page, touchState.x, touchState.y))
     selectPage(-1)
-  elseif event == EVT_TOUCH_FIRST and (touchState.x >= LCD_W - 40 and touchState.y >= 100 and touchState.y <= 160) then
+  elseif event == EVT_TOUCH_FIRST and (touchState.x >= LCD_W - 40 and touchState.y >= (LCD_H/2)-(PAGE_UP_HEIGHT/2) and touchState.y <= (LCD_H/2)+(PAGE_UP_HEIGHT/2)) then
     print(string.format("(%s) %s - %s", page, touchState.x, touchState.y))
     if page ~= (#pages - 2) then
       selectPage(1)
