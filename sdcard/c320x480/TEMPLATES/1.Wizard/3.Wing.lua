@@ -37,6 +37,9 @@ local ImgPlane = bitmap.open("img/wing/plane.png")
 local ImgPageUp = bitmap.open("img/pageup.png")
 local ImgPageDn = bitmap.open("img/pagedn.png")
 
+local PAGE_UP_HEIGHT = 65
+local PAGE_UP_WIDTH = 25
+
 local STICK_NUMBER_AIL = 3
 local STICK_NUMBER_ELE = 1
 local STICK_NUMBER_THR = 2
@@ -230,8 +233,8 @@ local function drawMark(x, y, name)
 end
 
 local function drawTitle(txt)
-    lcd.drawFilledRectangle(1, 1, 480, 35, LIGHTGREY)
-    lcd.drawText(150, 8, txt, COLOR_THEME_PRIMARY1)
+    lcd.drawFilledRectangle(0, 0, 320, 35, LIGHTGREY)
+    lcd.drawText(110, 8, txt, COLOR_THEME_PRIMARY1)
 end
 
 local MotorFields = {
@@ -256,8 +259,8 @@ local function runMotorConfig(event)
         ImgEngine = bitmap.open("img/wing/prop.png")
     end
     lcd.drawBitmap(BackgroundImg, 0, 0)
-    lcd.drawBitmap(ImgPageDn, 455, 95)
-    lcd.drawBitmap(ImgEngine, 310, 50)
+    lcd.drawBitmap(ImgPageDn, LCD_W-PAGE_UP_WIDTH, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
+    lcd.drawBitmap(ImgEngine, 120, 220)
 
     drawTitle("Motor Settings")
 
@@ -305,15 +308,18 @@ local ImgAilR
 local ImgAilL
 
 local function runElevronConfig(event)
+    local ImgPlaneX = 35 --250x128
+    local ImgPlaneY = 280
+
     lcd.clear()
     if ImgAilR == nil then
         ImgAilR = bitmap.open("img/wing/rail.png")
         ImgAilL = bitmap.open("img/wing/lail.png")
     end
     lcd.drawBitmap(BackgroundImg, 0, 0)
-    lcd.drawBitmap(ImgPageUp, 0, 95)
-    lcd.drawBitmap(ImgPageDn, 455, 95)
-    lcd.drawBitmap(ImgPlane, 230, 150)
+    lcd.drawBitmap(ImgPageUp, 0, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
+    lcd.drawBitmap(ImgPageDn, LCD_W-PAGE_UP_WIDTH, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
+    lcd.drawBitmap(ImgPlane, ImgPlaneX, ImgPlaneY)
 
     drawTitle("Elevron Setup")
 
@@ -357,8 +363,8 @@ local function runConfigSummary(event)
     end
 
     lcd.drawBitmap(BackgroundImg, 0, 0)
-    lcd.drawBitmap(ImgPageUp, 0, 95)
-    lcd.drawBitmap(ImgSummary, 300, 60)
+    lcd.drawBitmap(ImgPageUp, 0, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
+    lcd.drawBitmap(ImgSummary, 150, 260)
 
     drawTitle("Config Summary")
 
@@ -387,8 +393,8 @@ local function runConfigSummary(event)
             "")
     )
 
-    lcd.drawFilledRectangle(60-10, 250-2, 240, 25, YELLOW)
-    lcd.drawText(60, 250, "Hold [Enter] to apply changes...", COLOR_THEME_PRIMARY1)
+    lcd.drawFilledRectangle(60-10, 450-2, 240, 25, YELLOW)
+    lcd.drawText(60, 450, "Hold [Enter] to apply changes...", COLOR_THEME_PRIMARY1)
 
     if event == EVT_VIRTUAL_EXIT then
         -- exit script
@@ -440,7 +446,7 @@ end
 local function createModel(event)
     lcd.clear()
     lcd.drawBitmap(BackgroundImg, 0, 0)
-    lcd.drawBitmap(ImgSummary, 300, 60)
+    lcd.drawBitmap(ImgSummary, 150, 260)
     model.defaultInputs()
     model.deleteInput(defaultChannel(STICK_NUMBER_RUD), 0) -- delete rudder
     model.deleteMixes()
@@ -496,7 +502,7 @@ end
 local function onEnd(event)
     lcd.clear()
     lcd.drawBitmap(BackgroundImg, 0, 0)
-    lcd.drawBitmap(ImgSummary, 300, 60)
+    lcd.drawBitmap(ImgSummary, 150, 260)
 
     lcd.drawText(70, 90, "Model successfully created !", COLOR_THEME_PRIMARY1)
     lcd.drawText(100, 130, "Hold [RTN] to exit.", COLOR_THEME_PRIMARY1)
@@ -527,10 +533,10 @@ local function run(event, touchState)
         selectPage(-1)
     elseif event == EVT_VIRTUAL_NEXT_PAGE and page < #pages - 2 then
         selectPage(1)
-    elseif event == EVT_TOUCH_FIRST and (touchState.x <= 40 and touchState.y >= 100 and touchState.y <= 160) then
+    elseif event == EVT_TOUCH_FIRST and (touchState.x <= 40 and touchState.y >= (LCD_H/2)-(PAGE_UP_HEIGHT/2) and touchState.y <= (LCD_H/2)+(PAGE_UP_HEIGHT/2)) then
         print(string.format("(%s) %s - %s", page, touchState.x, touchState.y))
         selectPage(-1)
-    elseif event == EVT_TOUCH_FIRST and (touchState.x >= LCD_W - 40 and touchState.y >= 100 and touchState.y <= 160) then
+    elseif event == EVT_TOUCH_FIRST and (touchState.x >= LCD_W - 40 and touchState.y >= (LCD_H/2)-(PAGE_UP_HEIGHT/2) and touchState.y <= (LCD_H/2)+(PAGE_UP_HEIGHT/2)) then
         print(string.format("(%s) %s - %s", page, touchState.x, touchState.y))
         if page ~= (#pages - 2) then
             selectPage(1)
