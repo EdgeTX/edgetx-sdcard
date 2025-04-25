@@ -182,7 +182,7 @@ local function main(event, touchState)
     lcd.setColor(CUSTOM_COLOR, getRangeColor(signalPercent, 0, 100))
 
     -- draw current value
-    lcd.drawText(3, 90, tostring(signalValue) .. "db", XXLSIZE + CUSTOM_COLOR)
+    lcd.drawText(3, 90, tostring(signalValue) .. "dB", XXLSIZE + CUSTOM_COLOR)
 
     -- draw main bar
     local xMin = 10

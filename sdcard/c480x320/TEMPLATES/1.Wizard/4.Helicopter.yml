@@ -1,5 +1,5 @@
 header: 
-   name: "Glider"
+   name: "Helicopter"
    bitmap: ""
 telemetryProtocol: 0
 thrTrim: 0
