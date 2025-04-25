@@ -34,6 +34,9 @@ local ImgPlane = bitmap.open("img/glider/glider.png")
 local ImgPageUp = bitmap.open("img/pageup.png")
 local ImgPageDn = bitmap.open("img/pagedn.png")
 
+local PAGE_UP_HEIGHT = 65
+local PAGE_UP_WIDTH = 25
+
 local STICK_NUMBER_AIL = 3
 local STICK_NUMBER_ELE = 1
 local STICK_NUMBER_THR = 2
@@ -230,8 +233,8 @@ local function drawMark(x, y, name)
 end
 
 local function drawTitle(txt)
-    lcd.drawFilledRectangle(1, 1, 480, 35, LIGHTGREY)
-    lcd.drawText(150, 8, txt, COLOR_THEME_PRIMARY1)
+    lcd.drawFilledRectangle(0, 0, 320, 35, LIGHTGREY)
+    lcd.drawText(110, 8, txt, COLOR_THEME_PRIMARY1)
 end
 
 local MotorFields = {
@@ -256,8 +259,8 @@ local function runMotorConfig(event)
         ImgEngine = bitmap.open("img/glider/prop.png")
     end
     lcd.drawBitmap(BackgroundImg, 0, 0)
-    lcd.drawBitmap(ImgPageDn, 455, 95)
-    lcd.drawBitmap(ImgEngine, 310, 50)
+    lcd.drawBitmap(ImgPageDn, LCD_W-PAGE_UP_WIDTH, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
+    lcd.drawBitmap(ImgEngine, 100, 220)
 
     drawTitle("Motor Settings")
 
@@ -301,32 +304,35 @@ local ImgAilR
 local ImgAilL
 
 local function runAilConfig(event)
+    local ImgPlaneX = 60
+    local ImgPlaneY = 270
+
     lcd.clear()
     if ImgAilR == nil then
         ImgAilR = bitmap.open("img/glider/rail.png")
         ImgAilL = bitmap.open("img/glider/lail.png")
     end
     lcd.drawBitmap(BackgroundImg, 0, 0)
-    lcd.drawBitmap(ImgPageUp, 0, 95)
-    lcd.drawBitmap(ImgPageDn, 455, 95)
-    lcd.drawBitmap(ImgPlane, 252, 100)
+    lcd.drawBitmap(ImgPageUp, 0, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
+    lcd.drawBitmap(ImgPageDn, LCD_W-PAGE_UP_WIDTH, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
+    lcd.drawBitmap(ImgPlane, ImgPlaneX, ImgPlaneY)
 
     drawTitle("Aileron Setup")
 
     if AilFields.ail_type.value == 1 then
-        lcd.drawBitmap(ImgAilR, 274, 123)
-        lcd.drawBitmap(ImgAilL, 395, 235)
-        drawMark(308, 115, "A")
-        drawMark(422, 220, "A")
-        drawMark(152, 124, "A")
+        lcd.drawBitmap(ImgAilR, ImgPlaneX+22, ImgPlaneY+23)
+        lcd.drawBitmap(ImgAilL, ImgPlaneX+143, ImgPlaneY+135)
+        drawMark(ImgPlaneX+56, ImgPlaneY+15, "A")
+        drawMark(ImgPlaneX+170, ImgPlaneY+120, "A")
+        drawMark(152, 120, "A")
         setFieldsVisible(AilFields.page, 1, 0)
     elseif AilFields.ail_type.value == 2 then
-        lcd.drawBitmap(ImgAilR, 274, 123)
-        lcd.drawBitmap(ImgAilL, 395, 235)
-        drawMark(308, 115, "A")
-        drawMark(422, 220, "B")
-        drawMark(152, 124, "A")
-        drawMark(152, 164, "B")
+        lcd.drawBitmap(ImgAilR, ImgPlaneX+22, ImgPlaneY+23)
+        lcd.drawBitmap(ImgAilL, ImgPlaneX+143, ImgPlaneY+135)
+        drawMark(ImgPlaneX+56, ImgPlaneY+15, "A")
+        drawMark(ImgPlaneX+170, ImgPlaneY+120, "B")
+        drawMark(152, 120, "A")
+        drawMark(152, 160, "B")
         setFieldsVisible(AilFields.page, 1, 1)
     else
         setFieldsVisible(AilFields.page, 0, 0)
@@ -350,29 +356,32 @@ FlapsFields.page = {
 local ImgFlp
 
 local function runFlapsConfig(event)
+    local ImgPlaneX = 60
+    local ImgPlaneY = 270
+
     lcd.clear()
     if ImgFlp == nil then
         ImgFlp = bitmap.open("img/glider/flap.png")
     end
     lcd.drawBitmap(BackgroundImg, 0, 0)
-    lcd.drawBitmap(ImgPageUp, 0, 95)
-    lcd.drawBitmap(ImgPageDn, 455, 95)
-    lcd.drawBitmap(ImgPlane, 252, 100)
+    lcd.drawBitmap(ImgPageUp, 0, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
+    lcd.drawBitmap(ImgPageDn, LCD_W-PAGE_UP_WIDTH, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
+    lcd.drawBitmap(ImgPlane, ImgPlaneX, ImgPlaneY)
 
     drawTitle("Flaps")
 
     if FlapsFields.flap_type.value == 1 then
-        lcd.drawBitmap(ImgFlp, 315, 160)
-        lcd.drawBitmap(ImgFlp, 358, 202)
-        drawMark(332, 132, "A")
-        drawMark(412, 215, "A")
+        lcd.drawBitmap(ImgFlp, ImgPlaneX+63, ImgPlaneY+60)
+        lcd.drawBitmap(ImgFlp, ImgPlaneX+106, ImgPlaneY+102)
+        drawMark(ImgPlaneX+80, ImgPlaneY+32, "A")
+        drawMark(ImgPlaneX+160, ImgPlaneY+115, "A")
         drawMark(40, FlapsFields.flap_ch_a.y, "A")
         setFieldsVisible(FlapsFields.page, 1, 0)
     elseif FlapsFields.flap_type.value == 2 then
-        lcd.drawBitmap(ImgFlp, 315, 160)
-        lcd.drawBitmap(ImgFlp, 358, 202)
-        drawMark(332, 132, "A")
-        drawMark(412, 215, "B")
+        lcd.drawBitmap(ImgFlp, ImgPlaneX+63, ImgPlaneY+60)
+        lcd.drawBitmap(ImgFlp, ImgPlaneX+106, ImgPlaneY+102)
+        drawMark(ImgPlaneX+80, ImgPlaneY+32, "A")
+        drawMark(ImgPlaneX+160, ImgPlaneY+115, "B")
         drawMark(40, FlapsFields.flap_ch_a.y, "A")
         drawMark(40, FlapsFields.flap_ch_b.y, "B")
         setFieldsVisible(FlapsFields.page, 1, 1)
@@ -385,7 +394,7 @@ local function runFlapsConfig(event)
 end
 
 local TailFields = {
-    tail_type = { id = 'tail_type', x = 60 , y = 65 , w = 0, type = COMBO, is_visible = 1, value = 1                   , avail_values = { "1 channel for Elevator, no Rudder", "One channel for Elevator, one for Rudder", "Two channels for Elevator, one for Rudder", "V Tail" } },
+    tail_type = { id = 'tail_type', x = 50 , y = 65 , w = 0, type = COMBO, is_visible = 1, value = 1                   , avail_values = { "One ch for Elevator, no Rudder", "One ch for Elevator, one for Rudder", "Two ch for Elevator, one for Rudder", "V Tail" } },
     ch_a      = { id = 'ch_a'     , x = 100, y = 120, w = 0, type = COMBO, is_visible = 1, value = defaultChannel_0_ELE, avail_values = { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8", "CH9", "CH10" } }, --ele
     ch_b      = { id = 'ch_b'     , x = 100, y = 160, w = 0, type = COMBO, is_visible = 1, value = defaultChannel_0_RUD, avail_values = { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8", "CH9", "CH10" } }, --rud
     ch_c      = { id = 'ch_c'     , x = 100, y = 200, w = 0, type = COMBO, is_visible = 0, value = 6-1                 , avail_values = { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8", "CH9", "CH10" } }, --ele2
@@ -402,6 +411,9 @@ local ImgVTail
 local ImgTailRud
 
 local function runTailConfig(event)
+    local ImgTailX = 60
+    local ImgTailY = 270
+
     lcd.clear()
     if ImgTail == nil then
         ImgTail = bitmap.open("img/glider/tail.png")
@@ -409,43 +421,43 @@ local function runTailConfig(event)
         ImgTailRud = bitmap.open("img/glider/tail_rud.png")
     end
     lcd.drawBitmap(BackgroundImg, 0, 0)
-    lcd.drawBitmap(ImgPageUp, 0, 95)
-    lcd.drawBitmap(ImgPageDn, 455, 95)
+    lcd.drawBitmap(ImgPageUp, 0, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
+    lcd.drawBitmap(ImgPageDn, LCD_W-PAGE_UP_WIDTH, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
 
     drawTitle("Tail Configuration")
 
     if TailFields.tail_type.value == 0 then
-        lcd.drawBitmap(ImgTail, 252, 100)
-        drawMark(360, 125, "A")
-        drawMark(390, 155, "A")
-        drawMark(152, TailFields.ch_a.y, "A")
+        lcd.drawBitmap(ImgTail, ImgTailX, ImgTailY)
+        drawMark(ImgTailX+163, ImgTailY+50, "A")
+        drawMark(ImgTailX+128, ImgTailY+20, "A")
+        drawMark(40, TailFields.ch_a.y, "A")
         setFieldsVisible(TailFields.page, 1, 0, 0)
     end
     if TailFields.tail_type.value == 1 then
-        lcd.drawBitmap(ImgTail, 252, 100)
-        lcd.drawBitmap(ImgTailRud, 390, 180)
-        drawMark(415, 150, "A")
-        drawMark(380, 120, "A")
-        drawMark(390, 185, "B")
+        lcd.drawBitmap(ImgTail, ImgTailX, ImgTailY)
+        lcd.drawBitmap(ImgTailRud, ImgTailX+138, ImgTailY+80)
+        drawMark(ImgTailX+163, ImgTailY+50, "A")
+        drawMark(ImgTailX+128, ImgTailY+20, "A")
+        drawMark(ImgTailX+138, ImgTailY+85, "B")
         drawMark(40, TailFields.ch_a.y, "A")
         drawMark(40, TailFields.ch_b.y, "B")
         setFieldsVisible(TailFields.page, 1, 1, 0)
     end
     if TailFields.tail_type.value == 2 then
-        lcd.drawBitmap(ImgTail, 252, 100)
-        lcd.drawBitmap(ImgTailRud, 390, 180)
-        drawMark(415, 150, "C")
-        drawMark(380, 120, "A")
-        drawMark(390, 185, "B")
+        lcd.drawBitmap(ImgTail, ImgTailX, ImgTailY)
+        lcd.drawBitmap(ImgTailRud, ImgTailX+138, ImgTailY+80)
+        drawMark(ImgTailX+163, ImgTailY+50, "C")
+        drawMark(ImgTailX+128, ImgTailY+20, "A")
+        drawMark(ImgTailX+138, ImgTailY+85, "B")
         drawMark(40, TailFields.ch_a.y, "A")
         drawMark(40, TailFields.ch_b.y, "B")
         drawMark(40, TailFields.ch_c.y, "C")
         setFieldsVisible(TailFields.page, 1, 1, 1)
     end
     if TailFields.tail_type.value == 3 then
-        lcd.drawBitmap(ImgVTail, 252, 100)
-        drawMark(315, 110, "A")
-        drawMark(382, 120, "B")
+        lcd.drawBitmap(ImgVTail, ImgTailX, ImgTailY)
+        drawMark(ImgTailX+73, ImgTailY+10, "A")
+        drawMark(ImgTailX+133, ImgTailY+30, "B")
         drawMark(40, TailFields.ch_a.y, "A")
         drawMark(40, TailFields.ch_b.y, "B")
         setFieldsVisible(TailFields.page, 1, 1, 0)
@@ -471,18 +483,21 @@ GearFields.page = {
 local ImgFlp
 
 local function runGearConfig(event)
+    local ImgPlaneX = 60
+    local ImgPlaneY = 270
+
     lcd.clear()
     if ImgFlp == nil then
         ImgFlp = bitmap.open("img/plane/flap.png")
     end
     lcd.drawBitmap(BackgroundImg, 0, 0)
-    lcd.drawBitmap(ImgPageUp, 0, 95)
-    lcd.drawBitmap(ImgPageDn, 455, 95)
-    lcd.drawBitmap(ImgPlane, 252, 100)
+    lcd.drawBitmap(ImgPageUp, 0, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
+    lcd.drawBitmap(ImgPageDn, LCD_W-PAGE_UP_WIDTH, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
+    lcd.drawBitmap(ImgPlane, ImgPlaneX, ImgPlaneY)
 
     drawTitle("Landing Gear")
 
-    lcd.drawText(40, 50, "Does your model have retract Landing gears?", COLOR_THEME_PRIMARY1)
+    lcd.drawText(40, 50, "Does your model have retract\nLanding gears?", COLOR_THEME_PRIMARY1)
 
     lcd.drawText(40, GearFields.is_gear.y, "Retracts Gear?", COLOR_THEME_PRIMARY1)
     if GearFields.is_gear.value == 1 then
@@ -513,8 +528,8 @@ AdditionalSettingsFields.page = {
 local function runAdditionalSettings(event)
     lcd.clear()
     lcd.drawBitmap(BackgroundImg, 0, 0)
-    lcd.drawBitmap(ImgPageUp, 0, 95)
-    lcd.drawBitmap(ImgPageDn, 455, 95)
+    lcd.drawBitmap(ImgPageUp, 0, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
+    lcd.drawBitmap(ImgPageDn, LCD_W-PAGE_UP_WIDTH, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
 
     drawTitle("Additional Settings")
 
@@ -552,8 +567,8 @@ local function runConfigSummary(event)
     end
 
     lcd.drawBitmap(BackgroundImg, 0, 0)
-    lcd.drawBitmap(ImgPageUp, 0, 95)
-    lcd.drawBitmap(ImgSummary, 300, 60)
+    lcd.drawBitmap(ImgPageUp, 0, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
+    lcd.drawBitmap(ImgSummary, 150, 260)
 
     drawTitle("Config Summary")
 
@@ -613,8 +628,8 @@ local function runConfigSummary(event)
         drawNextLine("Arm switch", nil, switchName)
     end
 
-    lcd.drawFilledRectangle(60-10, 250-2, 240, 25, YELLOW)
-    lcd.drawText(60, 250, "Hold [Enter] to apply changes...", COLOR_THEME_PRIMARY1)
+    lcd.drawFilledRectangle(60-10, 450-2, 240, 25, YELLOW)
+    lcd.drawText(60, 450, "Hold [Enter] to apply changes...", COLOR_THEME_PRIMARY1)
 
     if event == EVT_VIRTUAL_EXIT then
         -- exit script
@@ -666,7 +681,7 @@ end
 local function createModel(event)
     lcd.clear()
     lcd.drawBitmap(BackgroundImg, 0, 0)
-    lcd.drawBitmap(ImgSummary, 300, 60)
+    lcd.drawBitmap(ImgSummary, 150, 260)
     model.defaultInputs()
     model.deleteMixes()
 
@@ -754,7 +769,7 @@ end
 local function onEnd(event)
     lcd.clear()
     lcd.drawBitmap(BackgroundImg, 0, 0)
-    lcd.drawBitmap(ImgSummary, 300, 60)
+    lcd.drawBitmap(ImgSummary, 150, 260)
 
     lcd.drawText(70, 90, "Model successfully created !", COLOR_THEME_PRIMARY1)
     lcd.drawText(100, 130, "Hold [RTN] to exit.", COLOR_THEME_PRIMARY1)
@@ -789,10 +804,10 @@ local function run(event, touchState)
         selectPage(-1)
     elseif event == EVT_VIRTUAL_NEXT_PAGE and page < #pages - 2 then
         selectPage(1)
-    elseif event == EVT_TOUCH_FIRST and (touchState.x <= 40 and touchState.y >= 100 and touchState.y <= 160) then
+    elseif event == EVT_TOUCH_FIRST and (touchState.x <= 40 and touchState.y >= (LCD_H/2)-(PAGE_UP_HEIGHT/2) and touchState.y <= (LCD_H/2)+(PAGE_UP_HEIGHT/2)) then
         print(string.format("(%s) %s - %s", page, touchState.x, touchState.y))
         selectPage(-1)
-    elseif event == EVT_TOUCH_FIRST and (touchState.x >= LCD_W - 40 and touchState.y >= 100 and touchState.y <= 160) then
+    elseif event == EVT_TOUCH_FIRST and (touchState.x >= LCD_W - 40 and touchState.y >= (LCD_H/2)-(PAGE_UP_HEIGHT/2) and touchState.y <= (LCD_H/2)+(PAGE_UP_HEIGHT/2)) then
         print(string.format("(%s) %s - %s", page, touchState.x, touchState.y))
         if page ~= (#pages - 2) then
             selectPage(1)
