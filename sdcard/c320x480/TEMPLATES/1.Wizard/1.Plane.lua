@@ -37,6 +37,9 @@ local ImgPlane = bitmap.open("img/plane/plane.png")
 local ImgPageUp = bitmap.open("img/pageup.png")
 local ImgPageDn = bitmap.open("img/pagedn.png")
 
+local PAGE_UP_HEIGHT = 65
+local PAGE_UP_WIDTH = 25
+
 local STICK_NUMBER_AIL = 3
 local STICK_NUMBER_ELE = 1
 local STICK_NUMBER_THR = 2
@@ -259,7 +262,7 @@ local function runMotorConfig(event)
         ImgEngine = bitmap.open("img/plane/prop.png")
     end
     lcd.drawBitmap(BackgroundImg, 0, 0)
-    lcd.drawBitmap(ImgPageDn, 295, 100)
+    lcd.drawBitmap(ImgPageDn, LCD_W-PAGE_UP_WIDTH, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
     lcd.drawBitmap(ImgEngine, 120, 220)
 
     drawTitle("Motor Settings")
@@ -313,8 +316,8 @@ local function runAilConfig(event)
         ImgAilL = bitmap.open("img/plane/lail.png")
     end
     lcd.drawBitmap(BackgroundImg, 0, 0)
-    lcd.drawBitmap(ImgPageUp, 0, 95)
-    lcd.drawBitmap(ImgPageDn, 455, 95)
+    lcd.drawBitmap(ImgPageUp, 0, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
+    lcd.drawBitmap(ImgPageDn, LCD_W-PAGE_UP_WIDTH, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
     lcd.drawBitmap(ImgPlane, ImgPlaneX, ImgPlaneY)
 
     drawTitle("Aileron Setup")
@@ -364,8 +367,8 @@ local function runFlapsConfig(event)
         ImgFlp = bitmap.open("img/plane/flap.png")
     end
     lcd.drawBitmap(BackgroundImg, 0, 0)
-    lcd.drawBitmap(ImgPageUp, 0, 95)
-    lcd.drawBitmap(ImgPageDn, 455, 95)
+    lcd.drawBitmap(ImgPageUp, 0, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
+    lcd.drawBitmap(ImgPageDn, LCD_W-PAGE_UP_WIDTH, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
     lcd.drawBitmap(ImgPlane, ImgPlaneX, ImgPlaneY)
 
     drawTitle("Flaps")
@@ -421,9 +424,8 @@ local function runTailConfig(event)
         ImgTailRud = bitmap.open("img/plane/tail_rud.png")
     end
     lcd.drawBitmap(BackgroundImg, 0, 0)
-    lcd.drawBitmap(ImgPageUp, 0, 95)
-    lcd.drawBitmap(ImgPageDn, 455, 95)
-
+    lcd.drawBitmap(ImgPageUp, 0, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
+    lcd.drawBitmap(ImgPageDn, LCD_W-PAGE_UP_WIDTH, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
     drawTitle("Tail Configuration")
 
     if TailFields.tail_type.value == 0 then
@@ -491,8 +493,8 @@ local function runGearConfig(event)
         ImgFlp = bitmap.open("img/plane/flap.png")
     end
     lcd.drawBitmap(BackgroundImg, 0, 0)
-    lcd.drawBitmap(ImgPageUp, 0, 95)
-    lcd.drawBitmap(ImgPageDn, 455, 95)
+    lcd.drawBitmap(ImgPageUp, 0, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
+    lcd.drawBitmap(ImgPageDn, LCD_W-PAGE_UP_WIDTH, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
     lcd.drawBitmap(ImgPlane, ImgPlaneX, ImgPlaneY)
 
     drawTitle("Landing Gear")
@@ -528,9 +530,8 @@ AdditionalSettingsFields.page = {
 local function runAdditionalSettings(event)
     lcd.clear()
     lcd.drawBitmap(BackgroundImg, 0, 0)
-    lcd.drawBitmap(ImgPageUp, 0, 95)
-    lcd.drawBitmap(ImgPageDn, 455, 95)
-
+    lcd.drawBitmap(ImgPageUp, 0, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
+    lcd.drawBitmap(ImgPageDn, LCD_W-PAGE_UP_WIDTH, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
     drawTitle("Additional Settings")
 
     lcd.drawText(40, AdditionalSettingsFields.expo.y, "Expo", COLOR_THEME_PRIMARY1)
@@ -567,7 +568,7 @@ local function runConfigSummary(event)
     end
 
     lcd.drawBitmap(BackgroundImg, 0, 0)
-    lcd.drawBitmap(ImgPageUp, 0, 95)
+    lcd.drawBitmap(ImgPageUp, 0, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
     lcd.drawBitmap(ImgSummary, 150, 260)
 
     drawTitle("Config Summary")
@@ -686,7 +687,7 @@ end
 local function createModel(event)
     lcd.clear()
     lcd.drawBitmap(BackgroundImg, 0, 0)
-    lcd.drawBitmap(ImgSummary, 300, 60)
+    lcd.drawBitmap(ImgSummary, 150, 260)
     model.defaultInputs()
     model.deleteMixes()
 
@@ -775,7 +776,7 @@ end
 local function onEnd(event)
     lcd.clear()
     lcd.drawBitmap(BackgroundImg, 0, 0)
-    lcd.drawBitmap(ImgSummary, 300, 60)
+    lcd.drawBitmap(ImgSummary, 150, 260)
 
     lcd.drawText(70, 90, "Model successfully created !", COLOR_THEME_PRIMARY1)
     lcd.drawText(100, 130, "Hold [RTN] to exit.", COLOR_THEME_PRIMARY1)
@@ -810,10 +811,10 @@ local function run(event, touchState)
         selectPage(-1)
     elseif event == EVT_VIRTUAL_NEXT_PAGE and page < #pages - 2 then
         selectPage(1)
-    elseif event == EVT_TOUCH_FIRST and (touchState.x <= 40 and touchState.y >= 100 and touchState.y <= 160) then
+    elseif event == EVT_TOUCH_FIRST and (touchState.x <= 40 and touchState.y >= (LCD_H/2)-(PAGE_UP_HEIGHT/2) and touchState.y <= (LCD_H/2)+(PAGE_UP_HEIGHT/2)) then
         print(string.format("(%s) %s - %s", page, touchState.x, touchState.y))
         selectPage(-1)
-    elseif event == EVT_TOUCH_FIRST and (touchState.x >= LCD_W - 40 and touchState.y >= 100 and touchState.y <= 160) then
+    elseif event == EVT_TOUCH_FIRST and (touchState.x >= LCD_W - 40 and touchState.y >= (LCD_H/2)-(PAGE_UP_HEIGHT/2) and touchState.y <= (LCD_H/2)+(PAGE_UP_HEIGHT/2)) then
         print(string.format("(%s) %s - %s", page, touchState.x, touchState.y))
         if page ~= (#pages - 2) then
             selectPage(1)
