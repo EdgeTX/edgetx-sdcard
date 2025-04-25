@@ -437,7 +437,7 @@ local function runTailConfig(event)
     end
     if TailFields.tail_type.value == 1 then
         lcd.drawBitmap(ImgTail, ImgTailX, ImgTailY)
-        lcd.drawBitmap(ImgTailRud, 340, 100)
+        lcd.drawBitmap(ImgTailRud, ImgTailX+88, ImgTailY)
         drawMark(ImgTailX+23, ImgTailY+20, "A")
         drawMark(ImgTailX+138, ImgTailY+55, "A")
         drawMark(ImgTailX+118, ImgTailY+12, "B")
@@ -447,7 +447,7 @@ local function runTailConfig(event)
     end
     if TailFields.tail_type.value == 2 then
         lcd.drawBitmap(ImgTail, ImgTailX, ImgTailY)
-        lcd.drawBitmap(ImgTailRud, 340, 100)
+        lcd.drawBitmap(ImgTailRud, ImgTailX+88, ImgTailY)
         drawMark(ImgTailX+23, ImgTailY+20, "A")
         drawMark(ImgTailX+138, ImgTailY+55, "C")
         drawMark(ImgTailX+118, ImgTailY+12, "B")
