@@ -27,6 +27,12 @@ local pages = {}
 local fields = {}
 local switches = {"SA", "SB", "SC", "SD", "SE", "SF", "SG"}
 
+local STICK_NUMBER_AIL = 3
+local STICK_NUMBER_ELE = 1
+local STICK_NUMBER_THR = 2
+local STICK_NUMBER_RUD = 0
+
+chdir("/TEMPLATES/1.Wizard")
 -- load common Bitmaps
 local ImgMarkBg = bitmap.open("img/mark_bg.png")
 local BackgroundImg = bitmap.open("img/background.png")
@@ -138,7 +144,7 @@ end
 
 
 local ThrottleFields = {
-  {50, 50, COMBO, 1, defaultChannel(2), { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8" } },
+  {50, 50, COMBO, 1, defaultChannel(STICK_NUMBER_THR), { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8" } },
 }
 
 local ThrottleBackground
@@ -159,7 +165,7 @@ local function runThrottleConfig(event)
 end
 
 local RollFields = {
-  {50, 50, COMBO, 1, defaultChannel(3), { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8" } },
+  {50, 50, COMBO, 1, defaultChannel(STICK_NUMBER_AIL), { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8" } },
 }
 
 local RollBackground
@@ -181,7 +187,7 @@ local function runRollConfig(event)
 end
 
 local PitchFields = {
-  {50, 50, COMBO, 1, defaultChannel(1), { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8" } },
+  {50, 50, COMBO, 1, defaultChannel(STICK_NUMBER_ELE), { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8" } },
 }
 
 local PitchBackground
@@ -203,7 +209,7 @@ local function runPitchConfig(event)
 end
 
 local YawFields = {
-  {50, 50, COMBO, 1, defaultChannel(0), { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8" } },
+  {50, 50, COMBO, 1, defaultChannel(STICK_NUMBER_RUD), { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8" } },
 }
 
 local YawBackground
@@ -360,20 +366,29 @@ local function createModel(event)
   model.defaultInputs()
   model.deleteMixes()
   -- throttle
-  addMix(ThrottleFields[1][5], MIXSRC_FIRST_INPUT+defaultChannel(2), "Thr")
+  addMix(ThrottleFields[1][5], MIXSRC_FIRST_INPUT+defaultChannel(STICK_NUMBER_THR), "Thr")
   -- roll
-  addMix(RollFields[1][5], MIXSRC_FIRST_INPUT+defaultChannel(0), "Roll")
+  addMix(RollFields[1][5], MIXSRC_FIRST_INPUT+defaultChannel(STICK_NUMBER_AIL), "Roll")
   -- pitch
-  addMix(PitchFields[1][5], MIXSRC_FIRST_INPUT+defaultChannel(1), "Pitch")
+  addMix(PitchFields[1][5], MIXSRC_FIRST_INPUT+defaultChannel(STICK_NUMBER_ELE), "Pitch")
   -- yaw
-  addMix(YawFields[1][5], MIXSRC_FIRST_INPUT+defaultChannel(3), "Yaw")
+  addMix(YawFields[1][5], MIXSRC_FIRST_INPUT+defaultChannel(STICK_NUMBER_RUD), "Yaw")
   addMix(4, MIXSRC_SA + ArmFields[1][5], "Arm")
   addMix(5, MIXSRC_SA + BeeperFields[1][5], "Beeper")
   addMix(6, MIXSRC_SA + ModeFields[1][5], "Mode")
 
-  lcd.drawText(70, 90, "Model successfully created !", TEXT_COLOR)
-  lcd.drawText(100, 130, "Press RTN to exit", TEXT_COLOR)
-  return 2
+  selectPage(1)
+  return 0
+end
+
+local function onEnd(event)
+  lcd.clear()
+  lcd.drawBitmap(BackgroundImg, 0, 0)
+  lcd.drawBitmap(ImgSummary, 300, 60)
+
+  lcd.drawText(70, 90, "Model successfully created !", COLOR_THEME_PRIMARY1)
+  lcd.drawText(100, 130, "Hold [RTN] to exit.", COLOR_THEME_PRIMARY1)
+  return 0
 end
 
 -- Init
@@ -389,19 +404,29 @@ local function init()
     runModeConfig,
     runConfigSummary,
     createModel,
+    onEnd
   }
 end
 
+
 -- Main
-local function run(event)
+local function run(event, touchState)
   if event == nil then
     error("Cannot be run as a model script!")
     return 2
-  elseif event == EVT_VIRTUAL_NEXT_PAGE and page < #pages-1 then
-    selectPage(1)
   elseif event == EVT_VIRTUAL_PREV_PAGE and page > 1 then
     killEvents(event);
     selectPage(-1)
+  elseif event == EVT_VIRTUAL_NEXT_PAGE and page < #pages - 2 then
+    selectPage(1)
+  elseif event == EVT_TOUCH_FIRST and (touchState.x <= 40 and touchState.y >= 100 and touchState.y <= 160) then
+    print(string.format("(%s) %s - %s", page, touchState.x, touchState.y))
+    selectPage(-1)
+  elseif event == EVT_TOUCH_FIRST and (touchState.x >= LCD_W - 40 and touchState.y >= 100 and touchState.y <= 160) then
+    print(string.format("(%s) %s - %s", page, touchState.x, touchState.y))
+    if page ~= (#pages - 2) then
+      selectPage(1)
+    end
   end
 
   local result = pages[page](event)
