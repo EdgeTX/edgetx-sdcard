@@ -314,7 +314,7 @@ end
 
 
 local ConfigSummaryFields = {
-  {110, 250, COMBO, 1, 0, { "No, I need to change something", "Yes, all is well, create the model !"} },
+  {50, 250, COMBO, 1, 0, { "No, I need to change something", "Yes, all is well, create the model !"} },
 }
 
 local ImgSummary
