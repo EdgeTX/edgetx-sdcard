@@ -148,11 +148,11 @@ local function runTypeConfig(event)
   lcd.clear()
   lcd.drawBitmap(BackgroundImg,0,0)
   if TypeBackground == nil then
-    TypeBackground = bitmap.open("img/helicopter/type.png")
+    TypeBackground = bitmap.open("img/helicopter/type.png") --232x270
   end
   fields = TypeFields
   lcd.drawBitmap(BackgroundImg,0,0)
-  lcd.drawBitmap(TypeBackground, 230, 0)
+  lcd.drawBitmap(TypeBackground, (320-232)/2, 200)
   lcd.drawBitmap(ImgPageDn, LCD_W-PAGE_UP_WIDTH, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
   lcd.drawText(40, 20, "What Type of Helicopter ?")
   lcd.drawFilledRectangle(40, 45, 200, 30, TEXT_BGCOLOR)
@@ -176,10 +176,10 @@ local function runStyleConfig(event)
   lcd.clear()
 
   if StyleBackground == nil then
-    StyleBackground = bitmap.open("img/helicopter/style.png")
+    StyleBackground = bitmap.open("img/helicopter/style.png") --237x272
   end
   lcd.drawBitmap(BackgroundImg,0,0)
-  lcd.drawBitmap(StyleBackground, 215, 0)
+  lcd.drawBitmap(StyleBackground, (320-237)/2, 200)
   lcd.drawBitmap(ImgPageUp, 0, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
   lcd.drawBitmap(ImgPageDn, LCD_W-PAGE_UP_WIDTH, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
   fields = StyleFields
@@ -201,10 +201,10 @@ local SwitchBackground
 local function runSwitchConfig(event)
   lcd.clear()
   if SwitchBackground == nil then
-    SwitchBackground = bitmap.open("img/helicopter/switch.png")
+    SwitchBackground = bitmap.open("img/helicopter/switch.png") --121x272
   end
   lcd.drawBitmap(BackgroundImg,0,0)
-  lcd.drawBitmap(SwitchBackground, 270, 0)
+  lcd.drawBitmap(SwitchBackground, (320-121)/2, 200)
   lcd.drawBitmap(ImgPageUp, 0, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
   lcd.drawBitmap(ImgPageDn, LCD_W-PAGE_UP_WIDTH, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
   fields = SwitchFields
@@ -233,10 +233,10 @@ local ThrBackground
 local function runThrConfig(event)
   lcd.clear()
   if ThrBackground == nil then
-    ThrBackground = bitmap.open("img/helicopter/throttle.png")
+    ThrBackground = bitmap.open("img/helicopter/throttle.png") --211x151
   end
   lcd.drawBitmap(BackgroundImg,0,0)
-  lcd.drawBitmap(ThrBackground, 215, 0)
+  lcd.drawBitmap(ThrBackground, (320-211)/2, 200)
   lcd.drawBitmap(ImgPageUp, 0, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
   lcd.drawBitmap(ImgPageDn, LCD_W-PAGE_UP_WIDTH, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
   fields = ThrFields
@@ -258,10 +258,10 @@ local CurveBackground
 local function runCurveConfig(event)
   lcd.clear()
   if CurveBackground == nil then
-    CurveBackground = bitmap.open("img/helicopter/curve.png")
+    CurveBackground = bitmap.open("img/helicopter/curve.png") --282x271
   end
   lcd.drawBitmap(BackgroundImg,0,0)
-  lcd.drawBitmap(CurveBackground, 200, 0)
+  lcd.drawBitmap(CurveBackground, (320-282)/2, 200)
   lcd.drawBitmap(ImgPageUp, 0, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
   lcd.drawBitmap(ImgPageDn, LCD_W-PAGE_UP_WIDTH, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
   fields = CurveFields
@@ -287,10 +287,10 @@ local AilerBackground
 local function runAilerConfig(event)
   lcd.clear()
   if AilerBackground == nil then
-    AilerBackground = bitmap.open("img/helicopter/aileron.png")
+    AilerBackground = bitmap.open("img/helicopter/aileron.png") --236x148
   end
   lcd.drawBitmap(BackgroundImg,0,0)
-  lcd.drawBitmap(AilerBackground, 220, 0)
+  lcd.drawBitmap(AilerBackground, (320-236)/2, 200)
   lcd.drawBitmap(ImgPageUp, 0, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
   lcd.drawBitmap(ImgPageDn, LCD_W-PAGE_UP_WIDTH, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
   fields = AilerFields
@@ -310,10 +310,10 @@ local EleBackground
 local function runEleConfig(event)
   lcd.clear()
   if EleBackground == nil then
-    EleBackground = bitmap.open("img/helicopter/elevator.png")
+    EleBackground = bitmap.open("img/helicopter/elevator.png") --209x166
   end
   lcd.drawBitmap(BackgroundImg,0,0)
-  lcd.drawBitmap(EleBackground, 220, 0)
+  lcd.drawBitmap(EleBackground, (320-209)/2, 200)
   lcd.drawBitmap(ImgPageUp, 0, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
   lcd.drawBitmap(ImgPageDn, LCD_W-PAGE_UP_WIDTH, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
   fields = EleFields
@@ -333,10 +333,10 @@ local RudBackground
 local function runRudConfig(event)
   lcd.clear()
   if RudBackground == nil then
-    RudBackground = bitmap.open("img/helicopter/rudder.png")
+    RudBackground = bitmap.open("img/helicopter/rudder.png") --219x140
   end
   lcd.drawBitmap(BackgroundImg,0,0)
-  lcd.drawBitmap(RudBackground, 220, 0)
+  lcd.drawBitmap(RudBackground, (320-219)/2, 200)
   lcd.drawBitmap(ImgPageUp, 0, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
   lcd.drawBitmap(ImgPageDn, LCD_W-PAGE_UP_WIDTH, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
   fields = RudFields
@@ -348,22 +348,23 @@ local function runRudConfig(event)
 end
 
 local lineIndex
+local fieldOneX, fieldTwoX = 40, 202
 
 local function drawNextChanelLine(text, text2)
-  lcd.drawText(40, lineIndex, text)
-  lcd.drawText(242, lineIndex, ": CH" .. text2 + 1)
+  lcd.drawText(fieldOneX, lineIndex, text)
+  lcd.drawText(fieldTwoX, lineIndex, ": CH" .. text2 + 1)
   lineIndex = lineIndex + 20
 end
 
 local function drawNextSwitchLine(text, text2)
-  lcd.drawText(40, lineIndex, text)
-  lcd.drawText(242, lineIndex, ": " ..switches[text2 + 1])
+  lcd.drawText(fieldOneX, lineIndex, text)
+  lcd.drawText(fieldTwoX, lineIndex, ": " ..switches[text2 + 1])
   lineIndex = lineIndex + 20
 end
 
 local function drawNextTextLine(text, text2)
-  lcd.drawText(40, lineIndex, text)
-  lcd.drawText(242, lineIndex, ": " ..text2)
+  lcd.drawText(fieldOneX, lineIndex, text)
+  lcd.drawText(fieldTwoX, lineIndex, ": " ..text2)
   lineIndex = lineIndex + 20
 end
 
@@ -374,7 +375,7 @@ local function switchLine(text)
 end
 
 local ConfigSummaryFields = {
-  {110, 250, COMBO, 1, 0, { "No, I need to change something", "Yes, all is well, create the model !"} },
+  {50, 250, COMBO, 1, 0, { "No, I need to change something", "Yes, all is well, create the model !"} },
 }
 
 local function runConfigSummary(event)
