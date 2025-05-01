@@ -1,4 +1,4 @@
--- TNS|Flights History v1.1|TNE
+-- TNS|Flights History|TNE
 
 local function run()
     return "/SCRIPTS/TOOLS/FlightsHistory/main.lua"
