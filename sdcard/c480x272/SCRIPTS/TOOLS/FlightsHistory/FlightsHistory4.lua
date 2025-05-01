@@ -240,7 +240,7 @@ local function state_SHOW_FLIGHTS_init(event, touchState)
             day,
             string.format("%s", f_info.flight_count),
             f_info.model_name,
-            string.format("(%s min)", f_info.duration//10),
+            string.format("(%0.1f min)", f_info.duration/100),
         }
     end
 
