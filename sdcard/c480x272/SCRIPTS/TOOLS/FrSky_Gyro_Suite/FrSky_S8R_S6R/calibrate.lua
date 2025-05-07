@@ -1,6 +1,6 @@
 ---- #########################################################################
 ---- #                                                                       #
----- # Copyright (C) OpenTX                                                  #
+---- # Copyright (C) EdgeTX                                                  #
 -----#                                                                       #
 ---- # License GPLv2: http://www.gnu.org/licenses/gpl-2.0.html               #
 ---- #                                                                       #
@@ -15,7 +15,10 @@
 ---- #                                                                       #
 ---- #########################################################################
 
-chdir("/SCRIPTS/TOOLS/FrSky_S8R_S6R")
+chdir("/SCRIPTS/TOOLS/FrSky_Gyro_Suite/FrSky_S8R_S6R")
+
+local app_ver = "v2.08-etx"
+local app_name = "FrSky_SR"
 
 local VALUE = 0
 local refreshState = 0
@@ -114,7 +117,7 @@ end
 local function refreshPage(event)
     lcd.clear()
     lcd.drawFilledRectangle(0,0, LCD_W, LCD_H, LIGHTWHITE);
-    drawScreenTitle("Frsky S8R/S6R RX Calibration", calibrationStep + 1, 7)
+    drawScreenTitle("Frsky S8R/S6R RX Calibration (".. app_ver ..")", calibrationStep + 1, 7)
 
     if refreshIndex == #fields then
         refreshIndex = 0
