@@ -29,7 +29,7 @@
 -- Author : Offer Shmuely
 -- Date: 2021-2024
 local app_name = "Value2"
-local app_ver = "0.9"
+local app_ver = "0.11"
 
 
 -- imports
@@ -55,6 +55,16 @@ local options = {
     { "Suffix", STRING, "" },
     { "Show_MinMax", BOOL, 1 }
 }
+
+local function translate(name)
+    local translations = {
+        Source = "Source",
+        TextColor = "Text Color",
+        Show_MinMax="Show Min / Max"
+    }
+    return translations[name]
+end
+
 
 --------------------------------------------------------------
 local function log(...)
@@ -113,14 +123,14 @@ local function update(wgt, options)
         local source_min_obj = getFieldInfo(base_source_name .. "-")
         if source_min_obj ~= nil then
             wgt.source_min_id = source_min_obj.id
-            --log("source_min_id: %d", wgt.source_min_id)
+            -- log("source_min_id: %d", wgt.source_min_id)
         end
 
         -- update max id
         local source_max_obj = getFieldInfo(base_source_name .. "+")
         if source_min_obj ~= nil then
             wgt.source_max_id = source_max_obj.id
-            --log("source_max_id: %d", wgt.source_max_id)
+            -- log("source_max_id: %d", wgt.source_max_id)
         end
         --log("source_min_id: %d, source_max_id: %d", wgt.source_min_id, wgt.source_max_id)
     end
@@ -144,6 +154,9 @@ local function prettyPrintNone(val, precession)
     -- log("prettyPrintNone - precession:%s", precession)
     if val == nil then
         return "N/A (nil)"
+    end
+    if type(val) == "table" then
+        return "N/A (table)"
     end
 
     if val == -1 then
@@ -330,7 +343,7 @@ local function refresh_widget_no_telem(wgt)
     -- draw header
     local header_txt = wgt.source_name .. " " .. wgt.options.Suffix
     local font_size_header, ts_h_w, ts_h_h, v_offset = getFontSizeHeader(wgt, header_txt, wgt.zone.h)
-    log("val: font_size_header: %d, ts_h_h: %d, lastY: %d", wgt.zone.y, ts_h_h, last_y)
+    -- log("val: font_size_header: %d, ts_h_h: %d, lastY: %d", wgt.zone.y, ts_h_h, last_y)
     lcd.drawText(wgt.zone.x + 5, wgt.zone.y + last_y + v_offset, header_txt, font_size_header + wgt.options.TextColor)
     --lcd.drawRectangle(wgt.zone.x, wgt.zone.y + last_y, ts_h_w, ts_h_h, BLUE)
     last_y = last_y + ts_h_h + 3
@@ -406,4 +419,4 @@ local function refresh(wgt, event, touchState)
     -- lcd.drawText(wgt.zone.x + wgt.zone.w, wgt.zone.y+20, string.format("isTypeSensor: %s", wgt.isTypeSensor), FONT_6 + GREY + RIGHT) -- ???
 end
 
-return { name = app_name, options = options, create = create, update = update, background = background, refresh = refresh }
+return { name=app_name, options=options, translate=translate, create=create, update=update, background=background, refresh=refresh }
