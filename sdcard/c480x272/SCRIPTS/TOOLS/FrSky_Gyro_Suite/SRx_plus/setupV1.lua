@@ -267,8 +267,8 @@ end
 
 local function drawScreenTitle(title, page, pages)
     lcd.drawFilledRectangle(0, 0, LCD_W, 30, TITLE_BGCOLOR)
-    lcd.drawText(10, 5, title.. " (".. app_ver ..")", MENU_TITLE_COLOR)
-    lcd.drawText(LCD_W - 40, 5, page .. "/" .. pages, MENU_TITLE_COLOR)
+    lcd.drawText(10, 5, title.. " (".. app_ver ..")", COLOR_THEME_PRIMARY2)
+    lcd.drawText(LCD_W - 40, 5, page .. "/" .. pages, COLOR_THEME_PRIMARY2)
 end
 
 -- Redraw the current page

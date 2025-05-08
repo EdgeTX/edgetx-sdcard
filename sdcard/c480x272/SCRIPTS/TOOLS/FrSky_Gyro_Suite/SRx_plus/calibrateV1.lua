@@ -101,8 +101,8 @@ end
 
 local function drawScreenTitle(title, page, pages)
   lcd.drawFilledRectangle(0, 0, LCD_W, 30, TITLE_BGCOLOR)
-  lcd.drawText(1, 5, title, MENU_TITLE_COLOR)
-  lcd.drawText(LCD_W-40, 5, page.."/"..pages, MENU_TITLE_COLOR)
+  lcd.drawText(1, 5, title, COLOR_THEME_PRIMARY2)
+  lcd.drawText(LCD_W-40, 5, page.."/"..pages, COLOR_THEME_PRIMARY2)
 end
 
 local function drawProgressBar()
@@ -126,14 +126,14 @@ local function runCalibrationPageForHorus(event)
   drawScreenTitle(rxName.." Calibration ("..version..")", page, #pages)
   if(calibrationStep < 6) then
     local position = calibrationPositions[1 + calibrationStep]
-    lcd.drawText(100, 50, "Place the "..rxName.." in the following position", TEXT_COLOR)
+    lcd.drawText(100, 50, "Place the "..rxName.." in the following position", COLOR_THEME_SECONDARY1)
     if calibBitmaps[calibrationStep + 1] == nil then
       calibBitmaps[calibrationStep + 1] = Bitmap.open(calibBitmapsFile[calibrationStep + 1])
     end
     lcd.drawBitmap(calibBitmaps[calibrationStep + 1], 200, 70)
     -- for index = 1, 3, 1 do
     --   local field = fields[index]
-    --   lcd.drawText(70, 80+20*index, field[1]..":", TEXT_COLOR)
+    --   lcd.drawText(70, 80+20*index, field[1]..":", COLOR_THEME_SECONDARY1)
     --   lcd.drawNumber(90, 80+20*index, field[4]/10, LEFT+PREC2)
     -- end
 

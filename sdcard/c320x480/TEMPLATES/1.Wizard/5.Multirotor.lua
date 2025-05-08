@@ -83,7 +83,7 @@ local function redrawFieldsPage(event)
     end
 
     local attr = current == (index) and ((edit == true and BLINK or 0) + INVERS) or 0
-    attr = attr + TEXT_COLOR
+    attr = attr + COLOR_THEME_SECONDARY1
 
     if field[4] == 1 then
       if field[3] == VALUE then
@@ -142,7 +142,7 @@ end
 -- draws one letter mark
 local function drawMark(x, y, name)
   lcd.drawBitmap(ImgMarkBg, x, y)
-  lcd.drawText(x+8, y+3, name, TEXT_COLOR)
+  lcd.drawText(x+8, y+3, name, COLOR_THEME_SECONDARY1)
 end
 
 
@@ -160,8 +160,8 @@ local function runThrottleConfig(event)
   lcd.drawBitmap(ThrottleBackground, 0, 0)
   lcd.drawBitmap(ImgPageDn, LCD_W-PAGE_UP_WIDTH, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
   fields = ThrottleFields
-  lcd.drawText(40, 20, "Assign Throttle channel", TEXT_COLOR)
-  lcd.drawFilledRectangle(40, 45, 100, 30, TEXT_BGCOLOR)
+  lcd.drawText(40, 20, "Assign Throttle channel", COLOR_THEME_SECONDARY1)
+  lcd.drawFilledRectangle(40, 45, 100, 30, COLOR_THEME_SECONDARY3)
   fields[1][4]=1
   local result = runFieldsPage(event)
   return result
@@ -182,8 +182,8 @@ local function runRollConfig(event)
   lcd.drawBitmap(ImgPageUp, 0, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
   lcd.drawBitmap(ImgPageDn, LCD_W-PAGE_UP_WIDTH, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
   fields = RollFields
-  lcd.drawText(40, 20, "Assign Roll channel", TEXT_COLOR)
-  lcd.drawFilledRectangle(40, 45, 100, 30, TEXT_BGCOLOR)
+  lcd.drawText(40, 20, "Assign Roll channel", COLOR_THEME_SECONDARY1)
+  lcd.drawFilledRectangle(40, 45, 100, 30, COLOR_THEME_SECONDARY3)
   fields[1][4]=1
   local result = runFieldsPage(event)
   return result
@@ -204,8 +204,8 @@ local function runPitchConfig(event)
   lcd.drawBitmap(ImgPageUp, 0, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
   lcd.drawBitmap(ImgPageDn, LCD_W-PAGE_UP_WIDTH, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
   fields = PitchFields
-  lcd.drawText(40, 20, "Assign Pitch channel", TEXT_COLOR)
-  lcd.drawFilledRectangle(40, 45, 100, 30, TEXT_BGCOLOR)
+  lcd.drawText(40, 20, "Assign Pitch channel", COLOR_THEME_SECONDARY1)
+  lcd.drawFilledRectangle(40, 45, 100, 30, COLOR_THEME_SECONDARY3)
   fields[1][4]=1
   local result = runFieldsPage(event)
   return result
@@ -226,8 +226,8 @@ local function runYawConfig(event)
   lcd.drawBitmap(ImgPageUp, 0, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
   lcd.drawBitmap(ImgPageDn, LCD_W-PAGE_UP_WIDTH, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
   fields = YawFields
-  lcd.drawText(40, 20, "Assign Yaw channel", TEXT_COLOR)
-  lcd.drawFilledRectangle(40, 45, 100, 30, TEXT_BGCOLOR)
+  lcd.drawText(40, 20, "Assign Yaw channel", COLOR_THEME_SECONDARY1)
+  lcd.drawFilledRectangle(40, 45, 100, 30, COLOR_THEME_SECONDARY3)
   fields[1][4]=1
   local result = runFieldsPage(event)
   return result
@@ -248,8 +248,8 @@ local function runArmConfig(event)
   lcd.drawBitmap(ImgPageUp, 0, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
   lcd.drawBitmap(ImgPageDn, LCD_W-PAGE_UP_WIDTH, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
   fields = ArmFields
-  lcd.drawText(40, 20, "Assign Arm switch", TEXT_COLOR)
-  lcd.drawFilledRectangle(40, 45, 100, 30, TEXT_BGCOLOR)
+  lcd.drawText(40, 20, "Assign Arm switch", COLOR_THEME_SECONDARY1)
+  lcd.drawFilledRectangle(40, 45, 100, 30, COLOR_THEME_SECONDARY3)
   fields[1][4]=1
   local result = runFieldsPage(event)
   return result
@@ -270,8 +270,8 @@ local function runBeeperConfig(event)
   lcd.drawBitmap(ImgPageUp, 0, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
   lcd.drawBitmap(ImgPageDn, LCD_W-PAGE_UP_WIDTH, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
   fields = BeeperFields
-  lcd.drawText(40, 20, "Assign Beeper switch", TEXT_COLOR)
-  lcd.drawFilledRectangle(40, 45, 100, 30, TEXT_BGCOLOR)
+  lcd.drawText(40, 20, "Assign Beeper switch", COLOR_THEME_SECONDARY1)
+  lcd.drawFilledRectangle(40, 45, 100, 30, COLOR_THEME_SECONDARY3)
   fields[1][4]=1
   local result = runFieldsPage(event)
   return result
@@ -292,8 +292,8 @@ local function runModeConfig(event)
   lcd.drawBitmap(ImgPageUp, 0, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
   lcd.drawBitmap(ImgPageDn, LCD_W-PAGE_UP_WIDTH, (LCD_H/2)-(PAGE_UP_HEIGHT/2))
   fields = ModeFields
-  lcd.drawText(40, 20, "Assign Mode switch", TEXT_COLOR)
-  lcd.drawFilledRectangle(40, 45, 100, 30, TEXT_BGCOLOR)
+  lcd.drawText(40, 20, "Assign Mode switch", COLOR_THEME_SECONDARY1)
+  lcd.drawFilledRectangle(40, 45, 100, 30, COLOR_THEME_SECONDARY3)
   fields[1][4]=1
   local result = runFieldsPage(event)
   return result
@@ -301,14 +301,14 @@ end
 
 local lineIndex
 local function drawNextChanelLine(text, text2)
-  lcd.drawText(40, lineIndex, text, TEXT_COLOR)
-  lcd.drawText(242, lineIndex, ": CH" .. text2 + 1, TEXT_COLOR)
+  lcd.drawText(40, lineIndex, text, COLOR_THEME_SECONDARY1)
+  lcd.drawText(242, lineIndex, ": CH" .. text2 + 1, COLOR_THEME_SECONDARY1)
   lineIndex = lineIndex + 20
 end
 
 local function drawNextSwitchLine(text, text2)
-  lcd.drawText(40, lineIndex, text, TEXT_COLOR)
-  lcd.drawText(242, lineIndex, ": " ..switches[text2 + 1], TEXT_COLOR)
+  lcd.drawText(40, lineIndex, text, COLOR_THEME_SECONDARY1)
+  lcd.drawText(242, lineIndex, ": " ..switches[text2 + 1], COLOR_THEME_SECONDARY1)
   lineIndex = lineIndex + 20
 end
 

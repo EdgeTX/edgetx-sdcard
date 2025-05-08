@@ -58,8 +58,8 @@ local function run(event, touchState)
     if error_desc ~= nil then
         print(error_desc)
         lcd.clear()
-        lcd.drawText(5, 30, "Error:", TEXT_COLOR + BOLD)
-        lcd.drawText(5, 60, error_desc, TEXT_COLOR + BOLD)
+        lcd.drawText(5, 30, "Error:", COLOR_THEME_SECONDARY1 + BOLD)
+        lcd.drawText(5, 60, error_desc, COLOR_THEME_SECONDARY1 + BOLD)
         return 0
     end
 
