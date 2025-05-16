@@ -152,11 +152,11 @@ local function runTypeConfig(event)
   lcd.drawBitmap(TypeBackground, 230, 0)
   lcd.drawBitmap(ImgPageDn, 455, 95)
   lcd.drawText(40, 20, "What Type of Helicopter ?")
-  lcd.drawFilledRectangle(40, 45, 200, 30, TEXT_BGCOLOR)
+  lcd.drawFilledRectangle(40, 45, 200, 30, COLOR_THEME_SECONDARY3)
   fields[2][4] = 0
   if fields[1][5] == 1 then
     lcd.drawText(30, 100, "Specify your Swash Type")
-    lcd.drawFilledRectangle(40, 122, 100, 30, TEXT_BGCOLOR)
+    lcd.drawFilledRectangle(40, 122, 100, 30, COLOR_THEME_SECONDARY3)
     fields[2][4] = 1
   end
   local result = runFieldsPage(event)
@@ -181,7 +181,7 @@ local function runStyleConfig(event)
   lcd.drawBitmap(ImgPageDn, 455, 95)
   fields = StyleFields
   lcd.drawText(40, 20, "Your Flying Style")
-  lcd.drawFilledRectangle(40, 45, 100, 30, TEXT_BGCOLOR)
+  lcd.drawFilledRectangle(40, 45, 100, 30, COLOR_THEME_SECONDARY3)
   fields[1][4]=1
   local result = runFieldsPage(event)
   return result
@@ -206,15 +206,15 @@ local function runSwitchConfig(event)
   lcd.drawBitmap(ImgPageDn, 455, 95)
   fields = SwitchFields
   lcd.drawText(40, 20, "FM (Idle Up)")
-  lcd.drawFilledRectangle(40, 45, 100, 30, TEXT_BGCOLOR)
+  lcd.drawFilledRectangle(40, 45, 100, 30, COLOR_THEME_SECONDARY3)
   fields[1][4]=1
   lcd.drawText(40, 85, "Throttle Hold")
-  lcd.drawFilledRectangle(40, 105, 100, 30, TEXT_BGCOLOR)
+  lcd.drawFilledRectangle(40, 105, 100, 30, COLOR_THEME_SECONDARY3)
   fields[2][4]=1
   fields[3][4]=0
   if TypeFields[1][5]==1 then
     lcd.drawText(40, 160, "Tail Gain")
-    lcd.drawFilledRectangle(40, 185, 100, 30, TEXT_BGCOLOR)
+    lcd.drawFilledRectangle(40, 185, 100, 30, COLOR_THEME_SECONDARY3)
     fields[3][4]=1
   end
   local result = runFieldsPage(event)
@@ -238,7 +238,7 @@ local function runThrConfig(event)
   lcd.drawBitmap(ImgPageDn, 455, 95)
   fields = ThrFields
   lcd.drawText(40, 20, "Throttle Channel")
-  lcd.drawFilledRectangle(40, 45, 100, 30, TEXT_BGCOLOR)
+  lcd.drawFilledRectangle(40, 45, 100, 30, COLOR_THEME_SECONDARY3)
   fields[1][4]=1
   local result = runFieldsPage(event)
   return result
@@ -263,13 +263,13 @@ local function runCurveConfig(event)
   lcd.drawBitmap(ImgPageDn, 455, 95)
   fields = CurveFields
   lcd.drawText(40, 20, "Throttle Curve FM0")
-  lcd.drawFilledRectangle(40, 45, 100, 30, TEXT_BGCOLOR)
+  lcd.drawFilledRectangle(40, 45, 100, 30, COLOR_THEME_SECONDARY3)
   fields[1][4]=1
   lcd.drawText(40, 90, "Throttle Curve FM1")
-  lcd.drawFilledRectangle(40, 115, 100, 30, TEXT_BGCOLOR)
+  lcd.drawFilledRectangle(40, 115, 100, 30, COLOR_THEME_SECONDARY3)
   fields[2][4]=1
   lcd.drawText(40, 160, "Throttle Curve FM2")
-  lcd.drawFilledRectangle(40, 185, 100, 30, TEXT_BGCOLOR)
+  lcd.drawFilledRectangle(40, 185, 100, 30, COLOR_THEME_SECONDARY3)
   fields[3][4]=1
   local result = runFieldsPage(event)
   return result
@@ -292,7 +292,7 @@ local function runAilerConfig(event)
   lcd.drawBitmap(ImgPageDn, 455, 95)
   fields = AilerFields
   lcd.drawText(40, 20, "Aileron Channel")
-  lcd.drawFilledRectangle(40, 45, 100, 30, TEXT_BGCOLOR)
+  lcd.drawFilledRectangle(40, 45, 100, 30, COLOR_THEME_SECONDARY3)
   fields[1][4]=1
   local result = runFieldsPage(event)
   return result
@@ -315,7 +315,7 @@ local function runEleConfig(event)
   lcd.drawBitmap(ImgPageDn, 455, 95)
   fields = EleFields
   lcd.drawText(40, 20, "Elevator Channel")
-  lcd.drawFilledRectangle(40, 45, 100, 30, TEXT_BGCOLOR)
+  lcd.drawFilledRectangle(40, 45, 100, 30, COLOR_THEME_SECONDARY3)
   fields[1][4]=1
   local result = runFieldsPage(event)
   return result
@@ -338,7 +338,7 @@ local function runRudConfig(event)
   lcd.drawBitmap(ImgPageDn, 455, 95)
   fields = RudFields
   lcd.drawText(40, 20, "Rudder (Tail) Channel")
-  lcd.drawFilledRectangle(40, 45, 100, 30, TEXT_BGCOLOR)
+  lcd.drawFilledRectangle(40, 45, 100, 30, COLOR_THEME_SECONDARY3)
   fields[1][4]=1
   local result = runFieldsPage(event)
   return result

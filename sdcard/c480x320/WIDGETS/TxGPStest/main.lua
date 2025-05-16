@@ -37,29 +37,29 @@ function refresh(widget, event, touchState)
     local numsat = GPSTable.numsat
 
     if numsat ~= nil then
-        lcd.drawText(INDENT, 0, "NumSat: " .. string.format("%d", numsat), LEFT + TEXT_COLOR) -- internal gpsData.numSat
+        lcd.drawText(INDENT, 0, "NumSat: " .. string.format("%d", numsat), LEFT + COLOR_THEME_SECONDARY1) -- internal gpsData.numSat
     else
-        lcd.drawText(INDENT, 0, "NumSat: no data yet", LEFT + TEXT_COLOR)
+        lcd.drawText(INDENT, 0, "NumSat: no data yet", LEFT + COLOR_THEME_SECONDARY1)
     end
 
     if GPSTable.fix then
-      lcd.drawText(INDENT, 20, "GPS Lock", LEFT + TEXT_COLOR)
+      lcd.drawText(INDENT, 20, "GPS Lock", LEFT + COLOR_THEME_SECONDARY1)
     else
-      lcd.drawText(INDENT, 20, "No GPS lock yet", LEFT + TEXT_COLOR)
+      lcd.drawText(INDENT, 20, "No GPS lock yet", LEFT + COLOR_THEME_SECONDARY1)
     end
 
     -- if (GPSTable.fix==true) then
-    lcd.drawText(INDENT, 40, "HDOP: " .. string.format("%.1f",GPSTable.hdop * 0.01), LEFT + TEXT_COLOR) -- internal gpsData.hdop
-    lcd.drawText(INDENT, 60, "Lat: " .. string.format("%f",GPSTable.lat), LEFT + TEXT_COLOR) -- internal gpsData.latitude * 0.000001, positive is North
-    lcd.drawText(INDENT, 80, "Lon: " .. string.format("%f",GPSTable.lon), LEFT + TEXT_COLOR) -- internal gpsData.longitude * 0.000001, positive is East
-    lcd.drawText(INDENT, 100, "Alt: " .. string.format("%d",GPSTable.alt) .. " m", LEFT + TEXT_COLOR) -- internal gpsData.altitude (precision 1m)
-    lcd.drawText(INDENT, 120, "Spd: " .. string.format("%.2f",GPSTable.speed * 0.01) .. " m/s", LEFT + TEXT_COLOR) -- internal gpsData.speed in [cm/s]
-    lcd.drawText(INDENT, 140, "Head: " .. string.format("%d",GPSTable.heading * 0.1) .. " deg", LEFT + TEXT_COLOR) -- internal gpsData.groundCourse in 10 deg units
+    lcd.drawText(INDENT, 40, "HDOP: " .. string.format("%.1f",GPSTable.hdop * 0.01), LEFT + COLOR_THEME_SECONDARY1) -- internal gpsData.hdop
+    lcd.drawText(INDENT, 60, "Lat: " .. string.format("%f",GPSTable.lat), LEFT + COLOR_THEME_SECONDARY1) -- internal gpsData.latitude * 0.000001, positive is North
+    lcd.drawText(INDENT, 80, "Lon: " .. string.format("%f",GPSTable.lon), LEFT + COLOR_THEME_SECONDARY1) -- internal gpsData.longitude * 0.000001, positive is East
+    lcd.drawText(INDENT, 100, "Alt: " .. string.format("%d",GPSTable.alt) .. " m", LEFT + COLOR_THEME_SECONDARY1) -- internal gpsData.altitude (precision 1m)
+    lcd.drawText(INDENT, 120, "Spd: " .. string.format("%.2f",GPSTable.speed * 0.01) .. " m/s", LEFT + COLOR_THEME_SECONDARY1) -- internal gpsData.speed in [cm/s]
+    lcd.drawText(INDENT, 140, "Head: " .. string.format("%d",GPSTable.heading * 0.1) .. " deg", LEFT + COLOR_THEME_SECONDARY1) -- internal gpsData.groundCourse in 10 deg units
     -- end
   else
-    lcd.drawText(INDENT, 0, "No TxGPS detected!", LEFT + TEXT_COLOR)
-    lcd.drawText(INDENT, 40, "Make sure your firmware", LEFT + TEXT_COLOR)
-    lcd.drawText(INDENT, 60, "has GPS support enabled!", LEFT + TEXT_COLOR)
+    lcd.drawText(INDENT, 0, "No TxGPS detected!", LEFT + COLOR_THEME_SECONDARY1)
+    lcd.drawText(INDENT, 40, "Make sure your firmware", LEFT + COLOR_THEME_SECONDARY1)
+    lcd.drawText(INDENT, 60, "has GPS support enabled!", LEFT + COLOR_THEME_SECONDARY1)
   end
 end
 
