@@ -185,6 +185,8 @@ end
 ---------------------------------------------------------------------------------------------------
 
 function M.getSensorInfoByName(sensorName)
+    sensorName = string.gsub(sensorName, "-", "")
+    sensorName = string.gsub(sensorName, "+", "")
     local sensors = {}
     for i=0, 30, 1 do
         local s1 = {}
@@ -194,8 +196,8 @@ function M.getSensorInfoByName(sensorName)
         s1.type = s2.type
         --name (string) Name
         s1.name = s2.name
-        --unit (number) See list of units in the appendix of the OpenTX Lua Reference Guide
-        s1.unit = s2.unit
+        --unit (number->string) See list of units in the appendix of the OpenTX Lua Reference Guide
+        s1.unit = M.unitIdToString(s2.unit)
         --prec (number) Number of decimals
         s1.prec = s2.prec
         --id (number) Only custom sensors
