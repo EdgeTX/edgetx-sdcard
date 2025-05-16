@@ -142,8 +142,8 @@ local function Config_Draw_Edit( event )
     end
     --Display
     if LCD_W == 480 then
-      lcd.drawRectangle(160-1, 100-1, 160+2, 55+2, TEXT_COLOR)
-      lcd.drawFilledRectangle(160, 100, 160, 55, TEXT_BGCOLOR)
+      lcd.drawRectangle(160-1, 100-1, 160+2, 55+2, COLOR_THEME_SECONDARY1)
+      lcd.drawFilledRectangle(160, 100, 160, 55, COLOR_THEME_SECONDARY3)
     else
       lcd.clear()
     end
@@ -204,8 +204,8 @@ local function Config_Draw_Edit( event )
     end
     -- Display
     if LCD_W == 480 then
-      lcd.drawRectangle(160-1, 100-1, 160+2, 55+2, TEXT_COLOR)
-      lcd.drawFilledRectangle(160, 100, 160, 55, TEXT_BGCOLOR)
+      lcd.drawRectangle(160-1, 100-1, 160+2, 55+2, COLOR_THEME_SECONDARY1)
+      lcd.drawFilledRectangle(160, 100, 160, 55, COLOR_THEME_SECONDARY3)
     else
       lcd.clear()
     end
@@ -270,7 +270,7 @@ local function Config_Draw_Menu()
   if LCD_W == 480 then
     --Draw title
     lcd.drawFilledRectangle(0, 0, LCD_W, 30, TITLE_BGCOLOR)
-    lcd.drawText(1, 5, "Multi Config " .. Version, MENU_TITLE_COLOR)
+    lcd.drawText(1, 5, "Multi Config " .. Version, COLOR_THEME_PRIMARY2)
     if multiBuffer(13) == 0x00 then
       lcd.drawText(10,50,"No Config telemetry...", BLINK)
     end
@@ -294,8 +294,8 @@ local function Config_Draw_Menu()
       channel_names[bitand(ch_order,3)+1] = "T"
       ch_order = math.floor(ch_order/4)
       channel_names[bitand(ch_order,3)+1] = "R"
-	  lcd.drawText(150, 5, "Firmware v" .. multiBuffer(13) .. "." .. multiBuffer(14) .. "." .. multiBuffer(15) .. "." .. multiBuffer(16), MENU_TITLE_COLOR)
-      --lcd.drawText(150, 5, "Firmware v" .. multiBuffer(13) .. "." .. multiBuffer(14) .. "." .. multiBuffer(15) .. "." .. multiBuffer(16) .. " " .. channel_names[1] .. channel_names[2] .. channel_names[3] .. channel_names[4], MENU_TITLE_COLOR)
+	  lcd.drawText(150, 5, "Firmware v" .. multiBuffer(13) .. "." .. multiBuffer(14) .. "." .. multiBuffer(15) .. "." .. multiBuffer(16), COLOR_THEME_PRIMARY2)
+      --lcd.drawText(150, 5, "Firmware v" .. multiBuffer(13) .. "." .. multiBuffer(14) .. "." .. multiBuffer(15) .. "." .. multiBuffer(16) .. " " .. channel_names[1] .. channel_names[2] .. channel_names[3] .. channel_names[4], COLOR_THEME_PRIMARY2)
     else
       lcd.drawText(76, 0, "/Fw" .. multiBuffer(13) .. "." .. multiBuffer(14) .. "." .. multiBuffer(15) .. "." .. multiBuffer(16),SMLSIZE) -- .. " " .. channel_names[1] .. channel_names[2] .. channel_names[3] .. channel_names[4])
     end

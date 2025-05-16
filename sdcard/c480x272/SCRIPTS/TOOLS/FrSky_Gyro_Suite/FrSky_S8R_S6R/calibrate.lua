@@ -110,8 +110,8 @@ end
 
 local function drawScreenTitle(title, page, pages)
     lcd.drawFilledRectangle(0, 0, LCD_W, 30, TITLE_BGCOLOR)
-    lcd.drawText(130, 5, title, MENU_TITLE_COLOR)
-    lcd.drawText(LCD_W - 40, 5, page .. "/" .. pages, MENU_TITLE_COLOR)
+    lcd.drawText(130, 5, title, COLOR_THEME_PRIMARY2)
+    lcd.drawText(LCD_W - 40, 5, page .. "/" .. pages, COLOR_THEME_PRIMARY2)
 end
 
 local function refreshPage(event)
@@ -125,7 +125,7 @@ local function refreshPage(event)
 
     if (calibrationStep < 6) then
         local position = calibrationPositions[1 + calibrationStep]
-        lcd.drawText(50, 50, "Place the receiver in the following position", TEXT_COLOR)
+        lcd.drawText(50, 50, "Place the receiver in the following position", COLOR_THEME_SECONDARY1)
         if calibBitmaps[calibrationStep + 1] == nil then
             calibBitmaps[calibrationStep + 1] = bitmap.open(calibBitmapsFile[calibrationStep + 1])
         end
@@ -162,7 +162,7 @@ local function refreshPage(event)
             local x_pos_expected = (v_expected/100) * prog_w
 
             -- values
-            lcd.drawText(240, 80 + 25 * index, field[1] .. ":" .. v_current, TEXT_COLOR)
+            lcd.drawText(240, 80 + 25 * index, field[1] .. ":" .. v_current, COLOR_THEME_SECONDARY1)
             -- background rect
             lcd.drawRectangle(prog_m - prog_w - mark_w_half, 80 + 25 * index - 0, prog_w*2+ mark_w_half *2, 18, BLACK);
             -- expected pos

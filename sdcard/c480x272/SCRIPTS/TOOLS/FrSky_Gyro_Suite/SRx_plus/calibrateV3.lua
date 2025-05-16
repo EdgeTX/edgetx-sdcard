@@ -103,8 +103,8 @@ end
 -- horus
 local function drawScreenTitle(title, page, pages)
   lcd.drawFilledRectangle(0, 0, LCD_W, 30, TITLE_BGCOLOR)
-  lcd.drawText(1, 5, title, MENU_TITLE_COLOR)
-  lcd.drawText(LCD_W-40, 5, page.."/"..pages, MENU_TITLE_COLOR)
+  lcd.drawText(1, 5, title, COLOR_THEME_PRIMARY2)
+  lcd.drawText(LCD_W-40, 5, page.."/"..pages, COLOR_THEME_PRIMARY2)
 end
 
 local function runCalibrationPageForHorus(event)
@@ -117,14 +117,15 @@ local function runCalibrationPageForHorus(event)
   local centerX = LCD_W / 2
 
   if(calibrationStep < 6) then
-    lcd.drawText(centerX, 50, "Place your Stabilizer Rx as shown in the image.", COLOR_THEME_SECONDARY1 + CENTER)
+    local position = calibrationPositions[1 + calibrationStep]
+    lcd.drawText(centerX, 50, "Place the "..rxName.." in the following position", COLOR_THEME_SECONDARY1)
     if calibBitmaps[calibrationStep + 1] == nil then
       calibBitmaps[calibrationStep + 1] = Bitmap.open(calibBitmapsFile[calibrationStep + 1])
     end
     lcd.drawBitmap(calibBitmaps[calibrationStep + 1], 180, 70)
     -- for index = 1, 3, 1 do
     --   local field = fields[index]
-    --   lcd.drawText(70, 80+20*index, field[1]..":", TEXT_COLOR)
+    --   lcd.drawText(70, 80+20*index, field[1]..":", COLOR_THEME_SECONDARY1)
     --   lcd.drawNumber(90, 80+20*index, field[4]/10, LEFT+PREC2)
     -- end
 
