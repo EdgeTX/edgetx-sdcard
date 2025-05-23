@@ -89,7 +89,7 @@ local function update(wgt, options)
 
 
     local ver, radio, maj, minor, rev, osname = getVersion()
-    wgt.is_valid_ver = (maj == 2 and minor >= 11)
+    wgt.is_valid_ver = (maj == 2 and minor >= 11) or (maj > 2)
     if wgt.is_valid_ver==false then
         local lytIvalidVer = {
             {
