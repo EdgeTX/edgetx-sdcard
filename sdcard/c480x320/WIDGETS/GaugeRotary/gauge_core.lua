@@ -12,6 +12,8 @@ local FONT_12 = MIDSIZE -- 12px
 local FONT_8 = 0 -- Default 8px
 local FONT_6 = SMLSIZE -- 6px
 
+local ARM_BASE_WIDTH = 12
+local ARM_BASE_WIDTH_MIN_MAX = 5
 local lcd = lcd
 --------------------------------------------------------------
 local function log(fmt, ...)
@@ -19,7 +21,7 @@ local function log(fmt, ...)
 end
 --------------------------------------------------------------
 
-function M.drawArm(armX, armY, armR, percentageValue, color, isFull)
+function M.drawArm(armX, armY, armR, baseWidth, percentageValue, color, isFull)
     --min = 5.54
     --max = 0.8
 
@@ -39,10 +41,13 @@ function M.drawArm(armX, armY, armR, percentageValue, color, isFull)
     --lcd.setColor(CUSTOM_COLOR, lcd.RGB(255, 255, 255))
     lcd.setColor(CUSTOM_COLOR, color)
 
-    local x1 = math.floor(armX - (math.sin(0) * (20 / 2.3)))
-    local y1 = math.floor(armY - (math.cos(0) * (20 / 2.3)))
-    local x2 = math.floor(armX - (math.sin(3) * (20 / 2.3)))
-    local y2 = math.floor(armY - (math.cos(3) * (20 / 2.3)))
+    local dx1 = math.cos(degrees) * baseWidth --(20 / 2.3)
+    local dy1 = math.sin(degrees) * baseWidth --(20 / 2.3)
+    local x1 = math.floor(armX - dx1)
+    local y1 = math.floor(armY + dy1)
+    local x2 = math.floor(armX + dx1)
+    local y2 = math.floor(armY - dy1)
+
     lcd.drawFilledTriangle(x1, y1, x2, y2, xh, yh, CUSTOM_COLOR)
 end
 
@@ -80,7 +85,7 @@ function M.getRangeColor(value, red_value, green_value)
     end
 end
 
-function M.drawGauge(centerX, centerY, centerR, isFull, percentageValue, percentageValueMin, percentageValueMax, txt1, value_fmt_min, value_fmt_max, txt2)
+function M.drawGauge(centerX, centerY, centerR, isFull, percentageValue, percentageValueMin, percentageValueMax, txt1, value_fmt_min, value_fmt_max, txt2, is_telemetry_available, enable_min_max)
     if value_fmt_min == nil then
         value_fmt_min = ""
     end
@@ -173,17 +178,11 @@ function M.drawGauge(centerX, centerY, centerR, isFull, percentageValue, percent
         armColorMax = lcd.RGB(200, 0, 0)
     end
 
-    --M.drawArm(centerX, centerY, armR, 0, armColorMin, isFull)
-    --M.drawArm(centerX, centerY, armR, 10, armColorMin, isFull)
-    --M.drawArm(centerX, centerY, armR, 50, armColorMin, isFull)
-    --M.drawArm(centerX, centerY, armR, 90, armColorMin, isFull)
-    --M.drawArm(centerX, centerY, armR, 100, armColorMin, isFull)
-
-    if percentageValueMin ~= nil and percentageValueMax ~= nil then
-        M.drawArm(centerX, centerY, armR, percentageValueMin, armColorMin, isFull)
-        M.drawArm(centerX, centerY, armR, percentageValueMax, armColorMax, isFull)
+    if enable_min_max == 1 and percentageValueMin ~= nil and percentageValueMax ~= nil then
+        M.drawArm(centerX, centerY, armR, ARM_BASE_WIDTH_MIN_MAX, percentageValueMin, armColorMin, isFull)
+        M.drawArm(centerX, centerY, armR, ARM_BASE_WIDTH_MIN_MAX, percentageValueMax, armColorMax, isFull)
     end
-    M.drawArm(centerX, centerY, armR, percentageValue, armColor, isFull)
+    M.drawArm(centerX, centerY, armR, ARM_BASE_WIDTH, percentageValue, armColor, isFull)
 
     -- hide the base of the arm
     lcd.drawFilledCircle(centerX, centerY, armCenterR, BLACK)
@@ -199,16 +198,27 @@ function M.drawGauge(centerX, centerY, centerR, isFull, percentageValue, percent
     -- text min/max
     if centerR > 60 then
         local y = centerY + (centerR - centerR * 0.6)
-        -- text min
-        M.tools.drawBadgedTextCenter(value_fmt_min, centerX - armCenterR -15, y, txtSizeMinMax, armColorMin, GREY)
+        if is_telemetry_available == false then
+            armColorMin = armColorMin + BLINK
+            armColorMax = armColorMax + BLINK
+        end
 
-        -- text max
-        M.tools.drawBadgedTextCenter(value_fmt_max, centerX + armCenterR + 15, y, txtSizeMinMax, armColorMax, GREY)
+        if enable_min_max == 1 then
+            -- text min
+            M.tools.drawBadgedTextCenter(value_fmt_min, centerX - armCenterR -15, y, txtSizeMinMax, armColorMin, GREY)
+
+            -- text max
+            M.tools.drawBadgedTextCenter(value_fmt_max, centerX + armCenterR + 15, y, txtSizeMinMax, armColorMax, GREY)
+        end
     end
 
     -- text below
     if isFull then
-        M.tools.drawBadgedTextCenter(txt1, centerX, centerY + centerR * 0.7, txtSize, WHITE, GREY)
+        if is_telemetry_available == true then
+            M.tools.drawBadgedTextCenter(txt1, centerX, centerY + centerR * 0.7, txtSize, WHITE, GREY)
+        else
+            M.tools.drawBadgedTextCenter(txt1, centerX, centerY + centerR * 0.7, txtSize, DARKGREY, GREY)
+        end
     else
         -- no text below in flat mode
     end
