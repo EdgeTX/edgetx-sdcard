@@ -1,4 +1,6 @@
 
+local CELL_DETECTION_TIME = 8
+
 
 -- The widget table will be returned to the main script.
 local wgt = {
@@ -12,7 +14,7 @@ local wgt = {
     no_telem_blink = 0,
     isDataAvailable = 0,
     vMax = 0,
-    vMin = 0,
+    vMin = 99,
     vTotalLive = 0,
     vPercent = 0,
     cellCount = 1,
@@ -85,6 +87,20 @@ local voltageRanges_lion = {4.30, 8.60, 12.90, 17.20, 21.50, 25.80, 30.10, 34.40
 local voltageRanges_hv   = {4.45, 8.90, 13.35, 17.80, 22.25, 26.70, 31.15, 35.60, 40.05, 44.50, 48.95, 53.40}
 
 --------------------------------------------------------------
+local function calcCellCount(wgt)
+    local cellCount = wgt.options.cbCellCount - 1
+    -- 9, 11, 13 are not supported by the widget
+    if cellCount == 9 then
+        cellCount = 10
+    elseif cellCount == 10 then
+        cellCount = 12
+    elseif cellCount == 11 then
+        cellCount = 14
+    end
+
+    -- wgt.log("calcCellCount - cbCellCount: %s, cbCellCount2: %s --> %s", wgt.options.cbCellCount, wgt.options.cbCellCount-1, cellCount)
+    return cellCount
+end
 
 function wgt.update_logic(wgt, options)
     if (wgt == nil) then
@@ -98,9 +114,9 @@ function wgt.update_logic(wgt, options)
         wgt.autoCellDetection = true
     else
         wgt.autoCellDetection = false
-        wgt.cellCount = wgt.options.cbCellCount - 1
+        wgt.cellCount = calcCellCount(wgt)
     end
-    wgt.log("cbCellCount: %s, autoCellDetection: %s, cellCount: %s", wgt.options.cbCellCount, wgt.autoCellDetection, wgt.cellCount)
+    -- wgt.log("cbCellCount: %s, autoCellDetection: %s, cellCount: %s", wgt.options.cbCellCount, wgt.autoCellDetection, wgt.cellCount)
 
     wgt.source_name = ""
     if (type(wgt.options.sensor) == "number") then
@@ -162,16 +178,16 @@ function wgt.getCellPercent(cellValue)
 
     local result = 0
     for i1, v1 in ipairs(_percentList) do
-        -- log(string.format("sub-list#: %s, head:%f, length: %d, last: %.3f", i1,v1[1][1], #v1, v1[#v1][1]))
+        -- wgt.log(string.format("sub-list#: %s, head:%f, length: %d, last: %.3f", i1,v1[1][1], #v1, v1[#v1][1]))
         -- is the cellVal < last-value-on-sub-list? (first-val:v1[1], last-val:v1[#v1])
         if (cellValue <= v1[#v1][1]) then
             -- cellVal is in this sub-list, find the exact value
-            -- log("this is the list")
+            -- wgt.log("this is the list")
             for i2, v2 in ipairs(v1) do
-                -- log(string.format("cell#: %s, %.3f--> %d%%", i2,v2[1], v2[2]))
+                -- wgt.log(string.format("cell#: %s, %.3f--> %d%%", i2,v2[1], v2[2]))
                 if v2[1] >= cellValue then
                     result = v2[2]
-                    -- log(string.format("result: %d%%", result))
+                    -- wgt.log(string.format("result: %d%%", result))
                     -- cpuProfilerAdd(wgt, 'cell-perc', t4);
                     return result
                 end
@@ -201,12 +217,12 @@ local function calcCellCount(singleVoltage)
 
     for i = 1, #voltageRanges do
         if singleVoltage < voltageRanges[i] then
-            -- log("calcCellCount %s --> %s", singleVoltage, i)
+            -- wgt.log("calcCellCount %s --> %s", singleVoltage, i)
             return i
         end
     end
 
-    log("no match found" .. singleVoltage)
+    wgt.log("no match found" .. singleVoltage)
     return 1
 end
 
@@ -215,36 +231,36 @@ function wgt.calculateBatteryData()
 
     local v = getValue(wgt.options.sensor)
     local fieldinfo = getFieldInfo(wgt.options.sensor)
-    -- log("wgt.options.sensor: " .. wgt.options.sensor)
+    -- wgt.log("wgt.options.sensor: " .. wgt.options.sensor)
 
     if type(v) == "table" then
         -- multi cell values using FLVSS liPo Voltage Sensor
         if (#v > 1) then
             wgt.isDataAvailable = false
-            -- log("FLVSS liPo Voltage Sensor, not supported")
+            -- wgt.log("FLVSS liPo Voltage Sensor, not supported")
             return
         end
     elseif v ~= nil and v >= 1 then
         -- single cell or VFAS lipo sensor
         if fieldinfo then
-            -- log(wgt.source_name .. ", value: " .. fieldinfo.name .. "=" .. v)
+            -- wgt.log(wgt.source_name .. ", value: " .. fieldinfo.name .. "=" .. v)
         else
-            -- log("only one cell using Ax lipo sensor")
+            -- wgt.log("only one cell using Ax lipo sensor")
         end
     else
         -- no telemetry available
         wgt.isDataAvailable = false
         if fieldinfo then
-            -- log("no telemetry data: " .. fieldinfo['name'] .. "=??")
+            -- wgt.log("no telemetry data: " .. fieldinfo['name'] .. "=??")
         else
-            -- log("no telemetry data")
+            -- wgt.log("no telemetry data")
         end
         return
     end
 
     if wgt.autoCellDetection == true then
         if (wgt.cell_detected == true) then
-            -- log("permanent cellCount: " .. wgt.cellCount)
+            -- wgt.log("permanent cellCount: " .. wgt.cellCount)
         else
             local newCellCount = calcCellCount(v)
             if (wgt.tools.periodicHasPassed(wgt.periodic1, false)) then
@@ -252,7 +268,7 @@ function wgt.calculateBatteryData()
                 wgt.cellCount = newCellCount
             else
                 local duration_passed = wgt.tools.periodicGetElapsedTime(wgt.periodic1, false)
-                -- log(string.format("detecting cells: %ss, %d/%d msec", newCellCount, duration_passed, wgt.tools.getDurationMili(wgt.periodic1)))
+                -- wgt.log(string.format("detecting cells: %ss, %d/%d msec", newCellCount, duration_passed, wgt.tools.getDurationMili(wgt.periodic1)))
 
                 -- this is necessary for simu where cell-count can change
                 if newCellCount ~= wgt.cellCount then
@@ -263,7 +279,7 @@ function wgt.calculateBatteryData()
             end
         end
     -- else
-    --     log("cellCount:autoCellDetection=%s", wgt.autoCellDetection)
+    --     wgt.log("cellCount:autoCellDetection=%s", wgt.autoCellDetection)
     end
     -- calc highest of all cells
     if v > wgt.vMax then
@@ -274,8 +290,8 @@ function wgt.calculateBatteryData()
     wgt.vCellLive = wgt.vTotalLive / wgt.cellCount
     wgt.vPercent = wgt.getCellPercent(wgt.vCellLive)
 
-    -- log("wgt.vCellLive: ".. wgt.vCellLive)
-    -- log("wgt.vPercent: ".. wgt.vPercent)
+    -- wgt.log("wgt.vCellLive: ".. wgt.vCellLive)
+    -- wgt.log("wgt.vPercent: ".. wgt.vPercent)
 
     -- mainValue
     if wgt.options.isTotalVoltage == 0 then
@@ -290,7 +306,7 @@ function wgt.calculateBatteryData()
     end
 
     --- calc lowest main voltage
-    if wgt.mainValue < wgt.vMin and wgt.mainValue > 1 then
+    if wgt.mainValue > 0 and wgt.mainValue < wgt.vMin and wgt.mainValue > 1 then
         -- min 1v to consider a valid reading
         wgt.vMin = wgt.mainValue
     end
@@ -351,6 +367,20 @@ end
 function wgt.background()
     wgt.tools.detectResetEvent(wgt, wgt.onTelemetryResetEvent)
     wgt.calculateBatteryData()
+
+    -- send sensor if needed
+    if (wgt.options.isTelemCellV == 1) then
+        setTelemetryValue(0x0310, 0, 1, wgt.vCellLive * 100, 1, 2, "cell")
+    end
+
+    -- if (wgt.reportSensorCellCount == true) then
+    --     setTelemetryValue(0x0310, 1, 1, wgt.cellCount, 0, 0, "cel#")
+    -- end
+
+    -- if (wgt.options.isTelemCellPerc == 1) then
+    --     setTelemetryValue(0x0310, 1, 1, wgt.vPercent, 13, 0, "cel%")
+    -- end
+
 end
 
 return wgt
