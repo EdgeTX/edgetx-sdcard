@@ -1,7 +1,7 @@
 --[[
 #########################################################################
 #                                                                       #
-# Telemetry Widget script for FrSky Horus/RadioMaster TX16s             #
+# Telemetry Widget script for RadioMaster TX16S                         #
 # Copyright "Offer Shmuely"                                             #
 #                                                                       #
 # License GPLv2: http://www.gnu.org/licenses/gpl-2.0.html               #
@@ -39,7 +39,12 @@
 -- Author : Offer Shmuely
 -- Date: 2021-2023
 local app_name = "GaugeRotary"
-local app_ver = "0.8"
+local app_ver = "0.12"
+------------------------------------------------------------------------------------------------------------------
+-- configuration
+local enable_min_max = 1                     -- 0=no min/max display, 1=display min/max
+------------------------------------------------------------------------------------------------------------------
+
 
 
 -- consts
@@ -66,17 +71,9 @@ local FONT_12 = MIDSIZE -- 12px
 local FONT_8 = 0 -- Default 8px
 local FONT_6 = SMLSIZE -- 6px
 
--- backward compatibility
-local ver, radio, maj, minor, rev, osname = getVersion()
-local DEFAULT_SOURCE = 1
-if maj == 2 and minor == 7 then
-    -- for 2.7.x
-    DEFAULT_SOURCE = 253     -- RSSI=253, TxBt=243, RxBt=256
-elseif maj == 2 and minor >= 8 then
-    -- for 2.8.x
-    DEFAULT_SOURCE = 306     -- RSSI
-end
 
+local lib_sensors = loadScript("/WIDGETS/" .. app_name .. "/lib_sensors.lua", "tcd")(m_log,app_name)
+local DEFAULT_SOURCE = lib_sensors.findSourceId( {"RQLY", "VFR", "cell","cels","RSSI","RxBt"})
 
 local _options = {
     { "Source", SOURCE, DEFAULT_SOURCE }, -- RSSI
@@ -110,7 +107,7 @@ local function setAutoMinMax(wgt)
     end
 
     log("GaugeRotary-setting: " .. "AutoMinMax")
-    local sourceName = getSourceName(wgt.options.Source)
+    local sourceName = wgt.tools.getSourceNameCleaned(wgt.options.Source)
     if (sourceName == nil) then return end
 
     -- workaround for bug in getFiledInfo()
@@ -188,7 +185,7 @@ end
 
 local function getWidgetValue(wgt)
     local currentValue = getValue(wgt.options.Source)
-    local sourceName = getSourceName(wgt.options.Source)
+    local sourceName = wgt.tools.getSourceNameCleaned(wgt.options.Source)
     log("[%s-%s],currentValue: %s" , wgt.options.Source, sourceName, currentValue)
 
     local fieldinfo = getFieldInfo(wgt.options.Source)
@@ -210,9 +207,6 @@ local function getWidgetValue(wgt)
         end
         currentValue = cellSum
     end
-
-    -- workaround for bug in getSourceName()
-    sourceName = wgt.tools.cleanInvalidCharFromGetFiledInfo(sourceName)
 
 
     --log("")
@@ -271,12 +265,12 @@ local function refresh_app_mode(wgt, event, touchState)
     local zone_h = 252
 
     local centerX = zone_w / 2
-    wgt.gauge1.drawGauge(centerX, 120, 110, false, percentageValue, percentageValueMin, percentageValueMax, value .. w_unit, w_name)
+    wgt.gauge1.drawGauge(centerX, 120, 110, false, percentageValue, percentageValueMin, percentageValueMax, value .. w_unit, w_name, wgt.tools.isTelemetryAvailable())
     lcd.drawText(10, 10, string.format("%d%s", value, w_unit), FONT_38 + YELLOW)
 
     -- min / max
-    wgt.gauge1.drawGauge(100, 180, 50, false, percentageValueMin, nil, nil, "", w_name)
-    wgt.gauge1.drawGauge(zone_w - 100, 180, 50, false, percentageValueMax, nil, nil, "", w_name)
+    wgt.gauge1.drawGauge(100, 180, 50, false, percentageValueMin, nil, nil, "", w_name, wgt.tools.isTelemetryAvailable())
+    wgt.gauge1.drawGauge(zone_w - 100, 180, 50, false, percentageValueMax, nil, nil, "", w_name, wgt.tools.isTelemetryAvailable())
     lcd.drawText(50, 230, string.format("Min: %d%s", minValue, w_unit), FONT_12)
     lcd.drawText(350, 230, string.format("Max: %d%s", maxValue, w_unit), FONT_12)
 
@@ -339,7 +333,10 @@ local function refresh_widget(wgt)
         centerY = wgt.zone.y + wgt.zone.h - 20
     end
 
-    wgt.gauge1.drawGauge(centerX, centerY, centerR, isFull, percentageValue, percentageValueMin, percentageValueMax, value_fmt, value_fmt_min, value_fmt_max, w_name)
+    wgt.gauge1.drawGauge(centerX, centerY, centerR, isFull,
+        percentageValue, percentageValueMin, percentageValueMax,
+        value_fmt, value_fmt_min, value_fmt_max, w_name,
+        wgt.tools.isTelemetryAvailable(), enable_min_max)
     --lcd.drawText(wgt.zone.x, wgt.zone.y, value_fmt, FONT_38 + YELLOW)
 
 
@@ -360,7 +357,7 @@ local function refresh(wgt, event, touchState)
     if (wgt == nil) then return end
     if (wgt.options == nil) then return end
     if (wgt.zone == nil) then return end
-    local sourceName = getSourceName(wgt.options.Source)
+    local sourceName = wgt.tools.getSourceNameCleaned(wgt.options.Source)
     if (sourceName == nil) then
         lcd.drawText(wgt.zone.x, wgt.zone.y + wgt.zone.h / 2, "No source selected...", FONT_12 + WHITE + BLINK)
         return
