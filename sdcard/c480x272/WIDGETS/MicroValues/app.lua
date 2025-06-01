@@ -1,7 +1,7 @@
 --[[
 #########################################################################
 #                                                                       #
-# Telemetry Widget script for radiomaster TX16s                         #
+# Telemetry Widget script for RadioMaster TX16S                         #
 # Copyright "Offer Shmuely"                                             #
 #                                                                       #
 # License GPLv2: http://www.gnu.org/licenses/gpl-2.0.html               #
@@ -27,7 +27,7 @@
 -- Author : Offer Shmuely
 -- Date: 2025
 local app_name = "MicroValues"
-local app_ver = "1.1"
+local app_ver = "1.2"
 
 
 -- imports
@@ -37,12 +37,8 @@ local LibWidgetToolsClass = loadScript("/WIDGETS/" .. app_name .. "/lib_widget_t
 local m_log = LibLogClass(app_name, "/WIDGETS/" .. app_name)
 
 -- better font names
-local FONT_38 = XXLSIZE -- 38px
-local FONT_16 = DBLSIZE -- 16px
-local FONT_12 = MIDSIZE -- 12px
-local FONT_8 = 0 -- Default 8px
-local FONT_6 = SMLSIZE -- 6px
-local FONT_LIST = {FONT_6,FONT_8,FONT_12,FONT_16,FONT_38,}
+local FS={FONT_38=XXLSIZE,FONT_16=DBLSIZE,FONT_12=MIDSIZE,FONT_8=0,FONT_6=SMLSIZE}
+local FONT_LIST = {FS.FONT_6,FS.FONT_8,FS.FONT_12,FS.FONT_16,FS.FONT_38}
 
 --------------------------------------------------------------
 local function log(...)
@@ -116,8 +112,8 @@ end
 local function update(wgt, options)
     if (wgt == nil) then return end
     wgt.options = options
-    wgt.fontSizeVal = FONT_LIST[wgt.options.fontSizeValIdx] or FONT_16
-    wgt.fontSizeKey = FONT_LIST[wgt.options.fontSizeKeyIdx] or FONT_8
+    wgt.fontSizeVal = FONT_LIST[wgt.options.fontSizeValIdx] or FS.FONT_16
+    wgt.fontSizeKey = FONT_LIST[wgt.options.fontSizeKeyIdx] or FS.FONT_8
 
     wgt.fieldinfo1 = nil
     wgt.fieldinfo2 = nil
@@ -225,7 +221,7 @@ local function refresh(wgt, event, touchState)
     if (wgt == nil) then return end
     if (wgt.options == nil) then return end
 
-    calcWidgetValues(wgt)
+    background(wgt)
 
     local str_v1 = prettyPrintNone(wgt.last_value_1, wgt.precession)
     local str_v2 = prettyPrintNone(wgt.last_value_2, wgt.precession)

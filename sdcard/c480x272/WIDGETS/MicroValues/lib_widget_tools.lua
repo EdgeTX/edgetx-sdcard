@@ -1,4 +1,6 @@
-local m_log, app_name = ...
+local args = {...}
+local m_log = args[1]
+local app_name = args[2]
 
 local M = {}
 M.m_log = m_log

@@ -1,4 +1,6 @@
-local app_name, script_dir = ...
+local args = {...}
+local app_name = args[1]
+local script_dir = args[2]
 
 local ENABLE_LOG_TO_CONSOLE = true
 local ENABLE_LOG_TO_FILE    = false
