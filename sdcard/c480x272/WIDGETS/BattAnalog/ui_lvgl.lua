@@ -268,32 +268,11 @@ local function layoutZoneNormal()
 end
 
 function wgt.refresh(event, touchState)
-    wgt.tools.detectResetEvent(wgt, wgt.onTelemetryResetEvent)
-    wgt.calculateBatteryData()
-
-    if wgt.isDataAvailable then
-        wgt.text_color = wgt.options.color
-    else
-        wgt.text_color = GREY
-    end
+    wgt.text_color = (wgt.isDataAvailable) and wgt.options.color or GREY
 end
 
 function wgt.update_ui()
     lvgl.clear()
-
-    -- local text = "TEST"
-    -- local font_size = FONT_38
-    -- local ts_w, ts_h, v_offset = wgt.tools.lcdSizeTextFixed(text, font_size)
-    -- local myString = string.format("%sx%s (%s,%s)", wgt.zone.w, wgt.zone.h, wgt.zone.x, wgt.zone.y)
-    -- lytZone = {
-        -- {type=LVGL_DEF.type.RECTANGLE, x=0, y=0, w=ts_w, h=ts_h, color=RED, filled=false},
-    --     {type=LVGL_DEF.type.LABEL, text="TEST", x=0, y=0 + v_offset, font=font_size, color=BLACK},
-        -- show spaces
-        -- {type=LVGL_DEF.type.RECTANGLE, x=wgt.zone.x, y=wgt.zone.y, w=wgt.zone.w, h=wgt.zone.h, color=BLUE, filled=false, thickness=space},
-        -- show zone size
-        -- {type=LVGL_DEF.type.LABEL, text=myString, x=wgt.zone.x+wgt.zone.w/2, y=wgt.zone.y+wgt.zone.h/2, font=FONT_6, color=BLACK},
-    -- }
-    -- lvgl.build(lytZone)
 
     if wgt.zone.w <  75 and wgt.zone.h < 45 then
         layoutZoneTopbar()

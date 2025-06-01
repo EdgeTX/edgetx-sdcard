@@ -34,24 +34,22 @@
 
 -- Widget to display the levels of Lipo battery from single analog source
 -- Author : Offer Shmuely
--- Date: 2021-2024
+-- Date: 2021-2025
 local app_name = "BattAnalog"
-local app_ver = "1.2"
-
-local CELL_DETECTION_TIME = 8
-local lib_sensors = loadScript("/WIDGETS/" .. app_name .. "/lib_sensors.lua", "tcd")(m_log,app_name)
-local DEFAULT_SOURCE = lib_sensors.findSourceId( {"cell","VFAS","RxBt","A1", "A2"})
-local useLvgl = true
+local app_ver = "1.5"
 
 local _options = {
-    {"sensor"            , SOURCE, DEFAULT_SOURCE },
+    {"sensor"            , SOURCE, "RxBt" },
+    -- should work soon {"sensor", SOURCE, {"cell","VFAS","RxBt","A1", "A2"} },
     {"batt_type"         , CHOICE, 1 , {"LiPo", "LiPo-HV (high voltage)", "Li-Ion"} },
-    {"cbCellCount"       , CHOICE, 1 , {"Auto Detection", "1 cell", "2 cell", "3 cell", "4 cell", "5 cell", "6 cell", "8 cell", "10 cell", "12 cell", "14 cell"} },
+    {"cbCellCount"       , CHOICE, 1 , {"Auto Detection", "1 cell", "2 cell", "3 cell", "4 cell", "5 cell", "6 cell", "7 cell","8 cell", "10 cell", "12 cell", "14 cell"} },
     {"isTotalVoltage"    , BOOL  , 0      }, -- 0=Show as average Lipo cell level, 1=show the total voltage (voltage as is)
     {"color"             , COLOR , YELLOW },
+    {"isTelemCellV"      , BOOL  , 0},
+    -- {"isTelemCellPerc"   , BOOL  , 0},
 }
 
-local function translate(nam)
+local function translate(name)
     local translations = {
         sensor = "Voltage Sensor",
         color = "Text Color",
@@ -59,15 +57,18 @@ local function translate(nam)
         batt_type="Battery Type",
         cellCount = "Cell Count (0=auto)",
         cbCellCount = "Cell Count",
+        isTelemCellV = "Generate Telemetry Cell",
+        isTelemCellPerc = "Generate Telemetry Cell%",
+
     }
-    return translations[nam]
+    return translations[name]
 end
 
 local function create(zone, options)
     -- imports
     local m_log = loadScript("/WIDGETS/" .. app_name .. "/lib_log.lua", "tcd")(app_name, "/WIDGETS/" .. app_name)
     local wgt = loadScript("/WIDGETS/" .. app_name .. "/logic.lua")(m_log)
-    wgt.tools = loadScript("/WIDGETS/" .. app_name .. "/lib_widget_tools.lua", "tcd")(m_log, app_name, useLvgl)
+    wgt.tools = loadScript("/WIDGETS/" .. app_name .. "/lib_widget_tools.lua", "tcd")(m_log, app_name, true)
     wgt.zone = zone
     wgt.options = options
     wgt.m_log = m_log
@@ -83,10 +84,8 @@ end
 local function update(wgt, options)
     wgt.options = options
 
-    wgt.batt_height = wgt.zone.h --???
+    wgt.batt_height = wgt.zone.h
     wgt.batt_width = wgt.zone.w
-    -- wgt.log("batt_11  width: " .. wgt.batt_width .. ", height: " .. wgt.batt_height)
-
 
     local ver, radio, maj, minor, rev, osname = getVersion()
     wgt.is_valid_ver = (maj == 2 and minor >= 11) or (maj > 2)
@@ -118,6 +117,7 @@ local function getDxByStick(stk)
 end
 
 local function refresh(wgt, event, touchState)
+    wgt.background()
 
     wgt.refresh(event, touchState)
 end
@@ -130,5 +130,5 @@ return {
     background = background,
     refresh = refresh,
     translate=translate,
-    useLvgl = true
+    useLvgl=true
 }
