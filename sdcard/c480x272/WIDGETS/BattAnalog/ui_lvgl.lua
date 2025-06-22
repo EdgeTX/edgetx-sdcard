@@ -1,32 +1,7 @@
 local wgt = ...
 
-LVGL_DEF = {
-    type = {
-        LABEL = "label",
-        RECTANGLE = "rectangle",
-        CIRCLE = "circle",
-        ARC = "arc",
-        IMAGE = "image",
-        QRCODE = "qrcode",
-    },
-    type_script = {
-        BUTTON = "button",
-        TOGGLE = "toggle",
-        TEXTEDIT = "textEdit",
-        NUMBEREDIT = "numberEdit",
-        CHOICE = "choice",
-        SLIDER = "slider",
-        PAGE = "page",
-    }
-    -- "meter"
-}
-
 -- better font names
-local FONT_38 = XXLSIZE -- 38px
-local FONT_16 = DBLSIZE -- 16px
-local FONT_12 = MIDSIZE -- 12px
-local FONT_8 = 0 -- Default 8px
-local FONT_6 = SMLSIZE -- 6px
+local FS={FONT_38=XXLSIZE,FONT_16=DBLSIZE,FONT_12=MIDSIZE,FONT_8=0,FONT_6=SMLSIZE}
 
 local space = 10
 
@@ -103,53 +78,51 @@ local function layoutBatt()
     local bby = by + th
     local bbw = bw
     local bbh = bh - th
+    local fill_space = 3
 
     local shd = (bh>120) and 3 or ((bh>120) and 2 or 1) -- shaddow
     local isNeedShaddow = (bh>80) and true or false
 
-    local lytBatt = {
+    lvgl.build({
         -- plus terminal
-        {type=LVGL_DEF.type.RECTANGLE, x=tx1, y=bby-th   , w=tw1, h=th1*2, color=WHITE, filled=true, rounded=5},
-        {type=LVGL_DEF.type.RECTANGLE, x=tx2, y=bby-th2  , w=tw2, h=th2  , color=WHITE, filled=true, rounded=5},
-        {type=LVGL_DEF.type.RECTANGLE, x=tx2, y=bby-th2/2, w=tw2, h=th2/2, color=WHITE, filled=true, rounded=0},
-
-        -- fill batt
-        {type=LVGL_DEF.type.RECTANGLE, x=bx, y=bby, w=bbw, h=0, filled=true, color=getFillColor, rounded=bw*0.1,
-            size=(function() return bbw, math.floor(wgt.vPercent / 100 * bbh) end),
-            pos=(function() return bx, bby + bbh - math.floor(wgt.vPercent / 100 * bbh) end)},
+        {type="rectangle", x=tx1, y=bby-th   , w=tw1, h=th1*2, color=WHITE, filled=true, rounded=5},
+        {type="rectangle", x=tx2, y=bby-th2  , w=tw2, h=th2  , color=WHITE, filled=true, rounded=5},
+        {type="rectangle", x=tx2, y=bby-th2/2, w=tw2, h=th2/2, color=WHITE, filled=true, rounded=0},
 
         -- battery outline shaddow
-        -- {type=LVGL_DEF.type.RECTANGLE, x=bx+2, y=bby+3, w=bbw, h=bbh, thickness=3,color=GREY, rounded=bw*0.1},
+        {type="rectangle", x=bx+2, y=bby+3, w=bbw, h=bbh, thickness=3, rounded=bw*0.1,     color=GREY, visible=function() return isNeedShaddow end},
 
-        -- -- battery segments shaddow
-        -- {type=LVGL_DEF.type.RECTANGLE, x=bx+1+2, y=bby + (1 * bbh / 5)+shd, w=bbw-2, h=2, filled=true, color=GREY},
-        -- {type=LVGL_DEF.type.RECTANGLE, x=bx+1+2, y=bby + (2 * bbh / 5)+shd, w=bbw-2, h=2, filled=true, color=GREY},
-        -- {type=LVGL_DEF.type.RECTANGLE, x=bx+1+2, y=bby + (3 * bbh / 5)+shd, w=bbw-2, h=2, filled=true, color=GREY},
-        -- {type=LVGL_DEF.type.RECTANGLE, x=bx+1+2, y=bby + (4 * bbh / 5)+shd, w=bbw-2, h=2, filled=true, color=GREY},
+        {type="box", x=bx, y=bby, w=bbw, h=bbh,
+            children={
 
-        -- battery segments shaddow
-        {type=LVGL_DEF.type.RECTANGLE, x=bx+1,   y=bby + (1 * bbh / 5)    , w=bbw-2, h=1, thickness=1, color=WHITE},
-        {type=LVGL_DEF.type.RECTANGLE, x=bx+1,   y=bby + (2 * bbh / 5)    , w=bbw-2, h=1, thickness=1, color=WHITE},
-        {type=LVGL_DEF.type.RECTANGLE, x=bx+1,   y=bby + (3 * bbh / 5)    , w=bbw-2, h=1, thickness=1, color=WHITE},
-        {type=LVGL_DEF.type.RECTANGLE, x=bx+1,   y=bby + (4 * bbh / 5)    , w=bbw-2, h=1, thickness=1, color=WHITE},
+                -- fill batt
+                {type="rectangle", filled=true, color=getFillColor, rounded=bw*0.1,
+                    pos =(function() return fill_space+1, fill_space +1 + bbh - math.floor(wgt.vPercent / 100 * bbh) end),
+                    size=(function() return bbw-2*fill_space, math.floor(wgt.vPercent / 100 * bbh)-2*fill_space end)
+                },
 
-        -- battery outline
-        {type=LVGL_DEF.type.RECTANGLE, x=bx, y=bby, w=bbw, h=bbh, thickness=2,color=WHITE, rounded=bw*0.1},
+                -- battery segments shaddow
+                {type="rectangle", x=1+2, y=0 + (1 * bbh / 5)+shd, w=bbw-2, h=2, filled=true, color=GREY, visible=function() return isNeedShaddow end},
+                {type="rectangle", x=1+2, y=0 + (2 * bbh / 5)+shd, w=bbw-2, h=2, filled=true, color=GREY, visible=function() return isNeedShaddow end},
+                {type="rectangle", x=1+2, y=0 + (3 * bbh / 5)+shd, w=bbw-2, h=2, filled=true, color=GREY, visible=function() return isNeedShaddow end},
+                {type="rectangle", x=1+2, y=0 + (4 * bbh / 5)+shd, w=bbw-2, h=2, filled=true, color=GREY, visible=function() return isNeedShaddow end},
 
-        -- {type=LVGL_DEF.type.RECTANGLE, x=bx, y=by, w=bw, h=bh,color=BLUE},
-    }
+                -- battery segments
+                {type="rectangle", x=1,   y=(1 * bbh / 5)    , w=bbw-2, h=1, thickness=1, color=WHITE},
+                {type="rectangle", x=1,   y=(2 * bbh / 5)    , w=bbw-2, h=1, thickness=1, color=WHITE},
+                {type="rectangle", x=1,   y=(3 * bbh / 5)    , w=bbw-2, h=1, thickness=1, color=WHITE},
+                {type="rectangle", x=1,   y=(4 * bbh / 5)    , w=bbw-2, h=1, thickness=1, color=WHITE},
 
-    if isNeedShaddow then
-            -- battery outline shaddow
-            lytBatt[#lytBatt+1] = {type=LVGL_DEF.type.RECTANGLE, x=bx+2, y=bby+3, w=bbw, h=bbh, thickness=3,color=GREY, rounded=bw*0.1}
-            -- battery segments shaddow
-            lytBatt[#lytBatt+1] = {type=LVGL_DEF.type.RECTANGLE, x=bx+1+2, y=bby + (1 * bbh / 5)+shd, w=bbw-2, h=2, filled=true, color=GREY}
-            lytBatt[#lytBatt+1] = {type=LVGL_DEF.type.RECTANGLE, x=bx+1+2, y=bby + (2 * bbh / 5)+shd, w=bbw-2, h=2, filled=true, color=GREY}
-            lytBatt[#lytBatt+1] = {type=LVGL_DEF.type.RECTANGLE, x=bx+1+2, y=bby + (3 * bbh / 5)+shd, w=bbw-2, h=2, filled=true, color=GREY}
-            lytBatt[#lytBatt+1] = {type=LVGL_DEF.type.RECTANGLE, x=bx+1+2, y=bby + (4 * bbh / 5)+shd, w=bbw-2, h=2, filled=true, color=GREY}
-    end
+                -- battery outline
+                {type="rectangle", x=0, y=0, w=bbw, h=bbh, thickness=2,color=WHITE, rounded=bw*0.1},
 
-    lvgl.build(lytBatt)
+                -- debug area
+                -- {type="label", x=tx2-10, y=bby+10, color=BLUE, font=FS.FONT_8, text=function() return string.format("round=%s", bw*0.1) end},
+                -- {type="rectangle", x=bx, y=by, w=bw, h=bh,color=BLUE},
+            }
+        }
+    })
+
 
     local batSize = {
         x = bx,
@@ -171,22 +144,22 @@ local function layoutZoneTopbar()
 
     local lytTxt = {
         -- battery values
-        {type=LVGL_DEF.type.LABEL, x=0, y=20, w=bx - 3, font=FONT_6+RIGHT, text=getMainValue,
+        {type="label", x=0, y=20, w=bx - 3, font=FS.FONT_6+RIGHT, text=getMainValue,
             -- color=(function() return (wgt.vPercent < 30) and RED or wgt.text_color end)
-            color=getVPercentColor
+            color=getTxtColor
         },
-        {type=LVGL_DEF.type.LABEL, x=0, y=5, w=bx - 3, font=FONT_6+RIGHT, text=getVPercent, color=getVPercentColor},
+        {type="label", x=0, y=5, w=bx - 3, font=FS.FONT_6+RIGHT, text=getVPercent, color=getTxtColor},
 
         -- plus terminal
-        {type=LVGL_DEF.type.RECTANGLE, x=bx+4, y=by-6, w=bw-8, h=6, filled=true, color=getTxtColor},
+        {type="rectangle", x=bx+4, y=by-6, w=bw-8, h=6, filled=true, color=function() return (wgt.vPercent < 30) and RED or getTxtColor() end},
 
         -- fill batt
-        {type=LVGL_DEF.type.RECTANGLE, x=bx, y=by, w=bw, h=0, filled=true, color=getFillColor,
+        {type="rectangle", x=bx, y=by, w=bw, h=0, filled=true, color=getFillColor,
             size=(function() return bw, math.floor(wgt.vPercent / 100 * (bh)) end),
             pos=(function() return bx, by + bh - math.floor(wgt.vPercent / 100 * (bh)) end)},
 
         -- battery outline
-        {type=LVGL_DEF.type.RECTANGLE, x=bx, y=by, w=bw, h=bh, thickness=2, color=getTxtColor},
+        {type="rectangle", x=bx, y=by, w=bw, h=bh, thickness=2, color=function() return (wgt.vPercent < 30) and RED or getTxtColor() end},
     }
 
     lvgl.build(lytTxt)
@@ -206,7 +179,7 @@ local function layoutTextZoneNormal(batSize)
         vMin = {},
     }
 
-    local fSizeMainV, w, h, v_offset = wgt.tools.getFontSize(wgt, "99.99 V", left_w, left_h, FONT_38)
+    local fSizeMainV, w, h, v_offset = wgt.tools.getFontSize(wgt, "99.99 V", left_w, left_h, FS.FONT_38)
     txtSizes.vMain = {x=batSize.xw +10, y=next_y +v_offset, font=fSizeMainV}
 
     next_y = next_y + h + 10
@@ -220,11 +193,11 @@ local function layoutTextZoneNormal(batSize)
 
     local max_w = 0
     local sec_x = LCD_W
-    local sec_font = FONT_16
+    local sec_font = FS.FONT_16
     local sec_dh = 0
     local line_space = 5
 
-    sec_font = wgt.tools.getFontSize(wgt, "AAA", left_w - batSize.w, left_h/3, FONT_16)
+    sec_font = wgt.tools.getFontSize(wgt, "AAA", left_w - batSize.w, left_h/3, FS.FONT_16)
 
 
     -- source
@@ -248,15 +221,15 @@ local function layoutTextZoneNormal(batSize)
 
     local lytTxt = {
         -- main value
-        {type=LVGL_DEF.type.LABEL, x=txtSizes.vMain.x, y=txtSizes.vMain.y, font=txtSizes.vMain.font, text=getMainValue, color=getTxtColor},
-        {type=LVGL_DEF.type.LABEL, x=txtSizes.percent.x, y=txtSizes.percent.y, font=txtSizes.percent.font, text=getVPercent, color=getTxtColor},
+        {type="label", x=txtSizes.vMain.x, y=txtSizes.vMain.y, font=txtSizes.vMain.font, text=getMainValue, color=getTxtColor},
+        {type="label", x=txtSizes.percent.x, y=txtSizes.percent.y, font=txtSizes.percent.font, text=getVPercent, color=getTxtColor},
         -- -- source name
-        -- {type=LVGL_DEF.type.LABEL, x=sec_x, y=txtSizes.source.y, font=sec_font, text=wgt.source_name, color=getTxtColor, visible=txtSizes.source.visible},
-        {type=LVGL_DEF.type.LABEL, x=sec_x, y=txtSizes.source.y, font=sec_font, text=wgt.source_name, color=getTxtColor}, -- , visible=txtSizes.vSec.visible
+        -- {type="label", x=sec_x, y=txtSizes.source.y, font=sec_font, text=wgt.source_name, color=getTxtColor, visible=txtSizes.source.visible},
+        {type="label", x=sec_x, y=txtSizes.source.y, font=sec_font, text=wgt.source_name, color=getTxtColor}, -- , visible=txtSizes.vSec.visible
         -- secondary value & cells
-        {type=LVGL_DEF.type.LABEL, x=sec_x, y=txtSizes.vSec.y, font=sec_font, text=getSecondaryValueCell, color=getTxtColor}, -- , visible=txtSizes.vSec.visible
+        {type="label", x=sec_x, y=txtSizes.vSec.y, font=sec_font, text=getSecondaryValueCell, color=getTxtColor}, -- , visible=txtSizes.vSec.visible
         -- min voltage
-        {type=LVGL_DEF.type.LABEL, x=sec_x, y=txtSizes.vMin.y, font=sec_font, text=getVMin, color=getTxtColor}, -- , visible="false"
+        {type="label", x=sec_x, y=txtSizes.vMin.y, font=sec_font, text=getVMin, color=getTxtColor}, -- , visible="false"
     }
 
     lvgl.build(lytTxt)
