@@ -20,7 +20,7 @@
 -- Model Locator by RSSI
 -- Offer Shmuely (based on code from Scott Bauer 6/21/2015)
 -- Date: 2022-2025
-local app_ver = "0.8"
+local app_ver = "0.9"
 
 -- This widget help to find a lost/crashed model based on the RSSI (if still available)
 -- The widget produce audio representation (vario-meter style) of the RSSI from the lost model
@@ -42,7 +42,7 @@ local delayMillis = 100
 local targetTXPower1 = 10
 local targetTXPower2 = 25
 local nextPlayTime = getTime()
-local img = bitmap.open("/SCRIPTS/TOOLS/model_locator_by_rssi/locator.png")
+local img = bitmap.open("/SCRIPTS/TOOLS/locator_by_rssi/locator.png")
 local useHaptic = false
 
 --------------------------------------------------------------
@@ -225,7 +225,7 @@ local function main(event, touchState)
 
     -- beep
     if getTime() >= nextPlayTime then
-        playFile("/SCRIPTS/TOOLS/model_locator_by_rssi/locator.wav")
+        playFile("/SCRIPTS/TOOLS/locator_by_rssi/locator.wav")
         if useHaptic then
             playHaptic(7, 0, 1)
         end
