@@ -42,7 +42,7 @@ local delayMillis = 100
 local targetTXPower1 = 10
 local targetTXPower2 = 25
 local nextPlayTime = getTime()
-local img = bitmap.open("/SCRIPTS/TOOLS/locator_by_rssi/locator.png")
+local img = bitmap.open("/SCRIPTS/locator_by_rssi/locator.png")
 local useHaptic = false
 
 --------------------------------------------------------------
@@ -225,7 +225,7 @@ local function main(event, touchState)
 
     -- beep
     if getTime() >= nextPlayTime then
-        playFile("/SCRIPTS/TOOLS/locator_by_rssi/locator.wav")
+        playFile("/SCRIPTS/locator_by_rssi/locator.wav")
         if useHaptic then
             playHaptic(7, 0, 1)
         end
