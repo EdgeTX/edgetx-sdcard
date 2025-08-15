@@ -1,7 +1,6 @@
 semver: 3.0.0
 header:
   name: "New Multi"
-  bitmap: "plane.jpg"
   labels: ""
 telemetryProtocol: 0
 thrTrim: 0
