@@ -1,0 +1,17 @@
+---
+summary:
+  name: FM2M Concrete
+  author: JimB40
+  info: Grays are sexi. Let's explore this bando.
+colors:
+ PRIMARY1:   0xA0A0A0
+ PRIMARY2:   0x202020
+ PRIMARY3:   0x505050
+ SECONDARY1: 0x808080
+ SECONDARY2: 0x505050
+ SECONDARY3: 0x303030
+ FOCUS:      0xC0C0C0
+ EDIT:       0xEEEEEE
+ ACTIVE:     0xD0D0D0
+ WARNING:    0x404040
+ DISABLED:   0x808080

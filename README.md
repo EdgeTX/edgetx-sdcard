@@ -15,6 +15,8 @@ However, if you want to do this manually:
 
 The contents of this repository are organised by color type and screen size, with zip archives generated for each color type and screen size.
 
+A non-exhaustive list of targets includes:
+
 - **c480x272.zip** (480x272 pixel landscape orientation color screen radios)
     - FrSky Horus x10s
     - FrSky Horus x12s
@@ -28,6 +30,8 @@ The contents of this repository are organised by color type and screen size, wit
 - **c320x480.zip** (320x480 pixel portrait orientation color screen radios)
     - Flysky Nirvana NV14
     - Flysky Elysium EL18
+- **c320x240.zip** (320x240 pixel landscape orientation color screen radios)
+    - Flysky PA01
 - **bw128x64.zip** (128x64 pixel black and white screen radios)
     - BetaFPV LiteRadio3 Pro
     - FrSky Taranis Q X7
