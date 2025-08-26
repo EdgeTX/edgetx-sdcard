@@ -3,7 +3,11 @@ name: Build Releases
 on:
   push:
     branches:
+      - 2.10
+      - 2.11
       - master
+    tags:
+      - v*
     paths-ignore:
       - "**/README.md"
   pull_request:
@@ -11,8 +15,6 @@ on:
       - master
     paths-ignore:
       - "**/README.md"
-    tags:
-      - v*
 
   workflow_dispatch:
 
@@ -50,11 +52,7 @@ jobs:
           prerelease: true
           title: "Latest"
           files: |
-            dist/bw212x64.zip
-            dist/bw128x64.zip
-            dist/c320x480.zip
-            dist/c480x272.zip
-            dist/c480x320.zip
+            dist/*
             sdcard.json
       - name: Auto Create Draft Release
         uses: crowbarmaster/GH-Automatic-Releases@latest
@@ -64,9 +62,5 @@ jobs:
           draft: true
           prerelease: false
           files: |
-            dist/bw212x64.zip
-            dist/bw128x64.zip
-            dist/c320x480.zip
-            dist/c480x272.zip
-            dist/c480x320.zip
+            dist/*
             sdcard.json
