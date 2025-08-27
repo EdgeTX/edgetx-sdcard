@@ -28,7 +28,7 @@ local function fieldIncDec(event, value, max)
   elseif event == EVT_VIRTUAL_INC or event == EVT_VIRTUAL_INC_REPT then
     value = (value + max + 3)
   end
-  value = (value % (max+2))
+  value = (value % (max + 2))
   return value
 end
 
@@ -44,12 +44,11 @@ end
 local function drawModelChoiceMenu()
   lcd.clear()
   lcd.drawScreenTitle("Select model type", 0, 0)
-    lcd.drawText( 20, 20, "Plane")
-    lcd.drawText( 78, 20, "Delta")
-    lcd.drawText( 20, 40, "Multi")
-    lcd.drawText( 78, 40, "Heli")
+  lcd.drawText( 20, 20, "Plane")
+  lcd.drawText( 78, 20, "Delta")
+  lcd.drawText( 20, 40, "Multi")
+  lcd.drawText( 78, 40, "Heli")
   modelTypeSurround(modelType)
-  fieldsMax = 0
 end
 
 local function modelTypeMenu(event)
