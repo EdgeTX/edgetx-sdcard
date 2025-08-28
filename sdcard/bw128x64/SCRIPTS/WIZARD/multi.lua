@@ -31,7 +31,6 @@ local edit = false
 local field = 0
 local fieldsMax = 0
 local comboBoxMode = 0 -- Scrap variable
-local validSwitch = {}
 
 -- Model settings
 local thrCH1 = 0
@@ -115,7 +114,7 @@ local function navigate(event, fieldMax, prevPage, nextPage)
 end
 
 local function getFieldFlags(position)
-  flags = 0
+  local flags = 0
   if field == position then
     flags = INVERS
     if edit then
@@ -126,8 +125,8 @@ local function getFieldFlags(position)
 end
 
 local function channelIncDec(event, value)
-  if not edit and event==EVT_VIRTUAL_MENU then
-    servoPage = value
+  if not edit and event == EVT_VIRTUAL_MENU then
+    -- servoPage = value
     dirty = true
   else
     value = valueIncDec(event, value, 0, 15)
@@ -153,8 +152,8 @@ local function switchValueIncDec(event, value, min, max)
 end
 
 local function switchIncDec(event, value)
-  if not edit and event== EVT_VIRTUAL_MENU then
-    servoPage = value
+  if not edit and event == EVT_VIRTUAL_MENU then
+    -- servoPage = value
     dirty = true
   else
     value = switchValueIncDec(event, value, 1, #switches)
@@ -169,10 +168,37 @@ local function init()
   yawCH1 = defaultChannel(0)
   pitchCH1 = defaultChannel(1)
   local ver, radio, maj, minor, rev = getVersion()
-  if string.match(radio, "x7") then
+
+  -- FrSky Taranis QX7 & QX7 ACCESS
+  if string.match(radio, "x7") or string.match(radio, "x7access") then
     switches = {"SA", "SB", "SC", "SD", "SF", "SH"}
-  elseif string.match(radio, "tx12") then
+  -- FrSky Taranis X9 Lite & X9 Lite S
+  elseif (string.match(radio, "x9lite") or string.match(radio, "x9lites")) then
+    switches = {"SA", "SB", "SC", "SD", "SE", "SF", "SG"}
+  -- Jumper T12
+  elseif string.match(radio, "t12") then
+    switches = {"SA", "SB", "SC", "SD", "SG", "SH"}
+  -- Radiomaster GX12
+  elseif string.match(radio, "gx12") then
+    switches = {"SA", "SB", "SC", "SD", "SE", "SF", "SG", "SH"}
+  -- Radiomaster Pocket
+  elseif string.match(radio, "pocket") then
+    switches = {"SA", "SB", "SC", "SD", "SE"}
+  -- HelloRadioSky V14
+  -- Jumper T12 MAX & Jumper T14
+  -- Radiomaster TX12 & TX12 MKII
+  elseif (string.match(radio,"v14") or string.match(radio, "t12max") or string.match(radio, "t14")
+          or string.match(radio, "tx12") or string.match(radio, "tx12mk2")) then
     switches = {"SA", "SB", "SC", "SD", "SE", "SF"}
+  -- Radiomaster Zorro
+  elseif string.match(radio, "zorro") then
+    switches = {"SB", "SC", "SE", "SF", "SG", "SH"}
+  -- BETAFPV LiteRadio 3 Pro
+  -- FrSky Taranis X-Lite
+  -- iFlight Commando 8
+  -- Radiomaster Boxer & T8
+  -- Jumper T20, Bumblebee, Jumper T-Lite, T-Pro, T-Pro V2 & T-Pro S
+  -- Default
   else
     switches = {"SA", "SB", "SC", "SD"}
   end
@@ -427,10 +453,10 @@ local function run(event)
     pitchMenu(event)
   elseif page == ARM_PAGE then
     armMenu(event)
-  elseif page == BEEPER_PAGE then
-    beeperMenu(event)
   elseif page == MODE_PAGE then
     modeMenu(event)
+  elseif page == BEEPER_PAGE then
+    beeperMenu(event)
   elseif page == CONFIRMATION_PAGE then
     return confirmationMenu(event)
   end
