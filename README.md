@@ -15,7 +15,7 @@ However, if you want to do this manually:
 
 The contents of this repository are organised by color type and screen size, with zip archives generated for each color type and screen size.
 
-A non-exhaustive list of targets includes:
+A non-exhaustive list of targets (look at the [sdcard.json](https://github.com/EdgeTX/edgetx-sdcard/blob/master/sdcard.json) if you are unable to figure out out which one applies to your handset from this list) includes:
 
 - **c480x272.zip** (480x272 pixel landscape orientation color screen radios)
     - FrSky Horus x10s
@@ -50,3 +50,4 @@ A non-exhaustive list of targets includes:
     - FrSky Taranis X9D
     - FrSky Taranis X9D+
     - FrSky Taranis X9D+ 2019
+
