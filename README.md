@@ -27,6 +27,7 @@ A non-exhaustive list of targets (look at the [sdcard.json](https://github.com/E
     - Flysky PL18
     - Flysky Paladin EV (PL18EV)
     - Jumper T15
+	- Radiomaster TX15
 - **c320x480.zip** (320x480 pixel portrait orientation color screen radios)
     - Flysky Nirvana NV14
     - Flysky Elysium EL18
