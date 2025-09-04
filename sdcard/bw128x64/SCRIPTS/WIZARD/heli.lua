@@ -464,12 +464,13 @@ local function runCreateModel(event)
    model.setOutput(RudFields[1][5],{name="Rud"})
 
   -- Gyro
+  MaxIndex=getSourceIndex("Max")
   if TypeFields[1][5] == 0 then
-    model.insertMix(4, 0,{source=88,name="TGa",weight=25})
+    model.insertMix(4, 0,{source=MaxIndex,name="TGa",weight=25})
     model.setOutput(4,{name="T.Ga"})
   else
-    model.insertMix( 4, 0,{source=88,name="HH",weight=25})
-    model.insertMix( 4, 1,{source=88,name="Rate",weight=-25,switch=gyRate,multiplex=2})
+    model.insertMix( 4, 0,{source=MaxIndex,name="HH",weight=25})
+    model.insertMix( 4, 1,{source=MaxIndex,name="Rate",weight=-25,switch=gyRate,multiplex=2})
     model.setOutput(4,{name="TGa"})
   end
 
@@ -531,4 +532,5 @@ local function run(event)
 end
 
 return { init=init, run=run }
+
 
