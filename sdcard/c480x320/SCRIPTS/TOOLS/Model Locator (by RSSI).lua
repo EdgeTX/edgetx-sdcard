@@ -1,8 +1,5 @@
 ---- TNS|Model Locator by RSSI|TNE
 
-local function run()
-    return "/SCRIPTS/TOOLS/model_locator_by_rssi/app.lua"
-end
+local app = assert(loadScript("/SCRIPTS/TOOLS/locator_by_rssi/app.lua", "btd"))()
 
-return { run = run }
-
+return {init=app.init, run=app.run, useLvgl=true}
