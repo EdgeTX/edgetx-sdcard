@@ -26,7 +26,7 @@ end
 
 local tool = nil
 local function create(zone, options)
-    tool = assert(loadScript("/WIDGETS/" .. app_name .. "/app.lua", "tcd"))()
+    tool = assert(loadScript("/WIDGETS/" .. app_name .. "/app.lua", "btd"))()
     return tool.create(zone, options)
 end
 local function update(wgt, options) return tool.update(wgt, options) end

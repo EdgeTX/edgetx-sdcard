@@ -39,7 +39,7 @@ local app_name = "BattAnalog"
 local app_ver = "1.2"
 
 local CELL_DETECTION_TIME = 8
-local lib_sensors = loadScript("/WIDGETS/" .. app_name .. "/lib_sensors.lua", "tcd")(m_log,app_name)
+local lib_sensors = loadScript("/WIDGETS/" .. app_name .. "/lib_sensors.lua", "btd")(m_log,app_name)
 local DEFAULT_SOURCE = lib_sensors.findSourceId( {"cell","VFAS","RxBt","A1", "A2"})
 local useLvgl = true
 
@@ -65,9 +65,9 @@ end
 
 local function create(zone, options)
     -- imports
-    local m_log = loadScript("/WIDGETS/" .. app_name .. "/lib_log.lua", "tcd")(app_name, "/WIDGETS/" .. app_name)
+    local m_log = loadScript("/WIDGETS/" .. app_name .. "/lib_log.lua", "btd")(app_name, "/WIDGETS/" .. app_name)
     local wgt = loadScript("/WIDGETS/" .. app_name .. "/logic.lua")(m_log)
-    wgt.tools = loadScript("/WIDGETS/" .. app_name .. "/lib_widget_tools.lua", "tcd")(m_log, app_name, useLvgl)
+    wgt.tools = loadScript("/WIDGETS/" .. app_name .. "/lib_widget_tools.lua", "btd")(m_log, app_name, useLvgl)
     wgt.zone = zone
     wgt.options = options
     wgt.m_log = m_log

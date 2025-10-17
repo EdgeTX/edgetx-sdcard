@@ -146,7 +146,7 @@ local function create(zone, options)
     --wgt.options.use_days = wgt.options.use_days % 2 -- modulo due to bug that cause the value to be other than 0|1
 
     -- imports
-    wgt.ToolsClass = loadScript("/WIDGETS/" .. app_name .. "/lib_widget_tools.lua", "tcd")
+    wgt.ToolsClass = loadScript("/WIDGETS/" .. app_name .. "/lib_widget_tools.lua", "btd")
     wgt.tools = wgt.ToolsClass(app_name)
 
     update(wgt, options)
