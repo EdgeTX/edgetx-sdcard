@@ -37,7 +37,7 @@ local T_RUN_MENU = 2
 
 local MainScreen = {
     menuPos = 1, -- Current Menu Pos
-    title = "FrSky Stabilization Suite(v1.0)"
+    title = "FrSky Stabilization Suite(v1.2)"
     -- menu done later
 }
 

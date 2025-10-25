@@ -16,7 +16,7 @@
 ---- #########################################################################
 chdir("/SCRIPTS/TOOLS/FrSky_Gyro_Suite/SRx_plus")
 
-local app_ver = "v3.0.6"
+local app_ver = "v3.0.7"
 local app_name = "FrSky_Gyro_Suite"
 
 local IS_SIMULATOR = false -- updated in init()

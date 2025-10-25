@@ -1,4 +1,11 @@
 local Telemetry = {}
+local Product   = {
+        [64]= {name="Archer+ SR10+", imgPrefix="ap_sr10p"},
+        [68]= {name="Archer+ SR8+",  imgPrefix="ap_sr8" },
+        [76]= {name="Archer+ SR12+", imgPrefix="ap_sr12p"},
+        [79]= {name="SR6 Mini",      imgPrefix="ap_sr6_mini"},
+        [80]= {name="SR6 Mini E",    imgPrefix="ap_sr6_mini"},
+}
 
 function Telemetry.telemetryRead(field)
     return sportTelemetryPush(0x17, 0x30, 0x0C30, field)
@@ -28,7 +35,7 @@ function Telemetry.parseValue(value)
     D3      = bit32.band(bit32.rshift(value,24),0xFF)
   
     return fieldId, D1, D2, D3  
-  end
+end
 
 
-return {Telemetry = Telemetry }
+return {Telemetry = Telemetry, Product=Product }
