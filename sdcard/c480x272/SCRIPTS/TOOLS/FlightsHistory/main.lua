@@ -37,7 +37,7 @@ local error_desc = nil
 local script_folder = "/SCRIPTS/TOOLS/FlightsHistory/"
 
 local function my_load_script(file_name, ...)
-    local code_chunk = assert(loadScript(script_folder .. file_name, "tcd"))
+    local code_chunk = assert(loadScript(script_folder .. file_name, "btd"))
     -- print(string.format("%s - loading, num args: %d", file_name, #{...}))
     return code_chunk(...)
 end
