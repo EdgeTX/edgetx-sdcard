@@ -31,9 +31,9 @@ local app_name = "PresetsLoader"
 local script_folder = "/SCRIPTS/PRESETS/engine/"
 --chdir(script_folder)
 
-local m_log =  loadScript(script_folder .. "lib_log", "tcd")(app_name, script_folder)
-local m_utils = loadScript(script_folder .. "lib_utils", "tcd")(m_log, app_name, script_folder)
-local m_libgui =  loadScript(script_folder .. "libgui", "tcd")()
+local m_log =  loadScript(script_folder .. "lib_log", "btd")(app_name, script_folder)
+local m_utils = loadScript(script_folder .. "lib_utils", "btd")(m_log, app_name, script_folder)
+local m_libgui =  loadScript(script_folder .. "libgui", "btd")()
 
 local preset_list = {
     about="---"
@@ -221,7 +221,7 @@ local function state_PRESET_OPTIONS_INIT()
 
     -- validate module exist
     local script_name = "/SCRIPTS/PRESETS/scripts/" .. dd_preset_folder_name .. "/main.lua"
-    local code_chunk = loadScript(script_name, "tcd")
+    local code_chunk = loadScript(script_name, "btd")
     if code_chunk == nil then
         error_desc = "File not found: " .. script_name
         return

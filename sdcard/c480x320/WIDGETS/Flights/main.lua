@@ -50,7 +50,7 @@ end
 
 local function create(zone, options)
     -- print(string.format("1111 Flights create: %s", name))
-    tool = assert(loadScript("/WIDGETS/"..app_name.."/app.lua", "tcd"))()
+    tool = assert(loadScript("/WIDGETS/"..app_name.."/app.lua", "btd"))()
     return tool.create(zone, options)
 end
 local function update(wgt, options) return tool.update(wgt, options) end

@@ -72,7 +72,7 @@ local FONT_8 = 0 -- Default 8px
 local FONT_6 = SMLSIZE -- 6px
 
 
-local lib_sensors = loadScript("/WIDGETS/" .. app_name .. "/lib_sensors.lua", "tcd")(m_log,app_name)
+local lib_sensors = loadScript("/WIDGETS/" .. app_name .. "/lib_sensors.lua", "btd")(m_log,app_name)
 local DEFAULT_SOURCE = lib_sensors.findSourceId( {"RQLY", "VFR", "cell","cels","RSSI","RxBt"})
 
 local _options = {
@@ -86,9 +86,9 @@ local _options = {
 }
 
 -- imports
-local LibLogClass = loadScript("/WIDGETS/" .. app_name .. "/lib_log.lua", "tcd")
-local LibWidgetToolsClass = loadScript("/WIDGETS/" .. app_name .. "/lib_widget_tools.lua", "tcd")
-local GaugeClass = loadScript("/WIDGETS/" .. app_name .. "/gauge_core.lua", "tcd")
+local LibLogClass = loadScript("/WIDGETS/" .. app_name .. "/lib_log.lua", "btd")
+local LibWidgetToolsClass = loadScript("/WIDGETS/" .. app_name .. "/lib_widget_tools.lua", "btd")
+local GaugeClass = loadScript("/WIDGETS/" .. app_name .. "/gauge_core.lua", "btd")
 
 local m_log = LibLogClass(app_name, "/WIDGETS/" .. app_name)
 

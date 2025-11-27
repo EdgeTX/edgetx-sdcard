@@ -73,7 +73,7 @@ local use_flights_history = 1                -- 0=do not write flights-history, 
 
 -- imports
 local img = bitmap.open("/WIDGETS/" .. app_name .. "/logo.png")
-local LibLogClass = loadScript("/WIDGETS/" .. app_name .. "/lib_log.lua", "tcd")
+local LibLogClass = loadScript("/WIDGETS/" .. app_name .. "/lib_log.lua", "btd")
 local m_log = LibLogClass(app_name, "/WIDGETS/" .. app_name)
 
 -- better font size names
@@ -162,12 +162,12 @@ local function create(zone, options)
     --wgt.options.use_days = wgt.options.use_days % 2 -- modulo due to bug that cause the value to be other than 0|1
 
     -- imports
-    wgt.ToolsClass = loadScript("/WIDGETS/" .. app_name .. "/lib_widget_tools.lua", "tcd")
+    wgt.ToolsClass = loadScript("/WIDGETS/" .. app_name .. "/lib_widget_tools.lua", "btd")
     wgt.tools = wgt.ToolsClass(m_log, app_name)
 
-    wgt.FlightsHistoryClass = loadScript("/WIDGETS/" .. app_name .. "/lib_flights_history.lua", "tcd")
+    wgt.FlightsHistoryClass = loadScript("/WIDGETS/" .. app_name .. "/lib_flights_history.lua", "btd")
     wgt.flightHistory = wgt.FlightsHistoryClass(m_log, app_name)
-    wgt.FlightsCountClass = loadScript("/WIDGETS/" .. app_name .. "/lib_flights_count.lua", "tcd")
+    wgt.FlightsCountClass = loadScript("/WIDGETS/" .. app_name .. "/lib_flights_count.lua", "btd")
     wgt.flightCountHWriter = wgt.FlightsCountClass(m_log, app_name, "/flights-count.csv")
 
     update(wgt, options)
