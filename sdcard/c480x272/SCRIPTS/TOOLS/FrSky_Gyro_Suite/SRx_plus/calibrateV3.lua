@@ -17,15 +17,17 @@
 chdir("/SCRIPTS/TOOLS/FrSky_Gyro_Suite/SRx_plus")
 local IS_SIMULATOR = false -- updated in init()
 
-local version = "v3.0.6"
+local version = "v3.0.7"
 
 local CommonFile = assert(loadfile("common.lua"))()
 local Telemetry  = CommonFile.Telemetry
+local Product    = CommonFile.Product
 
 local isHorus = (LCD_W == 480)
 local isX9 = (LCD_W == 212)
 local VALUE = 0
 
+local PRODUCT_TYPE_ADDRESS =  0xFE
 local CALIBRATION_ADDRESS = 0xB2
 local CALIBRATION_INIT = 0
 local CALIBRATION_WRITE = 1
@@ -33,7 +35,7 @@ local CALIBRATION_READ = 2
 local CALIBRATION_WAIT = 3
 local CALIBRATION_OK = 4
 
-local rxName = "SRX"
+local rxName = "SRx"
 local page = 1
 local refreshIndex = 0
 local calibrationState = 0
@@ -41,7 +43,14 @@ local calibrationStep = 0
 local pages = {}
 local fields = {}
 
-local calibrationPositions = { "up", "down", "left", "right", "forward", "back" }
+local calibrationPositions = { 
+  "Place your Stabilizer Rx horizontal with the label facing UP.",
+  "Place your Stabilizer Rx horizontal with the label facing DOWN.",
+  "Place your Stabilizer Rx with the label facing you\n and the pins pointing UPWARD.",
+  "Place your Stabilizer Rx with the label facing you\n and the pins pointing DOWNWARD.",
+  "Place your Stabilizer Rx with the label facing you\n and the pins pointing RIGHT.",
+  "Place your Stabilizer Rx with the label facing you\n and the pins pointing LEFT.",
+}
 -- only for x7
 local positionConfirmed = 0
 local orientationAutoSense = 0
@@ -50,11 +59,11 @@ local orientationAutoSense = 0
 local calibBitmaps = {}
 local calibBitmapsFile = {"img/up.png", "img/down.png", "img/left.png", "img/right.png", "img/forward.png", "img/back.png"}
 
-local calibrationFields = {
-  {"X:", VALUE, 0x9E, 0, -100, 100, "%"},
-  {"Y:", VALUE, 0x9F, 0, -100, 100, "%"},
-  {"Z:", VALUE, 0xA0, 0, -100, 100, "%"}
-}
+--local calibrationFields = {
+--  {"X:", VALUE, 0x9E, 0, -100, 100, "%"},
+--  {"Y:", VALUE, 0x9F, 0, -100, 100, "%"},
+--  {"Z:", VALUE, 0xA0, 0, -100, 100, "%"}
+--}
 
 -- common
 -- Select the next or previous page
@@ -99,36 +108,40 @@ local function drawScreenTitle(title, page, pages)
 end
 
 local function runCalibrationPageForHorus(event)
-  fields = calibrationFields
-  if refreshIndex == #fields then
-    refreshIndex = 0
-  end
+  --fields = calibrationFields
+  --if refreshIndex == #fields then
+    --refreshIndex = 0
+  --end
   lcd.clear()
   drawScreenTitle(rxName.." Calibration ("..version..")", page, #pages)
+  local centerX = LCD_W / 2
+
   if(calibrationStep < 6) then
-    local position = calibrationPositions[1 + calibrationStep]
-    lcd.drawText(100, 50, "Place the "..rxName.." in the following position", COLOR_THEME_SECONDARY1)
+    lcd.drawText(centerX, 50, "Place your Stabilizer Rx as shown in the image.", COLOR_THEME_SECONDARY1 + CENTER)
     if calibBitmaps[calibrationStep + 1] == nil then
       calibBitmaps[calibrationStep + 1] = Bitmap.open(calibBitmapsFile[calibrationStep + 1])
     end
-    lcd.drawBitmap(calibBitmaps[calibrationStep + 1], 200, 70)
+    lcd.drawBitmap(calibBitmaps[calibrationStep + 1], 180, 70)
     -- for index = 1, 3, 1 do
     --   local field = fields[index]
     --   lcd.drawText(70, 80+20*index, field[1]..":", COLOR_THEME_SECONDARY1)
     --   lcd.drawNumber(90, 80+20*index, field[4]/10, LEFT+PREC2)
     -- end
 
-    local attr = calibrationState == 0 and INVERS or 0
-    lcd.drawText(160, 220, "Press [Enter] when ready", attr)
+    if calibrationState == CALIBRATION_INIT then
+      lcd.drawText(centerX, 220, "Press [Enter] when ready", COLOR_THEME_SECONDARY1 + INVERS + CENTER)
+    else
+      lcd.drawText(centerX, 220, "Waiting...", COLOR_THEME_SECONDARY1 + CENTER)
+    end
   else
-    lcd.drawText(160, 50, "Calibration completed", 0)
-    lcd.drawBitmap(Bitmap.open("bmp/done.bmp"),200, 100)
-    lcd.drawText(160, 220, "Press [RTN] when ready", attr)
+    lcd.drawText(centerX, 50, "Calibration completed", COLOR_THEME_SECONDARY1 + CENTER)
+    lcd.drawBitmap(Bitmap.open("img/cali_ok.png"),200, 100)
+    lcd.drawText(centerX, 220, "Press [Enter] to exit", COLOR_THEME_SECONDARY1 + INVERS + CENTER)
   end
   if calibrationStep >= 6 and (event == EVT_VIRTUAL_ENTER or event == EVT_VIRTUAL_EXIT) then
     return 2
   elseif event == EVT_VIRTUAL_ENTER then
-    calibrationState = 1
+    calibrationState = CALIBRATION_WRITE
   elseif event == EVT_VIRTUAL_EXIT then
     if calibrationStep > 0 then
       calibrationStep = 0
@@ -159,10 +172,10 @@ end
 -- taranis x9
 local calibrationPositionsBitmaps = { "bmp/up.bmp", "bmp/down.bmp", "bmp/left.bmp", "bmp/right.bmp", "bmp/forward.bmp", "bmp/back.bmp"  }
 local function runCalibrationPageForX9(event)
-  fields = calibrationFields
-  if refreshIndex == #fields then
-    refreshIndex = 0
-  end
+  --fields = calibrationFields
+  --if refreshIndex == #fields then
+    --refreshIndex = 0
+  --end
   lcd.clear()
   lcd.drawScreenTitle(rxName .." ("..version..")", page, #pages)
   if(calibrationStep < 6) then
@@ -174,7 +187,7 @@ local function runCalibrationPageForX9(event)
     --   lcd.drawNumber(90, 12+10*index, field[4]/10, LEFT+PREC2)
     -- end
 
-    local attr = calibrationState == 0 and INVERS or 0
+    local attr = calibrationState == CALIBRATION_INIT and INVERS or 0
     lcd.drawText(0, 56, "Press [Enter] when ready", attr)
   else
     lcd.drawText(0, 9, "Calibration completed", 0)
@@ -184,7 +197,7 @@ local function runCalibrationPageForX9(event)
   if calibrationStep >= 6 and (event == EVT_VIRTUAL_ENTER or event == EVT_VIRTUAL_EXIT) then
     return 2
   elseif event == EVT_VIRTUAL_ENTER then
-    calibrationState = 1
+    calibrationState = CALIBRATION_WRITE
   elseif event == EVT_VIRTUAL_EXIT then
     if calibrationStep > 0 then
       calibrationStep = 0
@@ -227,16 +240,16 @@ local function drawCalibrationOrientation(x, y, step)
 end
 
 local function runCalibrationPageForX7(event)
-  fields = calibrationFields
-  if refreshIndex == #fields then
-    refreshIndex = 0
-  end
+  --fields = calibrationFields
+  --if refreshIndex == #fields then
+    --refreshIndex = 0
+  --end
   lcd.clear()
   lcd.drawScreenTitle(rxName.." Calibration ("..version..")", page, #pages)
   if(calibrationStep < 6) then
     drawCalibrationOrientation(10, 24, 1 + calibrationStep)
 
-    local attr = calibrationState == 0 and INVERS or 0
+    local attr = calibrationState == CALIBRATION_INIT and INVERS or 0
     --lcd.drawText(0, 56, "[Enter] to validate", attr)
   else
     lcd.drawText(0, 19, "Calibration completed", 0)
@@ -246,9 +259,59 @@ local function runCalibrationPageForX7(event)
   if calibrationStep >= 6 and (event == EVT_VIRTUAL_ENTER or event == EVT_VIRTUAL_EXIT) then
     return 2
   elseif event == EVT_VIRTUAL_ENTER and positionConfirmed  then
-    calibrationState = 1
+    calibrationState = CALIBRATION_WRITE
     positionConfirmed = 0
   end
+  return 0
+end
+
+local isRXDetected  = false
+local detectionState = CALIBRATION_READ
+local detectWaitTime = 0
+
+local function runDetectRX(event)
+  lcd.clear()
+  drawScreenTitle("SRx+ ("..version..")", page, #pages)
+
+  lcd.drawText(160, 220, "Detecting RX..Please Wait...", COLOR_THEME_SECONDARY1)
+
+
+  if detectionState == CALIBRATION_READ then
+    if Telemetry.telemetryRead(PRODUCT_TYPE_ADDRESS) == true then
+      detectWaitTime = getTime()
+      detectionState = CALIBRATION_WAIT
+    end
+  elseif detectionState == CALIBRATION_WAIT then
+    local value = Telemetry.telemetryPop()
+    if value == nil then
+      if (getTime() > detectWaitTime + 100) then -- 2s
+        detectionState = CALIBRATION_READ -- Try read again
+      end
+      return 0
+    end
+
+    local fieldId, D1, D2, D3 = Telemetry.parseValue(value)
+    if fieldId == PRODUCT_TYPE_ADDRESS then
+      print(string.format("RX dected: Family= %d, Type = %d",D1,D2))
+
+      local product = Product[D2]
+      if (product) then
+        isRXDetected = true
+        rxName = product.name
+        local caliPrefix = "img/"..product.imgPrefix.."/"
+
+        calibBitmapsFile = {
+          caliPrefix .. "cali_1.png", -- up  
+          caliPrefix .. "cali_2.png", -- down  
+          caliPrefix .. "cali_3.png", -- left
+          caliPrefix .. "cali_4.png", -- right 
+          caliPrefix .. "cali_5.png", -- forward
+          caliPrefix .. "cali_6.png" -- back
+        }
+      end
+    end
+  end
+
   return 0
 end
 
@@ -293,10 +356,13 @@ local function run(event)
     selectPage(-1)
   end
 
-  local result = pages[page](event)
-  refreshNext()
-
-  return result
+  if (not isRXDetected) then
+    return runDetectRX(event)    
+  else
+    local result = pages[page](event)
+    refreshNext()
+    return result
+  end
 end
 
 return { init=init, run=run }
