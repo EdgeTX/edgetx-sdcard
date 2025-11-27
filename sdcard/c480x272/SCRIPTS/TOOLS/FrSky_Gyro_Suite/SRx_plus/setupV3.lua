@@ -28,11 +28,12 @@ chdir("/SCRIPTS/TOOLS/FrSky_Gyro_Suite/SRx_plus")
 -- Updated by: Frankie Arzu  from Frsky v3.0.6
 -- Date: Apr 19, 2025
 
-local app_ver = "v3.0.6"
+local app_ver = "v3.0.7"
 local app_name = "FrSky_Gyro_Suite"
 
 local CommonFile = assert(loadfile("common.lua"))()
 local Telemetry  = CommonFile.Telemetry
+local Product    = CommonFile.Product
 
 local IS_SIMULATOR = false -- updated in init()
 local simData = {}
@@ -78,14 +79,7 @@ local lastError = nil
 
 local resetDialogActive = false
 
-local Product = { family = nil, id = nil }
-FrSkyProductName = {
-     [64]= "Archer+ SR10+",
-     [68]= "Archer+ SR8+",
-     [76]= "Archer+ SR12+",
-}
-
-local ResetDialogText = "        RESET\n Settings are about to be reset.\n Please confirm to continue\n\n [ENTER]=RESET [RTN]=CANCEL"
+local ResetDialogText = "        RESET\n Settings are about to be reset.\n Please confirm to continue\n\n [ENTER]=RESET\n [RTN]=CANCEL"
 
 local FieldsPage1 = {
     { "RX Info", T_HEADER },
@@ -272,7 +266,8 @@ function TypeText.setValue(field,rawValue)
     if (fieldId==0xFE) then -- Product ID
         local family =  Data[1]
         local id     =  Data[2]
-        field[COL8_V_SUFFIX] = FrSkyProductName[id] or "Unknown"
+        local product = Product[id]
+        field[COL8_V_SUFFIX] = product and product.name or "Unknown"
     elseif (fieldId==0xFF) then -- Version
         local major = Data[1]
         local minor = Data[2]
@@ -293,6 +288,12 @@ local TypeButton = makeType(T_BUTTON)
 function TypeButton.setValue(field,rawValue)
     local _, fieldValue  = extractRawValue(field,rawValue)
     field[COL5_CURR_VAL] = fieldValue
+end
+
+function TypeButton.getValue(field)
+    local value = field[COL5_CURR_VAL]
+    if value==nil then return 0 end
+    return value
 end
 
 function TypeButton.toString(field)
