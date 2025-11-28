@@ -442,12 +442,13 @@ local function runCreateModel(event)
   model.setOutput(ThrFields[1][5],{name="Thrt"})
   
   -- Ail
-  if TypeFields[1][5] == 0 then
+ if TypeFields[1][5] == 0 then
     model.insertMix(AilerFields[1][5], 0,{name="Ail",weight=100})
-    model.setOutput(AilerFields[1][5],{name="Aile"})
+    model.setOutput(AilerFields[1][5],{name="Ailer"})
   else
-    model.insertMix(AilerFields[1][5], 0,{source=83,name="Ail",weight=100})
-    model.setOutput(AilerFields[1][5],{name="Aile"})
+    col2=getFieldInfo('cyc2').id
+    model.insertMix(AilerFields[1][5], 0,{source=col2,name="Ail",weight=100})
+    model.setOutput(AilerFields[1][5],{name="Ailer"})
   end
 
   -- Elev
@@ -455,43 +456,46 @@ local function runCreateModel(event)
     model.insertMix(EleFields[1][5], 0,{name="Ele",weight=100})
     model.setOutput(EleFields[1][5],{name="Elev"})
   else
-    model.insertMix(EleFields[1][5], 0,{source=82,name="Ele",weight=100})
-    model.setOutput(EleFields[1][5],{name="Elev"})
+    col1=getFieldInfo('cyc1').id
+    model.insertMix(EleFields[1][5], 0,{source=col1,name="Ele",weight=100})
+    model.setOutput(EleFields[1][5],{name="Elev",revert=1})
   end
 
   -- Rudder
   model.insertMix(RudFields[1][5], 0,{name="Rud",weight=100})
-   model.setOutput(RudFields[1][5],{name="Rud"})
+  model.setOutput(RudFields[1][5],{name="Rud"})
 
   -- Gyro
   MaxIndex=getSourceIndex("Max")
   if TypeFields[1][5] == 0 then
-    model.insertMix(4, 0,{source=MaxIndex,name="TGa",weight=25})
-    model.setOutput(4,{name="T.Ga"})
+    model.insertMix(4, 0,{source=MaxIndex,name="Gyr",weight=25})
+    model.setOutput(4,{name="TGa"})
   else
     model.insertMix( 4, 0,{source=MaxIndex,name="HH",weight=25})
-    model.insertMix( 4, 1,{source=MaxIndex,name="Rate",weight=-25,switch=gyRate,multiplex=2})
+    model.insertMix( 4, 1,{source=MaxIndex,name="Rat",weight=-25,switch=gyRate-1,multiplex=2})
     model.setOutput(4,{name="TGa"})
   end
 
   -- Pitch
+  dyn1=getFieldInfo('thr').id
   if TypeFields[1][5] == 0 then
-    model.insertMix(5, 0,{source=77,name="Pch",weight=100})
-    model.setOutput(5,{name="Ptch"})
+    model.insertMix(5, 0,{source=named,name="Pch",weight=100})
+    model.setOutput(5,{name="Pitch"})
   else
-    model.insertMix(5, 0,{source=84,name="Pch",weight=100})
-    model.setOutput(5,{name="Ptch"})
+    col3=getFieldInfo('cyc3').id
+    model.insertMix(5, 0,{source=col3,name="Pch",weight=100})
+    model.setOutput(5,{name="Pitch"})
   end
 
   --Set Swash Parameters
   if TypeFields[1][5]==1 and TypeFields[2][5]==0 then
-    model.setSwashRing({type="1",collectiveSource=77,aileronSource=78,elevatorSource=76,collectiveWeight=60,aileronWeight=60,elevatorWeight=60})
+    model.setSwashRing({type="1",collectiveSource=dyn1,aileronSource=dyn1+1,elevatorSource=dyn1-1,collectiveWeight=60,aileronWeight=60,elevatorWeight=60})
   elseif TypeFields[2][5]==1 then
-    model.setSwashRing({type="2",collectiveSource=77,aileronSource=78,elevatorSource=76,collectiveWeight=60,aileronWeight=60,elevatorWeight=60})
+    model.setSwashRing({type="2",collectiveSource=dyn1,aileronSource=dyn1+1,elevatorSource=dyn1-1,collectiveWeight=60,aileronWeight=60,elevatorWeight=60})
   elseif TypeFields[2][5]==2 then
-    model.setSwashRing({type="3",collectiveSource=77,aileronSource=78,elevatorSource=76,collectiveWeight=40,aileronWeight=40,elevatorWeight=60})
+    model.setSwashRing({type="3",collectiveSource=dyn1,aileronSource=dyn1+1,elevatorSource=dyn1-1,collectiveWeight=40,aileronWeight=40,elevatorWeight=60})
   elseif TypeFields[2][5]==3 then
-    model.setSwashRing({type="4",collectiveSource=77,aileronSource=78,elevatorSource=76,collectiveWeight=35,aileronWeight=35,elevatorWeight=60})
+    model.setSwashRing({type="4",collectiveSource=dyn1,aileronSource=dyn1+1,elevatorSource=dyn1-1,collectiveWeight=35,aileronWeight=35,elevatorWeight=60})
   end
 end
 
@@ -532,5 +536,6 @@ local function run(event)
 end
 
 return { init=init, run=run }
+
 
 
