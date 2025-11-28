@@ -458,7 +458,8 @@ local function runCreateModel(event)
     model.insertMix(AilerFields[1][5], 0,{name="Ail",weight=100})
     model.setOutput(AilerFields[1][5],{name="Ailer"})
   else
-    model.insertMix(AilerFields[1][5], 0,{source=86,name="Ail",weight=100})
+    col2=getFieldInfo('cyc2').id
+    model.insertMix(AilerFields[1][5], 0,{source=col2,name="Ail",weight=100})
     model.setOutput(AilerFields[1][5],{name="Ailer"})
   end
 
@@ -467,8 +468,9 @@ local function runCreateModel(event)
     model.insertMix(EleFields[1][5], 0,{name="Ele",weight=100})
     model.setOutput(EleFields[1][5],{name="Elev"})
   else
-    model.insertMix(EleFields[1][5], 0,{source=85,name="Ele",weight=100})
-    model.setOutput(EleFields[1][5],{name="Elev"})
+    col1=getFieldInfo('cyc1').id
+    model.insertMix(EleFields[1][5], 0,{source=col1,name="Ele",weight=100})
+    model.setOutput(EleFields[1][5],{name="Elev",revert=1})
   end
 
   -- Rudder
@@ -487,23 +489,25 @@ local function runCreateModel(event)
   end
 
   -- Pitch
+  dyn1=getFieldInfo('thr').id
   if TypeFields[1][5] == 0 then
-    model.insertMix(5, 0,{source=77,name="Pch",weight=100})
+    model.insertMix(5, 0,{source=named,name="Pch",weight=100})
     model.setOutput(5,{name="Pitch"})
   else
-    model.insertMix(5, 0,{source=87,name="Pch",weight=100})
+    col3=getFieldInfo('cyc3').id
+    model.insertMix(5, 0,{source=col3,name="Pch",weight=100})
     model.setOutput(5,{name="Pitch"})
   end
 
   --Set Swash Parameters
   if TypeFields[1][5]==1 and TypeFields[2][5]==0 then
-    model.setSwashRing({type="1",collectiveSource=77,aileronSource=78,elevatorSource=76,collectiveWeight=60,aileronWeight=60,elevatorWeight=60})
+    model.setSwashRing({type="1",collectiveSource=dyn1,aileronSource=dyn1+1,elevatorSource=dyn1-1,collectiveWeight=60,aileronWeight=60,elevatorWeight=60})
   elseif TypeFields[2][5]==1 then
-    model.setSwashRing({type="2",collectiveSource=77,aileronSource=78,elevatorSource=76,collectiveWeight=60,aileronWeight=60,elevatorWeight=60})
+    model.setSwashRing({type="2",collectiveSource=dyn1,aileronSource=dyn1+1,elevatorSource=dyn1-1,collectiveWeight=60,aileronWeight=60,elevatorWeight=60})
   elseif TypeFields[2][5]==2 then
-    model.setSwashRing({type="3",collectiveSource=77,aileronSource=78,elevatorSource=76,collectiveWeight=40,aileronWeight=40,elevatorWeight=60})
+    model.setSwashRing({type="3",collectiveSource=dyn1,aileronSource=dyn1+1,elevatorSource=dyn1-1,collectiveWeight=40,aileronWeight=40,elevatorWeight=60})
   elseif TypeFields[2][5]==3 then
-    model.setSwashRing({type="4",collectiveSource=77,aileronSource=78,elevatorSource=76,collectiveWeight=35,aileronWeight=35,elevatorWeight=60})
+    model.setSwashRing({type="4",collectiveSource=dyn1,aileronSource=dyn1+1,elevatorSource=dyn1-1,collectiveWeight=35,aileronWeight=35,elevatorWeight=60})
   end
 end
 
@@ -544,5 +548,6 @@ local function run(event)
 end
 
 return { init=init, run=run }
+
 
 
