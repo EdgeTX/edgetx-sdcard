@@ -479,7 +479,7 @@ local function runCreateModel(event)
   -- Pitch
   dyn1=getFieldInfo('thr').id
   if TypeFields[1][5] == 0 then
-    model.insertMix(5, 0,{source=named,name="Pch",weight=100})
+    model.insertMix(5, 0,{source=dyn1,name="Pch",weight=100})
     model.setOutput(5,{name="Pitch"})
   else
     col3=getFieldInfo('cyc3').id
@@ -536,6 +536,7 @@ local function run(event)
 end
 
 return { init=init, run=run }
+
 
 
 
