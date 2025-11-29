@@ -1,21 +1,26 @@
-local m_log,m_utils,m_libgui  = ...
+local m_log,m_utils,m_box  = ...
 
--- Author: Offer Shmuely (2023)
-local ver = "0.1"
+-- Author: Offer Shmuely (2025)
+local ver = "1.0"
 local app_name = "set_timer1"
 
 local M = {}
+M.height = 270
 
-local ctx2
-local label_new_time
-local label_org_time
-local ddTimerId
+-- LVGL state variables
+local timer_hh = 0
+local timer_mm = 0
+local timer_ss = 0
+local org_hh = 0
+local org_mm = 0
+local org_ss = 0
+local selected_timer_id = 3
 
 ---------------------------------------------------------------------------------------------------
 local Fields = {
-    timer1_hour = { text = 'Hours', x = 160, y = 130 , w = 30, is_visible = 1, default_value = 6, min = 0, max = 1000 },
-    timer1_min  = { text = 'Min'  , x = 220, y = 130 , w = 30, is_visible = 1, default_value = 6, min = 0, max = 60   },
-    timer1_sec  = { text = 'Sec'  , x = 280, y = 130 , w = 30, is_visible = 1, default_value = 6, min = 0, max = 60   },
+    timer1_hour = { text = 'Hours', x = 160, y = 100 , w = 30, is_visible = 1, default_value = 6, min = 0, max = 1000 },
+    timer1_min  = { text = 'Min'  , x = 220, y = 100 , w = 30, is_visible = 1, default_value = 6, min = 0, max = 60   },
+    timer1_sec  = { text = 'Sec'  , x = 280, y = 100 , w = 30, is_visible = 1, default_value = 6, min = 0, max = 60   },
 }
 ---------------------------------------------------------------------------------------------------
 
@@ -70,69 +75,55 @@ local function formatTime2(hh, mm, ss)
 end
 
 function M.init()
-    local menu_x = 50
-    local menu_w = 60
-    local menu_h = 26
-
     local t1 = model.getTimer(0)
     local dd, hh, mm, ss = formatTime(t1)
 
-    ctx2 = m_libgui.newGUI()
+    -- Store original and current values
+    org_hh, org_mm, org_ss = hh, mm, ss
+    timer_hh, timer_mm, timer_ss = hh, mm, ss
 
-    ctx2.label(240, 40, 0, menu_h, "original time:", m_utils.FONT_8)
-    label_org_time = ctx2.label(340, 40, 0, menu_h, formatTime2(hh, mm, ss), m_utils.FONT_8)
+    local preset_list = {"Timer1", "Timer2", "Timer3"}
 
+    local p_hour = Fields.timer1_hour
+    local p_min = Fields.timer1_min
+    local p_sec = Fields.timer1_sec
 
-    local preset_list = {"Timer1","Timer2","Timer3"}
-    ddTimerId = ctx2.dropDown(menu_x, 70, 100, 25, preset_list, 1)
-    ddTimerId.selected = 3
-
-    ctx2.label(menu_x, 120, 0, menu_h, "new time:", m_utils.FONT_8)
-
-    local p = Fields.timer1_hour
-    ctx2.label(p.x, p.y -20, menu_w, menu_h, p.text, m_utils.FONT_8)
-    p.gui_obj = ctx2.number(p.x, p.y, p.w, menu_h, hh, nil, m_utils.FONT_8, p.min, p.max)
-
-    local p = Fields.timer1_min
-    ctx2.label(p.x, p.y -20, menu_w, menu_h, p.text, m_utils.FONT_8)
-    p.gui_obj = ctx2.number(p.x, p.y, p.w, menu_h, mm, nil, m_utils.FONT_8, p.min, p.max)
-
-    local p = Fields.timer1_sec
-    ctx2.label(p.x, p.y -20, menu_w, menu_h, p.text, m_utils.FONT_8)
-    p.gui_obj = ctx2.number(p.x, p.y, p.w, menu_h, ss, nil, m_utils.FONT_8, p.min, p.max)
-
-    label_new_time = ctx2.label(180, 170, 0, menu_h, formatTime2(hh, mm, ss), m_utils.FONT_16)
-
-    ctx2.label(menu_x, 210, 0, menu_h, "Note: Changing the timer to count up", m_utils.FONT_8)
-    ctx2.label(menu_x, 230, 0, menu_h, "Note: Changing the timer to be persistent", m_utils.FONT_8)
+    m_box:build({{type="label", text="original time:", x=240, y=10, color=BLACK},
+        {type="label", x=340, y=10, color=BLACK, text=function() return formatTime2(org_hh, org_mm, org_ss) end},
+        {type="choice",x=50, y=40, w=100, title="Select Timer",
+            values=preset_list,
+            get=function() return selected_timer_id end,
+            set=function(val) selected_timer_id=val end
+        },
+        {type="label", text="new time:", x=50, y=90, color=BLACK},
+        {type="label", text=p_hour.text, x=p_hour.x, y=p_hour.y - 20, color=BLACK},
+        {type="numberEdit", x=p_hour.x, y=p_hour.y, w=p_hour.w, min=p_hour.min, max=p_hour.max,
+            get=function() return timer_hh end,
+            set=function(val) timer_hh=val end
+        },
+        {type="label", text=p_min.text, x=p_min.x, y=p_min.y - 20, color=BLACK},
+        {type="numberEdit",x=p_min.x, y=p_min.y, w=p_min.w, min=p_min.min, max=p_min.max,
+            get=function() return timer_mm end,
+            set=function(val) timer_mm=val end
+        },
+        {type="label", text=p_sec.text, x=p_sec.x, y=p_sec.y - 20, color=BLACK},
+        {type="numberEdit",x=p_sec.x, y=p_sec.y, w=p_sec.w, min=p_sec.min, max=p_sec.max,
+            get=function() return timer_ss end,
+            set=function(val) timer_ss=val end
+        },
+        {type="label", x=180, y=140, color=BLACK, font=m_utils.FS.FONT_16, text=function() return formatTime2(timer_hh, timer_mm, timer_ss) end},
+        {type="label",text="Note: Changing the timer to count up\nNote: Changing the timer to be persistent", x=50, y=190, color=GREY}
+    })
 
     return nil
 end
 
-
-function M.draw_page(event, touchState)
-
-    local hh = Fields.timer1_hour.gui_obj.value
-    local mm = Fields.timer1_min.gui_obj.value
-    local ss = Fields.timer1_sec.gui_obj.value
-    label_new_time.title = formatTime2(hh, mm, ss)
-
-    ctx2.run(event, touchState)
-
-    return m_utils.PRESET_RC.OK_CONTINUE
-end
-
 function M.do_update_model()
     log("preset::do_update_model()")
-    -- log("preset::timer_id: %s", ddTimerId.selected)
 
-    local hh = Fields.timer1_hour.gui_obj.value
-    local mm = Fields.timer1_min.gui_obj.value
-    local ss = Fields.timer1_sec.gui_obj.value
-
-    local timeId = ddTimerId.selected-1
+    local timeId = selected_timer_id - 1
     local t1 = model.getTimer(timeId)
-    t1.value = hh*3600 + mm*60 + ss
+    t1.value = timer_hh * 3600 + timer_mm * 60 + timer_ss
     t1.start = 0
     t1.persistent = 2
     t1.name = "Air Time"

@@ -1,18 +1,18 @@
-local m_log,m_utils,m_libgui  = ...
+local m_log,m_utils,m_box  = ...
 
--- Author: Offer Shmuely (2023)
-local ver = "0.1"
+-- Author: Offer Shmuely (2025)
+local ver = "1.0"
 local app_name = "flight_widget_adj"
 
 local M = {}
+M.height = 270
 
-local ctx2
-local label_new_time
-local label_org_time
+local num_flights = 0
+local flights_count = 0
 
 ---------------------------------------------------------------------------------------------------
 local Fields = {
-    num_flights = { text = 'Num Flights', x = 210, y = 90 , w = 30, is_visible = 1, default_value = 6, min = 0, max = 1000 },
+    num_flights = { text='Num Flights', x=190, y=90, w=50, is_visible=1, default_value=6, min=0, max=1000 },
 }
 ---------------------------------------------------------------------------------------------------
 
@@ -35,41 +35,30 @@ end
 
 
 function M.init()
-    local menu_x = 50
-    local menu_w = 60
-    local menu_h = 26
-
-    ctx2 = m_libgui.newGUI()
-    local flights_count = getFlightCount()
+    flights_count = getFlightCount()
+    num_flights = flights_count
 
     local p = Fields.num_flights
 
-    ctx2.label(menu_x, 60, 0, menu_h, "original flights count:", m_utils.FONT_8)
-    label_org_time = ctx2.label(p.x, 60, 0, menu_h, flights_count, m_utils.FONT_8)
+    m_box:build({
+        {type="label", text="Setting flight count to this model", x=30, y=15, color=BLACK},
+        {type="label", text=function() return string.format("original flights count:  %s", flights_count) end, x=50, y=60, color=BLACK},
+        -- {type="label", text=function() return tostring(flights_count) end, x=p.x, y=60, color=BLACK},
+        {type="label", text="new flights count:", x=50, y=p.y +5, color=BLACK},
+        {type="numberEdit", x=p.x, y=p.y, w=p.w, min=p.min, max=p.max,
+            get=function() return num_flights end,
+            set=function(val) num_flights=val end
+        },
+    })
 
-    ctx2.label(menu_x,  p.y, 0, menu_h, "new flights count:", m_utils.FONT_8)
-    p.gui_obj = ctx2.number(p.x, p.y, p.w, menu_h, flights_count, nil, m_utils.FONT_8, p.min, p.max)
-
-    ctx2.label(menu_x, 250, 0, menu_h, "Setting flight count to this model", m_utils.FONT_8)
     return nil
-end
-
-
-function M.draw_page(event, touchState)
-
-    local num_flights = Fields.num_flights.gui_obj.value
-
-    ctx2.run(event, touchState)
-    return m_utils.PRESET_RC.OK_CONTINUE
 end
 
 function M.do_update_model()
     log("preset::num_flights()")
 
-    local new_flight_count = Fields.num_flights.gui_obj.value
-
-    model.setGlobalVariable(8, 0, new_flight_count)
-    log("num_flights updated: " .. new_flight_count)
+    model.setGlobalVariable(8, 0, num_flights)
+    log("num_flights updated: " .. num_flights)
 
     return m_utils.PRESET_RC.OK_CONTINUE
 end
