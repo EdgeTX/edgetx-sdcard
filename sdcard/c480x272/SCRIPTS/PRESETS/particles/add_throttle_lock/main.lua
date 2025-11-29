@@ -1,4 +1,4 @@
-local m_log,m_utils,m_box  = ...
+local m_log,m_utils  = ...
 
 -- Author: Offer Shmuely (2025)
 local ver = "1.0"
@@ -18,16 +18,12 @@ local Fields = {
 }
 ---------------------------------------------------------------------------------------------------
 
-function M.getVer()
-    return ver
-end
-
 local function log(fmt, ...)
     m_log.info(fmt, ...)
 end
 ---------------------------------------------------------------------------------------------------
 
-function M.init()
+function M.init(box)
     -- Initialize with default values
     selected_arm_switch = Fields.arm_switch.default_value
     selected_motor_ch = Fields.motor_ch.default_value
@@ -35,7 +31,7 @@ function M.init()
     local p_arm = Fields.arm_switch
     local p_motor = Fields.motor_ch
 
-    m_box:build({
+    box:build({
 
         {type="label",text=p_arm.text,x=50,y=p_arm.y,color=BLACK},
         {type="choice",x=p_arm.x,y=p_arm.y,w=p_arm.w,title="Arm Switch",values=p_arm.avail_values,

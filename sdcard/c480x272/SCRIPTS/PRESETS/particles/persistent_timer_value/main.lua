@@ -1,4 +1,4 @@
-local m_log,m_utils,m_box  = ...
+local m_log,m_utils  = ...
 
 -- Author: Offer Shmuely (2025)
 local ver = "1.0"
@@ -23,10 +23,6 @@ local Fields = {
     timer1_sec  = { text = 'Sec'  , x = 280, y = 100 , w = 30, is_visible = 1, default_value = 6, min = 0, max = 60   },
 }
 ---------------------------------------------------------------------------------------------------
-
-function M.getVer()
-    return ver
-end
 
 local function log(fmt, ...)
     m_log.info(fmt, ...)
@@ -74,7 +70,7 @@ local function formatTime2(hh, mm, ss)
     return time_str
 end
 
-function M.init()
+function M.init(box)
     local t1 = model.getTimer(0)
     local dd, hh, mm, ss = formatTime(t1)
 
@@ -88,7 +84,7 @@ function M.init()
     local p_min = Fields.timer1_min
     local p_sec = Fields.timer1_sec
 
-    m_box:build({{type="label", text="original time:", x=240, y=10, color=BLACK},
+    box:build({{type="label", text="original time:", x=240, y=10, color=BLACK},
         {type="label", x=340, y=10, color=BLACK, text=function() return formatTime2(org_hh, org_mm, org_ss) end},
         {type="choice",x=50, y=40, w=100, title="Select Timer",
             values=preset_list,

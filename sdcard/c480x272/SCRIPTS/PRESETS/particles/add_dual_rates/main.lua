@@ -1,4 +1,4 @@
-local m_log,m_utils,m_box  = ...
+local m_log,m_utils  = ...
 
 -- Author: Offer Shmuely (2025)
 local ver = "1.0"
@@ -30,10 +30,6 @@ local Fields = {
 }
 ---------------------------------------------------------------------------------------------------
 
-function M.getVer()
-    return ver
-end
-
 local function log(fmt, ...)
     m_log.info(fmt, ...)
 end
@@ -59,7 +55,7 @@ end
 
 ------------------------------------------------------------------------------------------------------
 
-function M.init()
+function M.init(box)
     input_idx_ail = m_utils.input_search_by_name("Ail")
     input_idx_ele = m_utils.input_search_by_name("Ele")
 
@@ -82,7 +78,7 @@ function M.init()
     rate_low = Fields.rate_low.default_value
     expo_low = Fields.expo_low.default_value
 
-    m_box:build({
+    box:build({
         -- Column headers
         {type="label", text="Rate", x=180, y=70, color=BLACK },
         {type="label", text="Expo", x=250, y=70, color=BLACK},

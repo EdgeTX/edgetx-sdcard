@@ -1,4 +1,4 @@
-local m_log,m_utils,m_box  = ...
+local m_log,m_utils  = ...
 
 -- Author: Offer Shmuely (2025)
 local ver = "1.0"
@@ -16,10 +16,6 @@ local Fields = {
 }
 ---------------------------------------------------------------------------------------------------
 
-function M.getVer()
-    return ver
-end
-
 local function log(fmt, ...)
     m_log.info(fmt, ...)
     print(app_name .. string.format(fmt, ...))
@@ -33,14 +29,13 @@ local function getFlightCount()
     return num_flights
 end
 
-
-function M.init()
+function M.init(box)
     flights_count = getFlightCount()
     num_flights = flights_count
 
     local p = Fields.num_flights
 
-    m_box:build({
+    box:build({
         {type="label", text="Setting flight count to this model", x=30, y=15, color=BLACK},
         {type="label", text=function() return string.format("original flights count:  %s", flights_count) end, x=50, y=60, color=BLACK},
         -- {type="label", text=function() return tostring(flights_count) end, x=p.x, y=60, color=BLACK},

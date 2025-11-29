@@ -29,11 +29,11 @@ local ver = "0.3"
 local app_name = "PresetsLoader"
 
 local app_folder    = "/SCRIPTS/PRESETS"
-local SCRIPT_FOLDER = "/SCRIPTS/PRESETS/scripts"
---chdir(app_folder)
+local ENGINE_FOLDER = app_folder .. "/engine"
+local SCRIPT_FOLDER = app_folder .. "/particles"
 
-local m_log =   loadScript(app_folder .. "/engine/lib_log"  , "btd")(app_name, app_folder)
-local m_utils = loadScript(app_folder .. "/engine/lib_utils", "btd")(m_log, app_name, app_folder)
+local m_log =   loadScript(ENGINE_FOLDER .. "/lib_log"  , "btd")(app_name, app_folder)
+local m_utils = loadScript(ENGINE_FOLDER .. "/lib_utils", "btd")(m_log, app_name, app_folder)
 
 -- better font names
 local FS={FONT_38=XXLSIZE,FONT_16=DBLSIZE,FONT_12=MIDSIZE,FONT_8=0,FONT_6=SMLSIZE}
@@ -77,14 +77,10 @@ local STATE = {
 }
 local state = STATE.SPLASH
 
-local ImgSplash     = app_folder .. "/engine/img/splash.png"
-local ImgBackground = app_folder .. "/engine/img/background.png"
-local ImgSummary    = app_folder .. "/engine/img/summary.png"
+local ImgSplash     = ENGINE_FOLDER .. "/img/splash.png"
+local ImgBackground = ENGINE_FOLDER .. "/img/background.png"
+local ImgSummary    = ENGINE_FOLDER .. "/img/summary.png"
 ---------------------------------------------------------------------------------------------------
-local function getVer()
-    return ver
-end
-
 local function log(fmt, ...)
     m_log.info(fmt, ...)
 end
@@ -161,7 +157,7 @@ local function on_change_preset_selection(i)
     log("Selected preset_name: %s. %s",i, preset_folder_name)
 
     preset_info = m_utils.readMeta(SCRIPT_FOLDER .. "/" .. preset_folder_name .. "/meta.ini")
-    preset_info.icon = Bitmap.open(SCRIPT_FOLDER .. "/" .. preset_folder_name .. "/icon.png")
+    preset_info.icon = bitmap.open(SCRIPT_FOLDER .. "/" .. preset_folder_name .. "/icon.png")
 
     log("Category: %s", preset_info["category"])
     log("preset_selection: %s", preset_info["name"])
@@ -270,17 +266,14 @@ local function state_SCRIPT_RUNNER_INIT()
         return
     end
 
-    preset_script_chunk = code_chunk(m_log,m_utils,bPresetArea)
+    preset_script_chunk = code_chunk(m_log,m_utils)
     if preset_script_chunk == nil then
         error_desc = "failed to load preset file:\n " .. script_name .. " \n"
         return nil
     end
     log("%s - loaded OK", preset_folder_name)
 
-    local the_ver = preset_script_chunk.getVer()
-    log("the_ver: " .. the_ver)
-
-    local err = preset_script_chunk.init()
+    local err = preset_script_chunk.init(bPresetArea)
     if err ~= nil then
         log("preset.init() returned error: %s", err)
         error_desc = err
@@ -388,7 +381,7 @@ local function state_ON_END_INIT(event, touchState)
     state = STATE.ON_END
     return 0
 end
----------------------------------------------------------------------------------------------------
+
 local function state_ON_END(event, touchState)
     return 0
 end
@@ -396,12 +389,10 @@ end
 
 local function state_ERROR_PAGE_INIT(event, touchState)
     lvgl.clear()
-
     lvgl.build({
         {type="label",text=error_desc or "Unknown error",x=40,y=80,w=LCD_W - 80,color=COLOR_THEME_PRIMARY1},
         {type="label",text="Hold [RTN] to exit.",x=100,y=200,color=COLOR_THEME_PRIMARY1}
     })
-
     state = STATE.ERROR_PAGE
     return 0
 end
