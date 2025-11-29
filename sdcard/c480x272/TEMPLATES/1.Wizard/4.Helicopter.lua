@@ -544,7 +544,7 @@ local function createModel(event)
   else
     col1=getFieldInfo('cyc1').id
     model.insertMix(EleFields[1][5], 0,{source=col1,name="Ele",weight=100})
-    model.setOutput(EleFields[1][5],{name="Elev"})
+    model.setOutput(EleFields[1][5],{name="Elev",revert=1})
   end
 
   -- Rudder
@@ -563,8 +563,9 @@ MaxIndex=getSourceIndex("Max")
   end
 
   -- Pitch
+  dyn1=getFieldInfo('thr').id
   if TypeFields[1][5] == 0 then
-    model.insertMix(5, 0,{source=89,name="Pch",weight=100})
+    model.insertMix(5, 0,{source=dyn1,name="Pch",weight=100})
     model.setOutput(5,{name="Pitch"})
   else
     col3=getFieldInfo('cyc3').id
@@ -574,13 +575,13 @@ MaxIndex=getSourceIndex("Max")
 
   --Set Swash Parameters
   if TypeFields[1][5]==1 and TypeFields[2][5]==0 then
-    model.setSwashRing({type=1,collectiveSource=89,aileronSource=90,elevatorSource=88,collectiveWeight=60,aileronWeight=60,elevatorWeight=60})
+    model.setSwashRing({type=1,collectiveSource=dyn1,aileronSource=dyn1+1,elevatorSource=dyn1-1,collectiveWeight=60,aileronWeight=60,elevatorWeight=60})
   elseif TypeFields[2][5]==1 then
-    model.setSwashRing({type=2,collectiveSource=89,aileronSource=90,elevatorSource=88,collectiveWeight=60,aileronWeight=60,elevatorWeight=60})
+    model.setSwashRing({type=2,collectiveSource=dyn1,aileronSource=dyn1+1,elevatorSource=dyn1-1,collectiveWeight=60,aileronWeight=60,elevatorWeight=60})
   elseif TypeFields[2][5]==2 then
-    model.setSwashRing({type=3,collectiveSource=89,aileronSource=90,elevatorSource=88,collectiveWeight=40,aileronWeight=40,elevatorWeight=60})
+    model.setSwashRing({type=3,collectiveSource=dyn1,aileronSource=dyn1+1,elevatorSource=dyn1-1,collectiveWeight=40,aileronWeight=40,elevatorWeight=60})
   elseif TypeFields[2][5]==3 then
-    model.setSwashRing({type=4,collectiveSource=89,aileronSource=90,elevatorSource=88,collectiveWeight=35,aileronWeight=35,elevatorWeight=60})
+    model.setSwashRing({type=4,collectiveSource=dyn1,aileronSource=dyn1+1,elevatorSource=dyn1-1,collectiveWeight=35,aileronWeight=35,elevatorWeight=60})
   end
   selectPage(1)
   return 0
