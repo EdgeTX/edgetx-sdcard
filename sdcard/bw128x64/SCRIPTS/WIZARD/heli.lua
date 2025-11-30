@@ -452,14 +452,17 @@ local function runCreateModel(event)
   end
 
   -- Elev
+  col1=getFieldInfo('cyc1').id
   if TypeFields[1][5] == 0 then
     model.insertMix(EleFields[1][5], 0,{name="Ele",weight=100})
     model.setOutput(EleFields[1][5],{name="Elev"})
-  else
-    col1=getFieldInfo('cyc1').id
+  elseif TypeFields[2][5]==1 then
     model.insertMix(EleFields[1][5], 0,{source=col1,name="Ele",weight=100})
     model.setOutput(EleFields[1][5],{name="Elev",revert=1})
-  end
+  else
+    model.insertMix(EleFields[1][5], 0,{source=col1,name="Ele",weight=100})
+    model.setOutput(EleFields[1][5],{name="Elev"})
+    end
 
   -- Rudder
   model.insertMix(RudFields[1][5], 0,{name="Rud",weight=100})
@@ -536,6 +539,7 @@ local function run(event)
 end
 
 return { init=init, run=run }
+
 
 
 
