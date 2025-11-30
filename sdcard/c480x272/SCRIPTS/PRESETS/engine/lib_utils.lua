@@ -1,4 +1,4 @@
-local m_log, app_name, m_script_folder = ...
+local m_log, app_name, app_folder = ...
 
 local M = {}
 M.m_log = m_log
@@ -27,80 +27,31 @@ M.defaultChannel_0_ELE = defaultChannel(M.STICK_NUMBER_ELE)
 M.defaultChannel_0_THR = defaultChannel(M.STICK_NUMBER_THR)
 M.defaultChannel_0_RUD = defaultChannel(M.STICK_NUMBER_RUD)
 
-local script_folder = m_script_folder
-local ImgBackground = bitmap.open(script_folder .. "img/background.png")
-local ImgPageUp = bitmap.open(script_folder .. "img/pageup.png")
-local ImgPageDn = bitmap.open(script_folder .. "img/pagedn.png")
-
 -----------------------------------------------------------------
 
--- better font size names
-M.FONT_38 = XXLSIZE -- 38px
-M.FONT_16 = DBLSIZE -- 16px
-M.FONT_12 = MIDSIZE -- 12px
-M.FONT_8 = 0 -- Default 8px
-M.FONT_6 = SMLSIZE -- 6px
+-- better font names
+-- local FS={FONT_38=XXLSIZE,FONT_16=DBLSIZE,FONT_12=MIDSIZE,FONT_8=0,FONT_6=SMLSIZE}
+M.FS={FONT_38=XXLSIZE,FONT_16=DBLSIZE,FONT_12=MIDSIZE,FONT_8=0,FONT_6=SMLSIZE}
 
 
 local function lcdSizeTextFixed(txt, font_size)
     local ts_w, ts_h = lcd.sizeText(txt, font_size)
 
     local v_offset = 0
-    if font_size == M.FONT_38 then
+    if font_size == M.FS.FONT_38 then
         v_offset = -11
-    elseif font_size == M.FONT_16 then
+    elseif font_size == M.FS.FONT_16 then
         v_offset = -5
-    elseif font_size == M.FONT_12 then
+    elseif font_size == M.FS.FONT_12 then
         v_offset = -4
-    elseif font_size == M.FONT_8 then
+    elseif font_size == M.FS.FONT_8 then
         v_offset = -3
-    elseif font_size == M.FONT_6 then
+    elseif font_size == M.FS.FONT_6 then
         v_offset = 0
     end
     return ts_w, ts_h +2*v_offset, v_offset
 end
 
-function M.drawBadgedText(txt, field, font_size, is_selected, is_edit)
-    local ts_w, ts_h, v_offset = lcdSizeTextFixed(txt, font_size)
-    local bdg_h = 5 + ts_h + 5
-    local r = bdg_h / 2
-
-    if (field.w > 0) then
-        ts_w = field.w
-    else
-        if (ts_w < 30) then
-            ts_w = 30
-        end
-    end
-    local bg_color = WHITE
-    if (is_selected) then
-        bg_color = GREEN
-    end
-    lcd.drawFilledCircle(field.x, field.y + r, r, bg_color)
-    lcd.drawFilledCircle(field.x + ts_w, field.y + r, r, bg_color)
-    lcd.drawFilledRectangle(field.x, field.y, ts_w, bdg_h, bg_color)
-    local attr = 0
-    if (is_selected and is_edit) then
-        attr = attr + BLINK
-    end
-
-    lcd.drawText(field.x, field.y + v_offset + 5, txt, font_size + BLACK + attr)
-end
-
------------------------------------------------------------------
-function M.drawTitle(txt, is_prev, is_next, img)
-    lcd.clear()
-    lcd.drawBitmap(img, 0, 0)
-
-    lcd.drawText(120, 8, txt, COLOR_THEME_PRIMARY1)
-
-    if is_prev == true then
-        lcd.drawBitmap(ImgPageUp, 0, 95)
-    end
-    if is_next == true then
-        lcd.drawBitmap(ImgPageDn, 455, 95)
-    end
-end
 
 -----------------------------------------------------------------
 function M.func1(text)
