@@ -20,26 +20,32 @@
 -- Date: 2025
 
 -- default channels
--- CH1  = Elevron left
--- CH2  = Elevron Right
--- CH3  = Throttle / Motor
+-- CH1  = Aileron
+-- CH2  = Elevator
+-- CH3  = collective (pitch)
+-- CH4  = Rudder (yaw)
 -- CH5  = Arm (elrs)
+-- CH6  = Motor (3 rpm)
+-- CH7  = Tail Gain
+-- CH8  = Bank (Profile/idle up)
+-- CH9  = Rescue (panic)
+-- CH10 = 
 
 -- default switches
--- SA = Flaps
--- SB = Gears (retracts)
--- SC = Dual rates
+-- SA = Bank (Profile/idle up)
+-- SB = 
+-- SD = 
+-- SH = Rescue (Panic)
 -- SF↓ = Motor arm (safety)
 
 ---------------------------------------------------------------------------------------------------
 
-local topbar_txt = "Wing Wizard"
+local topbar_txt = "Heli Wizard (Flight Controller)"
 
 local paticles_list = {
     "model_name",
-    "motor",
-    "elevron",
-    "dual_rates",
+    "heli_channels_order",
+    "heli_rates",
 }
 
 ---------------------------------------------------------------------------------------------------
