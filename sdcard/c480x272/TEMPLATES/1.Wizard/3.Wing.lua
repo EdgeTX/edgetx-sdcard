@@ -36,7 +36,7 @@
 local topbar_txt = "Wing Wizard"
 
 local paticles_list = {
-    "model_name",
+    "name",
     "motor",
     "elevron",
     "dual_rates",

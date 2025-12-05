@@ -43,7 +43,7 @@
 local topbar_txt = "Multirotor Wizard"
 
 local paticles_list = {
-    "model_name",
+    "name",
     "motor",
     "beeper",
     "profile1",

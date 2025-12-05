@@ -43,7 +43,7 @@
 local topbar_txt = "Heli Wizard (Flight Controller)"
 
 local paticles_list = {
-    "model_name",
+    "name",
     "heli_channels_order",
     "heli_rates",
 }

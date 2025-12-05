@@ -42,7 +42,7 @@
 local topbar_txt = "Plane Wizard"
 
 local paticles_list = {
-    "model_name",
+    "name",
     "motor",
     "ailerons",
     "tail",
