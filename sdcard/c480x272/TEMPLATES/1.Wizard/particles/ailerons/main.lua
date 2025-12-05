@@ -10,6 +10,7 @@ M.height = 130
 
 local x1 = 20
 local x2 = (LCD_W>=470) and 180 or 150
+local x3 = (LCD_W>=470) and 280 or 235
 local use_images = (LCD_W>=470)
 
 
@@ -28,7 +29,6 @@ function M.init(box)
 
     box:build({
         -- Aileron type selection
-        -- {type="label", text="Number of ailerons:", x=x1, y=5, color=BLACK},
         {type="choice", x=x1, y=2, --w=180,
             title="Aileron Type",
             values={ 
@@ -41,23 +41,22 @@ function M.init(box)
         },
         
         -- First aileron channel (visible when ail_type >= 2)
-        {type="label", text="Aileron channels:", x=x1, y=50, color=BLACK, visible=function() return ail_type >= 2 end },
+        {type="label", text="Aileron channels:", x=x1, y=50, color=BLACK, visible=function() return ail_type==2 or ail_type==3 end },
         {type="choice", x=x2, y=45, w=70,
             title="Ail Channel",
             values=m_utils.channels_list,
             get=function() return ail_ch_a end,
             set=function(val) ail_ch_a = val end,
-            visible=function() return ail_type >= 2 end
+            visible=function() return ail_type==2 or ail_type==3 end
         },
 
-        {type="choice", x=x2+80, y=45, w=safe_width(x2+80, 70), title="Ail Left Channel",
+        {type="choice", x=x3, y=45, w=safe_width(x3, 70), title="Ail Left Channel",
             values=m_utils.channels_list,
             get=function() return ail_ch_b end,
             set=function(val) ail_ch_b = val end,
             visible=function() return ail_type == 3 end
         },
     })
-
     return nil
 end
 

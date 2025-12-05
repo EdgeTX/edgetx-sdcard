@@ -113,12 +113,15 @@ local function load_preset(preset_name, pos_y)
     local bPresetArea1 = lvgl.box({scrollDir=lvgl.SCROLL_OFF, x=0, y=pos_y, w=LCD_W})
     -- bPresetArea1:image({x=LCD_W-95, y=10, w=100, h=100, file=function() return string.format(SCRIPT_FOLDER .. "/%s/icon.png", preset_name) end})
 
+     --------------------------------------------------------------
+    -- load particle
     local script_name = SCRIPT_FOLDER .. "/" .. preset_name .. "/main.lua"
     local preset_script_lib = loadScript(script_name, "btd")(m_log, m_utils, SCRIPT_FOLDER .. "/" .. preset_name)
     if preset_script_lib == nil then
         error_desc = "failed to load preset file:\n " .. script_name .. " \n"
         return nil, nil
     end
+    --------------------------------------------------------------
 
     preset_info = m_utils.readMeta(SCRIPT_FOLDER .. "/" .. preset_name .. "/meta.ini")
     -- preset_info.icon = bitmap.open(SCRIPT_FOLDER .. "/" .. preset_name .. "/icon.png")
@@ -134,7 +137,7 @@ local function load_preset(preset_name, pos_y)
     bPresetArea1:rectangle({x=5, y=0, w=LCD_W-15, h=30, color=GREY , filled=true, rounded=5, thickness=2 })
     bPresetArea1:label({x=20, y=5, color=WHITE, font=BOLD, text=preset_info["name"]})
 
-    local bPresetArea2 = bPresetArea1:box({x=0, y=35, h=height})
+    local bPresetArea2 = bPresetArea1:box({x=0, y=35, h=height, w=LCD_W, scrollDir=lvgl.SCROLL_OFF})
 
     --------------------------------------------------------------
     -- init the particle to create it's UI inside bPresetArea2

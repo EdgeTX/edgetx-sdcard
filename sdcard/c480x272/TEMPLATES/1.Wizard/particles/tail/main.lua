@@ -9,6 +9,7 @@ local M = {}
 M.height = 170
 local x1 = 20
 local x2 = (LCD_W>=470) and 180 or 150
+local x3 = (LCD_W>=470) and 280 or 235
 local use_images = (LCD_W>=470)
 
 
@@ -33,7 +34,12 @@ function M.init(box)
         -- {type="label", text="Pick the tail configuration:", x=x1, y=5, color=BLACK},
         {type="choice", x=x1, y=2, w=safe_width(x1, 380),
             title="Tail Type",
-            values={ "1 ch Elevator, no Rudder", "1 CH Elevator, 1 CH Rudder", "2 CH Elevator, 1 CH Rudder", "V-Tail" },
+            values={ 
+                "1 ch Elevator, no Rudder", 
+                "1 CH Elevator, 1 CH Rudder", 
+                "2 CH Elevator, 1 CH Rudder", 
+                "V-Tail" 
+            },
             get=function() return tail_type end,
             set=function(val) tail_type = val end
         },
@@ -53,7 +59,7 @@ function M.init(box)
             get=function() return ch_a end,
             set=function(val) ch_a = val end
         },
-        {type="choice", x=250, y=45, w=80,
+        {type="choice", x=x3, y=45, w=safe_width(x3, 80),
             title="Elevator Left Ch",
             values=m_utils.channels_list,
             get=function() return ch_c end,
