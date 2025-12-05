@@ -127,7 +127,10 @@ local function load_preset(preset_name, pos_y)
     log("about: %s", preset_info["about"])
 
     local height = preset_script_lib.height
-    bPresetArea1:rectangle({x=5, y=0, w=LCD_W-15, h=height, color=COLOR_THEME_FOCUS , filled=true, rounded=5, thickness=2 })
+    bPresetArea1:rectangle({x=5, y=0, w=LCD_W-15, h=height, 
+        color=lcd.RGB(0xFFEEAD), 
+        -- color=COLOR_THEME_FOCUS, 
+        filled=true, rounded=5, thickness=2 })
     bPresetArea1:rectangle({x=5, y=0, w=LCD_W-15, h=30, color=GREY , filled=true, rounded=5, thickness=2 })
     bPresetArea1:label({x=20, y=5, color=WHITE, font=BOLD, text=preset_info["name"]})
     -- bPresetArea1:image({x=LCD_W-110, y=0, w=80, h=80, file=function() 
