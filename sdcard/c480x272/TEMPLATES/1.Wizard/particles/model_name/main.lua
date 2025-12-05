@@ -32,7 +32,7 @@ function M.init(box)
     box:build({
         -- {type="label", text="Set the name for this model", x=x1, y=0, color=BLACK},
         {type="label", text="Model Name:", x=x1, y=5, color=BLACK},
-        {type="textEdit", x=130, y=0, w=safe_width(130, 200), maxLen=15,
+        {type="textEdit", x=130, y=2, w=safe_width(130, 200), maxLen=15,
             value=model_name,
             get=function() return model_name end,
             set=function(val) model_name=val end

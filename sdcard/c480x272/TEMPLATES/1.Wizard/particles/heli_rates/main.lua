@@ -51,7 +51,7 @@ function M.init(box)
     box:build({
 
         {type="label", text="Style Rates?", x=x1, y=5, color=BLACK},
-        {type="choice", x=x2, y=0, w=safe_width(x2, 280),
+        {type="choice", x=x2, y=2, w=safe_width(x2, 280),
             label="Dual Rates",
             values={"No, single rate only", "3 different rates on a switch"},
             default=is_dual_rate,

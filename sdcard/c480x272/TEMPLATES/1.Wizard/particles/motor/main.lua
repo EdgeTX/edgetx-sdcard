@@ -34,7 +34,7 @@ function M.init(box)
         -- Motor question
         -- {type="label", text="Have a motor?", x=x1, y=5, color=BLACK},
         {type="choice",
-            x=x2, y=0, w=safe_width(x2, 160),
+            x=x2, y=2, w=safe_width(x2, 160),
             title="Have a Motor?",
             values={ "No Motor", "Yes, I have motor" },
             get=function() return is_motor end,

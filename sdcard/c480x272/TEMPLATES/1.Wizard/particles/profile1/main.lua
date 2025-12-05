@@ -27,7 +27,7 @@ function M.init(box)
     log("Initializing %s v%s, LCD_W: %s, x2:%s, x2-left: %s, box.w: %s", app_name, ver, LCD_W, x2, LCD_W - x2, box.w)
     box:build({
         {type="label", text="Profiles", x=x1, y=5, color=BLACK},
-        {type="choice", x=x2, y=0, w=safe_width(x2, 240),
+        {type="choice", x=x2, y=2, w=safe_width(x2, 240),
             values = {
                 "Yes, I need profiles",
                 "No need, single profile is ok", 

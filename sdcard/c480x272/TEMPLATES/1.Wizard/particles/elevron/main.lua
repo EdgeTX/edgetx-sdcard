@@ -29,13 +29,13 @@ function M.init(box)
     box:build({       
         {type="label", text="channels:", x=x1, y=5, color=BLACK},
 
-        {type="choice", x=x2, y=0, w=80,
+        {type="choice", x=x2, y=2, w=80,
             title="Elevron CH Left",
             values=m_utils.channels_list,
             get=function() return ch_a end,
             set=function(val) ch_a = val end
         },
-        {type="choice", x=x2+90, y=0, w=safe_width(x2+90, 80),
+        {type="choice", x=x2+90, y=2, w=safe_width(x2+90, 80),
             title="Elevron CH Right",
             values=m_utils.channels_list,
             get=function() return ch_b end,

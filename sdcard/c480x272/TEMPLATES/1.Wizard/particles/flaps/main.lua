@@ -29,7 +29,7 @@ function M.init(box)
     box:build({
         -- Flaps type selection
         -- {type="label", text="Flaps", x=x1, y=5, color=BLACK},
-        {type="choice", x=x2, y=0, w=safe_width(x2, 220),
+        {type="choice", x=x2, y=2, w=safe_width(x2, 220),
             title="Flaps Type",
             values={ 
                 "No Flaps", 

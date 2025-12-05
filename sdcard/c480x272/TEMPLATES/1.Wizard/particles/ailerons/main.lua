@@ -29,7 +29,7 @@ function M.init(box)
     box:build({
         -- Aileron type selection
         -- {type="label", text="Number of ailerons:", x=x1, y=5, color=BLACK},
-        {type="choice", x=x1, y=0, --w=180,
+        {type="choice", x=x1, y=2, --w=180,
             title="Aileron Type",
             values={ 
                 "No Ailerons", 

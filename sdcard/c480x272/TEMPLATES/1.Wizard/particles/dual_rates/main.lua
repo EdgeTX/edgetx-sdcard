@@ -50,7 +50,7 @@ function M.init(box)
     box:build({
         -- Expo setting
         {type="label", text="Expo", x=x1, y=5, color=BLACK},
-        {type="numberEdit", x=x2, y=0, w=60, min=0, max=100,
+        {type="numberEdit", x=x2, y=2, w=60, min=0, max=100,
             default=expo,
             get=function() return expo end,
             set=function(v) expo = v end,

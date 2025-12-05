@@ -177,14 +177,19 @@ local function state_SELECTOR_INIT()
     end
 
     local bApprove = lvgl.box({scrollDir=lvgl.SCROLL_OFF, x=0, y=last_height})
-    local space = 10
-    local btn_w = (LCD_W-3*space)/2
-    bApprove:button({x=space, y=0, w=btn_w, h=40, text="Cancel",
-            press=(function()  exitTool = true end)
-        })
-    bApprove:button({x=LCD_W-space-btn_w, y=0, w=btn_w, h=40, text="Apply",
-            press=(function() state = STATE.UPDATE_MODEL_INIT end)
-        })
+    local space_left = 6
+    local space_right = 12
+    local space_middle = 12
+    local btn_w = (LCD_W-space_left-space_right-space_middle)/2
+
+    bApprove:button({text="Cancel", 
+        x=space_left, y=2, w=btn_w, h=40,
+        press=(function()  exitTool = true end)
+    })
+    bApprove:button({text="Apply",
+        x=LCD_W-space_right-btn_w, y=2, w=btn_w, h=40,
+        press=(function() state = STATE.UPDATE_MODEL_INIT end)
+    })
     bApprove:label({x=0, y=30, text=""})
 
     state = STATE.SELECTOR

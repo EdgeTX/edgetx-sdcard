@@ -29,7 +29,7 @@ function M.init(box)
 
         -- Flaps type selection
         {type="label", text="Beeper", x=x1, y=5, color=BLACK},
-        {type="choice", x=x2, y=0, w=safe_width(x2, 160),
+        {type="choice", x=x2, y=2, w=safe_width(x2, 160),
             values = {
                 "Yes, I have beeper",
                 "No Beeper", 

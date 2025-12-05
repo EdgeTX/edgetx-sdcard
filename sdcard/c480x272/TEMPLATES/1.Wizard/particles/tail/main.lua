@@ -31,7 +31,7 @@ function M.init(box)
     box:build({
         -- Tail type selection
         -- {type="label", text="Pick the tail configuration:", x=x1, y=5, color=BLACK},
-        {type="choice", x=x1, y=0, w=safe_width(x1, 380),
+        {type="choice", x=x1, y=2, w=safe_width(x1, 380),
             title="Tail Type",
             values={ "1 ch Elevator, no Rudder", "1 CH Elevator, 1 CH Rudder", "2 CH Elevator, 1 CH Rudder", "V-Tail" },
             get=function() return tail_type end,

@@ -81,7 +81,7 @@ function M.init(box)
 
     box:build({
         {type="label", text="Channel Order Preset:", x=x1, y=5, color=BLACK},
-        {type="choice", x=x2, y=0, w=safe_width(x2, 180),
+        {type="choice", x=x2, y=2, w=safe_width(x2, 180),
             title="Channel Order Preset",
             values={
                 "--manual--", 
