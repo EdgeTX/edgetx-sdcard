@@ -133,12 +133,14 @@ local function load_preset(preset_name, pos_y)
         filled=true, rounded=5, thickness=2 })
     bPresetArea1:rectangle({x=5, y=0, w=LCD_W-15, h=30, color=GREY , filled=true, rounded=5, thickness=2 })
     bPresetArea1:label({x=20, y=5, color=WHITE, font=BOLD, text=preset_info["name"]})
-    -- bPresetArea1:image({x=LCD_W-110, y=0, w=80, h=80, file=function() 
-    --     return SCRIPT_FOLDER .. "/" .. preset_name .. "/icon.png" 
-    -- end})
 
     local bPresetArea2 = bPresetArea1:box({x=0, y=35, h=height})
+
+    --------------------------------------------------------------
+    -- init the particle to create it's UI inside bPresetArea2
     local err = preset_script_lib.init(bPresetArea2)
+    --------------------------------------------------------------
+
     if err ~= nil then
         log("preset.init() returned error: %s", err)
         error_desc = err
@@ -179,7 +181,7 @@ local function state_SELECTOR_INIT()
         last_height = last_height + preset.height + 10
     end
 
-    local bApprove = lvgl.box({scrollDir=lvgl.SCROLL_OFF, x=0, y=last_height})
+    local bApprove = lvgl.box({scrollDir=lvgl.SCROLL_OFF, x=0, y=last_height, w=LCD_W})
     local space_left = 6
     local space_right = 12
     local space_middle = 12
