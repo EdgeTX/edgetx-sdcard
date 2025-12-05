@@ -45,6 +45,14 @@ end
 
 function M.do_update_model()
     log("Setting model name to: %s", model_name)
+
+    -- strip leading/trailing whitespace before validating
+    model_name = string.gsub(model_name, "^%s*(.-)%s*$", "%1")
+
+    if model_name == "" then
+        local now = getDateTime()
+        model_name = string.format("New %02d-%02d-%02d", now.year, now.mon, now.day)
+    end
     
     local modelInfo = model.getInfo()
     modelInfo.name = model_name
