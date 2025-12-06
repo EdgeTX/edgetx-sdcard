@@ -3,10 +3,17 @@ local m_log,m_utils,m_box  = ...
 -- Author: Offer Shmuely (2025)
 local ver = "1.0"
 local app_name = "set_timer1"
-local safe_width = m_utils.get_max_width_left
+local safe_width = m_utils.safe_width
+local x1 = m_utils.x1
+local x2 = m_utils.x2
+local x3 = m_utils.x3
+local use_images = m_utils.use_images
 
 local M = {}
-M.height = 270
+local lvSCALE = lvgl.LCD_SCALE or 1
+local line_height = 6*lvSCALE + (lvgl.UI_ELEMENT_HEIGHT or 32)
+
+M.height = 3*line_height + 15*lvSCALE
 
 -- state variables
 local timer_hh = 0

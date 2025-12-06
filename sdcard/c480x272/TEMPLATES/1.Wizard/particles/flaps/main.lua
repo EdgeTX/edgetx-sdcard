@@ -3,15 +3,17 @@ local m_log, m_utils, PRESET_FOLDER  = ...
 -- Author: Offer Shmuely (2025)
 local ver = "1.0"
 local app_name = "flaps_config"
-local safe_width = m_utils.get_max_width_left
+local safe_width = m_utils.safe_width
+local x1 = m_utils.x1
+local x2 = m_utils.x2
+local x3 = m_utils.x3
+local use_images = m_utils.use_images
 
 local M = {}
-M.height = 160
+local lvSCALE = lvgl.LCD_SCALE or 1
+local line_height = 6*lvSCALE + (lvgl.UI_ELEMENT_HEIGHT or 32)
 
-local x1 = 20
-local x2 = (LCD_W>=470) and 180 or 150
-local use_images = (LCD_W>=470)
-
+M.height =  3*line_height + 15*lvSCALE
 
 -- state variables
 local flap_type = 1   -- 1=No, 2=Yes on one channel, 3=Yes on two channels
@@ -29,56 +31,60 @@ function M.init(box)
     box:build({
         -- Flaps type selection
         -- {type="label", text="Flaps", x=x1, y=5, color=BLACK},
-        {type="choice", x=x2, y=2, w=safe_width(x2, 220),
-            title="Flaps Type",
-            values={ 
-                "No Flaps", 
-                "Yes, on one channel", 
-                "Yes, on two channels" 
+        { type="setting", x=x1, y=0*line_height, w=LCD_W, title="Have Flaps?",
+            children={
+                {type="choice", x=x2, y=2, w=safe_width(x2, 220),
+                    title="Flaps Type",
+                    values={ 
+                        "No Flaps", 
+                        "Flaps on one channel", 
+                        "Flaps on two channels" 
+                    },
+                    get=function() return flap_type end,
+                    set=function(val) flap_type = val 
+                        log("Flap type set to: %d", flap_type)
+                    end
+                },
             },
-            get=function() return flap_type end,
-            set=function(val) flap_type = val 
-                log("Flap type set to: %d", flap_type)
-            end
-        },
-        
-        -- First flap channel (visible when flap_type >= 2)
-        {type="label", text="Flaps switch:", x=x1, y=45, color=BLACK,
-            visible=function() return flap_type >= 2 end
-        },
-        {type="source",
-            x=x2, y=40, w=80,
-            title="Flap Switch",
-            get=function() 
-                return flaps_switch_idx 
-            end,
-            set=function(val) 
-                flaps_switch_idx = val 
-            end,
-            visible=function() return flap_type >= 2 end
         },
 
-        {type="label", text="Flaps channels:", x=x1, y=85, color=BLACK,
-            visible=function() return flap_type >= 2 end
-        },
-        -- flap channel left or dual  (visible only when flap_type == 3)
-        {type="choice", x=x2, y=80, w=80, 
-            title="Flap Channel",
-            values=m_utils.channels_list,
-            get=function() return flap_ch_a end,
-            set=function(val) flap_ch_a = val end,
-            visible=function() return flap_type >= 2 end
+        { type="setting", x=x1, y=1*line_height, w=LCD_W, title="Flaps switch", visible=function() return flap_type ~=1 end,
+            children={
+            -- {type="label", text="Flaps switch:", x=x1, y=45, color=BLACK, visible=function() return flap_type >= 2 end},
+                {type="source",
+                    x=x2, y=0, w=80*lvSCALE,
+                    title="Flap Switch",
+                    get=function() 
+                        return flaps_switch_idx 
+                    end,
+                    set=function(val) 
+                        flaps_switch_idx = val 
+                    end,
+                },
+            },
         },
 
-        -- flap channel right (visible only when flap_type == 3)
-        {type="choice", x=280, y=80, w=80,
-            title="Flap Right Channel",
-            values=m_utils.channels_list,
-            get=function() return flap_ch_b end,
-            set=function(val) flap_ch_b = val end,
-            visible=function() return flap_type == 3 end
+        { type="setting", x=x1, y=2*line_height, w=LCD_W, title="Flaps channels", visible=function() return flap_type ~=1 end,
+            children={
+                -- flap channel left or dual
+                {type="choice", x=x2, y=0, w=80*lvSCALE,
+                    title="Flap Channel",
+                    values=m_utils.channels_list,
+                    get=function() return flap_ch_a end,
+                    set=function(val) flap_ch_a = val end,
+                },
+
+                -- flap channel right
+                {type="choice", x=x3, y=0, w=safe_width(x3, 80*lvSCALE),
+                    title="Flap Right Channel",
+                    values=m_utils.channels_list,
+                    get=function() return flap_ch_b end,
+                    set=function(val) flap_ch_b = val end,
+                    visible=function() return flap_type == 3 end
+                },
+            },
         },
-        -- {type="label", text="", x=x1, y=50, color=BLACK}, --???
+        -- {type="box", x=0, y=M.height, w=LCD_W, h=20, color=RED} -- rectangle/box ???
     })
 
     return nil

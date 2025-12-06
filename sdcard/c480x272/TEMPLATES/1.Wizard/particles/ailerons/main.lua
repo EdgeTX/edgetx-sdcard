@@ -3,16 +3,17 @@ local m_log, m_utils, PRESET_FOLDER  = ...
 -- Author: Offer Shmuely (2025)
 local ver = "1.0"
 local app_name = "ailerons_config"
-local safe_width = m_utils.get_max_width_left
+local safe_width = m_utils.safe_width
+local x1 = m_utils.x1
+local x2 = m_utils.x2
+local x3 = m_utils.x3
+local use_images = m_utils.use_images
 
 local M = {}
-M.height = 130
+local lvSCALE = lvgl.LCD_SCALE or 1
+local line_height = 6*lvSCALE + (lvgl.UI_ELEMENT_HEIGHT or 32)
 
-local x1 = 20
-local x2 = (LCD_W>=470) and 180 or 150
-local x3 = (LCD_W>=470) and 280 or 235
-local use_images = (LCD_W>=470)
-
+M.height = 2*line_height + 15*lvSCALE
 
 -- state variables
 local ail_type = 3   -- 1=None, 2=One (or two with Y cable), 3=Two
@@ -29,32 +30,39 @@ function M.init(box)
 
     box:build({
         -- Aileron type selection
-        {type="choice", x=x1, y=2, --w=180,
-            title="Aileron Type",
-            values={ 
-                "No Ailerons", 
-                "Two Ailerons on single channel (with Y cable)", 
-                "Two Ailerons on two channels" 
+        { type="setting", x=x1, y=0*line_height, w=LCD_W, title="Aileron Type",
+            children={
+                {type="choice", x=x2, y=2, --w=180,
+                    title="Aileron Type",
+                    values={ 
+                        "No Ailerons", 
+                        "Two Ailerons on single channel (with Y cable)", 
+                        "Two Ailerons on two channels" 
+                    },
+                    get=function() return ail_type end,
+                    set=function(val) ail_type = val end
+                },
             },
-            get=function() return ail_type end,
-            set=function(val) ail_type = val end
-        },
-        
+        },        
         -- First aileron channel (visible when ail_type >= 2)
-        {type="label", text="Aileron channels:", x=x1, y=50, color=BLACK, visible=function() return ail_type==2 or ail_type==3 end },
-        {type="choice", x=x2, y=45, w=70,
-            title="Ail Channel",
-            values=m_utils.channels_list,
-            get=function() return ail_ch_a end,
-            set=function(val) ail_ch_a = val end,
-            visible=function() return ail_type==2 or ail_type==3 end
-        },
+        { type="setting", x=x1, y=1*line_height, w=LCD_W, title="Aileron channels",
+            children={
+                -- {type="label", text="Aileron channels:", x=x1, y=50, color=BLACK, visible=function() return ail_type==2 or ail_type==3 end },
+                {type="choice", x=x2, y=0, w=70*lvSCALE,
+                    title="Ail Channel",
+                    values=m_utils.channels_list,
+                    get=function() return ail_ch_a end,
+                    set=function(val) ail_ch_a = val end,
+                    visible=function() return ail_type==2 or ail_type==3 end
+                },
 
-        {type="choice", x=x3, y=45, w=safe_width(x3, 70), title="Ail Left Channel",
-            values=m_utils.channels_list,
-            get=function() return ail_ch_b end,
-            set=function(val) ail_ch_b = val end,
-            visible=function() return ail_type == 3 end
+                {type="choice", x=x3, y=0, w=safe_width(x3, 70*lvSCALE), title="Ail Left Channel",
+                    values=m_utils.channels_list,
+                    get=function() return ail_ch_b end,
+                    set=function(val) ail_ch_b = val end,
+                    visible=function() return ail_type == 3 end
+                },
+            },
         },
     })
     return nil

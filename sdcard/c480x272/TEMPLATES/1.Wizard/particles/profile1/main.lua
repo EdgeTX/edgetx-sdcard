@@ -3,17 +3,20 @@ local m_log, m_utils, PRESET_FOLDER  = ...
 -- Author: Offer Shmuely (2025)
 local ver = "1.0"
 local app_name = "profile_config"
-local safe_width = m_utils.get_max_width_left
+local safe_width = m_utils.safe_width
+local x1 = m_utils.x1
+local x2 = m_utils.x2
+local x3 = m_utils.x3
+local use_images = m_utils.use_images
 
 local M = {}
-M.height = 160
-local x1 = 20
-local x2 = (LCD_W>=470) and 180 or 150
-local use_images = (LCD_W>=470)
+local lvSCALE = lvgl.LCD_SCALE or 1
+local line_height = 6*lvSCALE + (lvgl.UI_ELEMENT_HEIGHT or 32)
 
+M.height = 3*line_height + 15*lvSCALE
 
 -- State
-local is_profile = 1  -- 1=No, 2=Yes
+local is_profile = 2  -- 1=No, 2=Yes
 local switch_idx = getSourceIndex("SA")  -- -- switch SD source
 local profile_channel = 7  -- default CH7 (AUX3)
 
@@ -26,52 +29,66 @@ end
 function M.init(box)
     log("Initializing %s v%s, LCD_W: %s, x2:%s, x2-left: %s, box.w: %s", app_name, ver, LCD_W, x2, LCD_W - x2, box.w)
     box:build({
-        {type="label", text="Profiles", x=x1, y=5, color=BLACK},
-        {type="choice", x=x2, y=2, w=safe_width(x2, 240),
-            values = {
-                "Yes, I need profiles",
-                "No need, single profile is ok", 
+
+
+        { type="setting", x=x1, y=0*line_height, w=LCD_W, title="Profiles",
+            children={
+                -- {type="label", text="Profiles", x=x1, y=5, color=BLACK},
+                {type="choice", x=x2, y=2, w=safe_width(x2, 240),
+                    values = {
+                        "No need, single profile is ok", 
+                        "Yes, I need profiles",
+                    },
+                    color = COLOR_THEME_SECONDARY3,
+                    label = "Profiles needed?",
+                    default = is_profile,
+                    get = function() return is_profile end,
+                    set = function(v) is_profile = v end,
+                    -- labelX = x2
+                },
+
             },
-            color = COLOR_THEME_SECONDARY3,
-            label = "Profiles needed?",
-            default = is_profile,
-            get = function() return is_profile end,
-            set = function(v) is_profile = v end,
-            -- labelX = x2
         },
 
-        {type="label", x=x1, y=45, color=BLACK, text="Profile Switch",
-            visible = function() return is_profile == 1 end
-        },
-        {type="source", x=x2, y=40, w=80,
-            title = "Switch for profiles",
-            get = function() return switch_idx end,
-            set = function(v) switch_idx = v end,
-            visible = function() return is_profile == 1 end,
+        { type="setting", x=x1, y=1*line_height, w=LCD_W, title="Profiles Switch", visible = function() return is_profile==2 end,
+            children={
+                -- {type="label", x=x1, y=45, color=BLACK, text="Profile Switch",
+                --     visible = function() return is_profile == 1 end
+                -- },
+                {type="source", x=x2, y=0, w=80,
+                    title = "Switch for profiles",
+                    get = function() return switch_idx end,
+                    set = function(v) switch_idx = v end,
+                },
+            },
         },
 
-        {type="label", x=x1, y=85, color=BLACK, text="Profiles Channel",
-            visible = function() return is_profile == 1 end
+        { type="setting", x=x1, y=2*line_height, w=LCD_W, title="Profiles Channel", visible = function() return is_profile==2 end,
+            children={
+
+                -- {type="label", x=x1, y=85, color=BLACK, text="Profiles Channel",
+                --     visible = function() return is_profile == 1 end
+                -- },
+                {type="choice", x=x2, y=0, w=80,
+                    label = "Channel",
+                    default = profile_channel,
+                    values = m_utils.channels_list,
+                    color = COLOR_THEME_SECONDARY3,
+                    get = function() return profile_channel end,
+                    set = function(v) profile_channel = v end,
+                },
+            },
         },
-        {type="choice", x=x2, y=80, w=80,
-            label = "Channel",
-            default = profile_channel,
-            values = m_utils.channels_list,
-            color = COLOR_THEME_SECONDARY3,
-            get = function() return profile_channel end,
-            set = function(v) profile_channel = v end,
-            visible = function() return is_profile == 1 end,
-        },
-        {type="label", x=x1, y=100, text=""}, --???
+
+        -- {type="box", x=0, y=M.height, w=LCD_W, h=20, color=RED} -- rectangle/box ???
     })
 
     return nil
 end
 
 
-
 function M.do_update_model()
-    if is_profile == 1 then
+    if is_profile == 2 then
         local mixInfo = {
             source = switch_idx,
             name = "Prof",

@@ -3,15 +3,17 @@ local m_log, m_utils, PRESET_FOLDER  = ...
 -- Author: Offer Shmuely (2025)
 local ver = "1.0"
 local app_name = "heli_channels_order_config"
-local safe_width = m_utils.get_max_width_left
+local safe_width = m_utils.safe_width
+local x1 = m_utils.x1
+local x2 = m_utils.x2
+local x3 = m_utils.x3
+local use_images = m_utils.use_images
 
 local M = {}
-M.height = 450
+local lvSCALE = lvgl.LCD_SCALE or 1
+local line_height = 6*lvSCALE + (lvgl.UI_ELEMENT_HEIGHT or 32)
 
-local x1 = 20
-local x2 = (LCD_W>=470) and 180 or 150
-local x3 = (LCD_W>=470) and 280 or 235
-local use_images = (LCD_W>=470)
+M.height = 10*line_height + 15*lvSCALE
 
 -- state variables
 local channel_type = 2   -- 1=None, 2=ELRS, 3=FrSky, 4=Futaba
@@ -78,135 +80,144 @@ end
 apply_preset(channel_type)
 
 function M.init(box)
-
     box:build({
-        {type="label", text="Channel Order Preset:", x=x1, y=5, color=BLACK},
-        {type="choice", x=x2, y=2, w=safe_width(x2, 180),
-            title="Channel Order Preset",
-            values={
-                "--manual--", 
-                "ELRS:   AECR1T23", 
-                "FrSky:  AETRC123", 
-                "Futaba: AETR1C23",
-            },
-            get=function() return channel_type end,
-            set=function(val) 
-                channel_type = val 
-                apply_preset(channel_type)
-            end
-        },
-        
+        -- order presets
+        { type="setting", x=x1, y=0*line_height, w=LCD_W, title="Channel Order Preset:", children={
+            {type="choice", x=x2, y=2, w=safe_width(x2, 180),
+                title="Channel Order Preset",
+                values={
+                    "--manual--", 
+                    "ELRS:   AECR1T23", 
+                    "FrSky:  AETRC123", 
+                    "Futaba: AETR1C23",
+                },
+                get=function() return channel_type end,
+                set=function(val) 
+                    channel_type = val 
+                    apply_preset(channel_type)
+                end
+            },        
+        }},
         -- aileron
-        {type="label", text="Aileron:", x=x1, y=50, color=BLACK },
-        {type="choice", x=x2, y=45, w=80,
-            title="Ail Channel",
-            values=m_utils.channels_list,
-            get=function() return ch_ail end,
-            set=function(val) 
-                ch_ail = val
-                channel_type = 1  -- manual
-            end,
-        },
-
-        {type="label", text="Elevator:", x=x1, y=90, color=BLACK },
-        {type="choice", x=x2, y=85, w=80, title="Elevator Channel",
-            values=m_utils.channels_list,
-            get=function() return ch_ele end,
-            set=function(val) 
-                ch_ele = val 
-                channel_type = 1  -- manual
-            end,
-        },
-        {type="label", text="Collective (pitch):", x=x1, y=130, color=BLACK },
-        {type="choice", x=x2, y=125, w=80, title="Collective Channel",
-            values=m_utils.channels_list,
-            get=function() return ch_col end,
-            set=function(val) 
-                ch_col = val 
-                channel_type = 1  -- manual
-            end,
-        },
-        {type="label", text="Rudder:", x=x1, y=170, color=BLACK },
-        {type="choice", x=x2, y=165, w=80, title="Rudder Channel",
-            values=m_utils.channels_list,
-            get=function() return ch_rud end,
-            set=function(val) 
-                ch_rud = val 
-                channel_type = 1  -- manual
-            end,
-        },
-
-        {type="label", text="Arm:", x=x1, y=210, color=BLACK },
-        {type="choice", x=x2, y=210 -5, w=80, title="Arm Channel",
-            values=m_utils.channels_list,
-            get=function() return ch_arm end,
-            set=function(val) 
-                ch_arm = val 
-                channel_type = 1  -- manual
-            end,
-        },
-        {type="source", x=x3, y=210-5, w=safe_width(x3, 80),
-            -- filter=lvgl.SW_TRIM,
-            get=function() return arm_switch_idx end,
-            set=function(val) arm_switch_idx = val end,
-        },
-
-        {type="label", text="Throttle:", x=x1, y=250, color=BLACK },
-        {type="choice", x=x2, y=250-5, w=80, title="Throttle Channel",
-            values=m_utils.channels_list,
-            get=function() return ch_thr end,
-            set=function(val) 
-                ch_thr = val 
-                channel_type = 1  -- manual
-            end,
-        },
-
-        {type="label", text="Tail Gain:", x=x1, y=290, color=BLACK },
-        {type="choice", x=x2, y=290-5, w=80, title="Tail Gain Channel",
-            values=m_utils.channels_list,
-            get=function() return ch_tail_gain end,
-            set=function(val) 
-                ch_tail_gain = val 
-                channel_type = 1  -- manual
-            end,
-        },
-        {type="source", x=x3, y=290-5, w=safe_width(x3, 80),
-            filter=lvgl.SRC_POT,
-            get=function() return tail_gain_switch_idx end,
-            set=function(val) tail_gain_switch_idx = val end,
-        },
-
-
-        {type="label", text="Bank (profile):", x=x1, y=330, color=BLACK },
-        {type="choice", x=x2, y=330-5, w=80, title="Bank Channel",
-            values=m_utils.channels_list,
-            get=function() return ch_bank end,
-            set=function(val) 
-                ch_bank = val 
-                -- channel_type = 1  -- manual
-            end,
-        },
-        {type="source", x=x3, y=330-5, w=safe_width(x3, 80),
-            filter=lvgl.SRC_SWITCH,
-            get=function() return bank_switch_idx end,
-            set=function(val) bank_switch_idx = val end,
-        },
-
-
-        {type="label", text="Rescue (Panic):", x=x1, y=370, color=BLACK },
-        {type="choice", x=x2, y=370-5, w=80, title="Rescue Channel",
-            values=m_utils.channels_list,
-            get=function() return ch_rescue end,
-            set=function(val) 
-                ch_rescue = val 
-                -- channel_type = 1  -- manual
-            end,
-        },
-        {type="source", x=x3, y=370-5, w=safe_width(x3, 80),
-            filter=lvgl.SRC_SWITCH,
-            get=function() return rescue_switch_idx end,
-            set=function(val) rescue_switch_idx = val end,
-        },
+        { type="setting", x=x1, y=1*line_height, w=LCD_W, title="Aileron:", children={
+            {type="choice", x=x2, y=0, w=80*lvSCALE,
+                title="Ail Channel",
+                values=m_utils.channels_list,
+                get=function() return ch_ail end,
+                set=function(val) 
+                    ch_ail = val
+                    channel_type = 1  -- manual
+                end,
+            },
+        }},
+        -- elevator
+        { type="setting", x=x1, y=2*line_height, w=LCD_W, title="Elevator:", children={
+            {type="choice", x=x2, y=0, w=80*lvSCALE, title="Elevator Channel",
+                values=m_utils.channels_list,
+                get=function() return ch_ele end,
+                set=function(val) 
+                    ch_ele = val 
+                    channel_type = 1  -- manual
+                end,
+            },
+        }},
+        -- Collective
+        { type="setting", x=x1, y=3*line_height, w=LCD_W, title="Collective (pitch):", children={
+            {type="choice", x=x2, y=0, w=80*lvSCALE, title="Collective Channel",
+                values=m_utils.channels_list,
+                get=function() return ch_col end,
+                set=function(val) 
+                    ch_col = val 
+                    channel_type = 1  -- manual
+                end,
+            },
+        }},
+        -- Rudder
+        { type="setting", x=x1, y=4*line_height, w=LCD_W, title="Rudder:", children={
+            {type="choice", x=x2, y=0, w=80*lvSCALE, title="Rudder Channel",
+                values=m_utils.channels_list,
+                get=function() return ch_rud end,
+                set=function(val) 
+                    ch_rud = val 
+                    channel_type = 1  -- manual
+                end,
+            },
+        }},
+        -- Arm
+        { type="setting", x=x1, y=5*line_height, w=LCD_W, title="Arm:", children={
+            {type="choice", x=x2, y=0, w=80*lvSCALE, title="Arm Channel",
+                values=m_utils.channels_list,
+                get=function() return ch_arm end,
+                set=function(val) 
+                    ch_arm = val 
+                    channel_type = 1  -- manual
+                end,
+            },
+            {type="source", x=x3, y=0, w=safe_width(x3, 80),
+                -- filter=lvgl.SW_TRIM,
+                get=function() return arm_switch_idx end,
+                set=function(val) arm_switch_idx = val end,
+            },
+        }},
+        -- Throttle
+        { type="setting", x=x1, y=6*line_height, w=LCD_W, title="Throttle:", children={
+            {type="choice", x=x2, y=0, w=80*lvSCALE, title="Throttle Channel",
+                values=m_utils.channels_list,
+                get=function() return ch_thr end,
+                set=function(val) 
+                    ch_thr = val 
+                    channel_type = 1  -- manual
+                end,
+            },
+        }},
+        -- Tail Gain
+        { type="setting", x=x1, y=7*line_height, w=LCD_W, title="Tail Gain:", children={
+            {type="choice", x=x2, y=0, w=80*lvSCALE, title="Tail Gain Channel",
+                values=m_utils.channels_list,
+                get=function() return ch_tail_gain end,
+                set=function(val) 
+                    ch_tail_gain = val 
+                    channel_type = 1  -- manual
+                end,
+            },
+            {type="source", x=x3, y=0, w=safe_width(x3, 80),
+                filter=lvgl.SRC_POT,
+                get=function() return tail_gain_switch_idx end,
+                set=function(val) tail_gain_switch_idx = val end,
+            },
+        }},
+        -- Bank (profile)
+        { type="setting", x=x1, y=8*line_height, w=LCD_W, title="Bank (profile):", children={
+            {type="choice", x=x2, y=0, w=80*lvSCALE, title="Bank Channel",
+                values=m_utils.channels_list,
+                get=function() return ch_bank end,
+                set=function(val) 
+                    ch_bank = val 
+                    -- channel_type = 1  -- manual
+                end,
+            },
+            {type="source", x=x3, y=0, w=safe_width(x3, 80),
+                filter=lvgl.SRC_SWITCH,
+                get=function() return bank_switch_idx end,
+                set=function(val) bank_switch_idx = val end,
+            },
+        }},
+        -- Rescue (panic)
+        { type="setting", x=x1, y=9*line_height, w=LCD_W, title="Rescue (Panic):", children={
+            {type="choice", x=x2, y=0, w=80*lvSCALE, title="Rescue Channel",
+                values=m_utils.channels_list,
+                get=function() return ch_rescue end,
+                set=function(val) 
+                    ch_rescue = val 
+                    -- channel_type = 1  -- manual
+                end,
+            },
+            {type="source", x=x3, y=0, w=safe_width(x3, 80),
+                filter=lvgl.SRC_SWITCH,
+                get=function() return rescue_switch_idx end,
+                set=function(val) rescue_switch_idx = val end,
+            },
+        }},
 
     })
 

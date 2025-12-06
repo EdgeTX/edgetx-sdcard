@@ -3,15 +3,17 @@ local m_log, m_utils, PRESET_FOLDER  = ...
 -- Author: Offer Shmuely (2025)
 local ver = "1.0"
 local app_name = "tail_config"
-local safe_width = m_utils.get_max_width_left
+local safe_width = m_utils.safe_width
+local x1 = m_utils.x1
+local x2 = m_utils.x2
+local x3 = m_utils.x3
+local use_images = m_utils.use_images
 
 local M = {}
-M.height = 170
-local x1 = 20
-local x2 = (LCD_W>=470) and 180 or 150
-local x3 = (LCD_W>=470) and 280 or 235
-local use_images = (LCD_W>=470)
+local lvSCALE = lvgl.LCD_SCALE or 1
+local line_height = 6*lvSCALE + (lvgl.UI_ELEMENT_HEIGHT or 32)
 
+M.height = 3*line_height + 15*lvSCALE
 
 -- Constants
 
@@ -32,68 +34,72 @@ function M.init(box)
     box:build({
         -- Tail type selection
         -- {type="label", text="Pick the tail configuration:", x=x1, y=5, color=BLACK},
-        {type="choice", x=x1, y=2, w=safe_width(x1, 380),
-            title="Tail Type",
-            values={ 
-                "1 ch Elevator, no Rudder", 
-                "1 CH Elevator, 1 CH Rudder", 
-                "2 CH Elevator, 1 CH Rudder", 
-                "V-Tail" 
+        { type="setting", x=x1, y=0*line_height, w=LCD_W, title="Tail Configuration",
+            children={
+                {type="choice", x=x2, y=2, w=safe_width(x2, 380),
+                    title="Tail Type",
+                    values={ 
+                        "1 Elevator, no Rudder", 
+                        "1 Elevator, 1 Rudder", 
+                        "2 Elevator, 1 Rudder", 
+                        "V-Tail" 
+                    },
+                    get=function() return tail_type end,
+                    set=function(val) tail_type = val end
+                },
             },
-            get=function() return tail_type end,
-            set=function(val) tail_type = val end
-        },
-        
-        -- Channel A (Elevator) - always visible
-        {type="label", text="Elevator channels:", x=x1, y=50, color=BLACK,
-            visible=function() return tail_type ~= 4 end
-        },
-        -- V-Tail channels - visible only when tail_type == 4
-        {type="label", text="V-Tail channels:", x=x1, y=50, color=BLACK,
-            visible=function() return tail_type == 4 end
+        },        
+
+        -- Elevators
+        { type="setting", x=x1, y=1*line_height, w=LCD_W, title="Elevator channels", visible=function() return tail_type<4 end,
+            children={
+                {type="choice", x=x2, y=0, w=80*lvSCALE,
+                    title="Elevator Ch",
+                    values=m_utils.channels_list,
+                    get=function() return ch_a end,
+                    set=function(val) ch_a = val end
+                },
+                {type="choice", x=x3, y=0, w=safe_width(x3, 80*lvSCALE),
+                    title="Elevator Right Ch",
+                    values=m_utils.channels_list,
+                    get=function() return ch_c end,
+                    set=function(val) ch_c = val end,
+                    visible=function() return tail_type==3 end
+                },
+            },
         },
 
-        {type="choice", x=x2, y=45, w=80,
-            title="Elevator Ch",
-            values=m_utils.channels_list,
-            get=function() return ch_a end,
-            set=function(val) ch_a = val end
-        },
-        {type="choice", x=x3, y=45, w=safe_width(x3, 80),
-            title="Elevator Left Ch",
-            values=m_utils.channels_list,
-            get=function() return ch_c end,
-            set=function(val) ch_c = val end,
-            visible=function() return tail_type == 3 or tail_type == 4 end
-        },
-
-        -- Channel B (Rudder) - visible when tail_type >= 2
-        {type="label", text="Rudder channel:", x=x1, y=90, color=BLACK,
-            visible=function() return tail_type == 2 or tail_type == 3 end
-        },
-        {type="choice", x=x2, y=85, w=80, title="Rudder Ch",
-            values=m_utils.channels_list,
-            get=function() return ch_b end,
-            set=function(val) ch_b = val end,
-            visible=function() return tail_type == 2 or tail_type == 3 end
+        -- Rudder - visible when tail_type >= 2
+        { type="setting", x=x1, y=2*line_height, w=LCD_W, title="Rudder channel", visible=function() return tail_type==2 or tail_type==3 end,
+            children={
+                -- {type="label", text="Rudder channel:", x=x1, y=90, color=BLACK,
+                --     visible=function() return tail_type==2 or tail_type==3 end
+                -- },
+                {type="choice", x=x2, y=0, w=80, title="Rudder Ch",
+                    values=m_utils.channels_list,
+                    get=function() return ch_b end,
+                    set=function(val) ch_b = val end,
+                },
+            },
         },
 
-        -- -- V-Tail channels - visible only when tail_type == 4
-        -- {type="label", text="V-Tail channels:", x=x1, y=120, color=BLACK,
-        --     visible=function() return tail_type == 4 end
-        -- },
-        -- {type="choice", x=x2, y=115, w=80, title="V-Tail Right",
-        --     values=m_utils.channels_list,
-        --     get=function() return ch_a end,
-        --     set=function(val) ch_a = val end,
-        --     visible=function() return tail_type == 4 end
-        -- },
-        -- {type="choice", x=250, y=115, w=80, title="V-Tail Left",
-        --     values=m_utils.channels_list,
-        --     get=function() return ch_b end,
-        --     set=function(val) ch_b = val end,
-        --     visible=function() return tail_type == 4 end
-        -- },
+        -- v-tail
+        { type="setting", x=x1, y=1*line_height, w=LCD_W, title="V-Tail  channels", visible=function() return tail_type==4 end,
+            children={
+                {type="choice", x=x2, y=0, w=80*lvSCALE,
+                    title="v-tail-left ch",
+                    values=m_utils.channels_list,
+                    get=function() return ch_a end,
+                    set=function(val) ch_a = val end
+                },
+                {type="choice", x=x3, y=0, w=safe_width(x3, 80*lvSCALE),
+                    title="v-tail-right ch",
+                    values=m_utils.channels_list,
+                    get=function() return ch_c end,
+                    set=function(val) ch_c = val end,
+                },
+            },
+        },
 
     })
 
@@ -103,7 +109,7 @@ end
 function M.do_update_model()
     log("Applying tail configuration...")
     
-    if tail_type == 1 then
+    if tail_type==1 then
         -- Elevator only, no rudder
         log("Adding elevator on channel CH%d", ch_a)
         
@@ -118,7 +124,7 @@ function M.do_update_model()
         model.insertMix(ch_a - 1, 0, mixInfo)
         m_utils.set_output_name(ch_a, "Elev")
         
-    elseif tail_type == 2 then
+    elseif tail_type==2 then
         -- One elevator + one rudder
         local ch_a_idx = ch_a - 1
         local ch_b_idx = ch_b - 1
@@ -149,7 +155,7 @@ function M.do_update_model()
         model.insertMix(ch_b - 1, 0, mixInfoRud)
         m_utils.set_output_name(ch_b, "Rud")
         
-    elseif tail_type == 3 then
+    elseif tail_type==3 then
         -- Two elevators + one rudder
         log("Adding right elevator on channel CH%d", ch_a)
         log("Adding rudder on channel CH%d", ch_b)
@@ -190,7 +196,7 @@ function M.do_update_model()
         model.insertMix(ch_b - 1, 0, mixInfoRud)
         m_utils.set_output_name(ch_b, "Rud")
         
-    elseif tail_type == 4 then
+    elseif tail_type==4 then
         -- V-Tail
         log("Adding V-tail left on channel CH%d", ch_a)
         log("Adding V-tail right on channel CH%d", ch_c)

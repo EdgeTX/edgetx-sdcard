@@ -40,7 +40,7 @@
 
 ---------------------------------------------------------------------------------------------------
 
-local topbar_txt = "Multirotor Wizard"
+local topbar_txt = "Build a multirotor model with a wizard"
 
 local paticles_list = {
     "name",

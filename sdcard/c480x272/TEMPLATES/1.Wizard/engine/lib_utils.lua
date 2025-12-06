@@ -22,6 +22,11 @@ M.defaultChannel_ELE = defaultChannel(M.STICK_NUMBER_ELE) + 1
 M.defaultChannel_THR = defaultChannel(M.STICK_NUMBER_THR) + 1
 M.defaultChannel_RUD = defaultChannel(M.STICK_NUMBER_RUD) + 1
 
+local lvSCALE = lvgl.LCD_SCALE or 1
+M.x1 = 10*lvSCALE
+M.x2 = (LCD_W>=470) and 180*lvSCALE or 150*lvSCALE
+M.x3 = (LCD_W>=470) and 280*lvSCALE or 235*lvSCALE
+M.use_images = (LCD_W>=470)
 
 ---------------------------------------------------------------------------------------------------
 local function log(fmt, ...)
@@ -147,8 +152,8 @@ function M.set_output_name(channel, txt)
     model.setOutput(channel - 1, out_info)
 end
 
-function M.get_max_width_left(startX, neededWidth)
-    local maxWidth = LCD_W - startX - 13
+function M.safe_width(startX, neededWidth)
+    local maxWidth = LCD_W - startX - 25
     if neededWidth <= maxWidth then
         return neededWidth
     else

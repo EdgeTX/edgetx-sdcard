@@ -3,14 +3,17 @@ local m_log, m_utils, PRESET_FOLDER  = ...
 -- Author: Offer Shmuely (2025)
 local ver = "1.0"
 local app_name = "gears_config"
-local safe_width = m_utils.get_max_width_left
+local safe_width = m_utils.safe_width
+local x1 = m_utils.x1
+local x2 = m_utils.x2
+local x3 = m_utils.x3
+local use_images = m_utils.use_images
 
 local M = {}
-M.height = 160
-local x1 = 20
-local x2 = (LCD_W>=470) and 180 or 150
-local use_images = (LCD_W>=470)
+local lvSCALE = lvgl.LCD_SCALE or 1
+local line_height = 6*lvSCALE + (lvgl.UI_ELEMENT_HEIGHT or 32)
 
+M.height = 3*line_height + 15*lvSCALE
 
 -- State
 local is_gear = 1  -- 1=No, 2=Yes
@@ -27,43 +30,45 @@ function M.init(box)
 
     box:build({
         -- Flaps type selection
-        {type="label", text="Have Gears?", x=x1, y=5, color=BLACK},
-        {type="choice", x=x2, y=2, w=safe_width(x2, 160),
-            values = {
-                "No Gears", 
-                "Yes, I have Gears"
+        { type="setting", x=x1, y=0*line_height, w=LCD_W, title="Have Gears?",
+            children={
+                {type="choice", x=x2, y=2, w=safe_width(x2, 160*lvSCALE),
+                    values = {
+                        "No Gears", 
+                        "Yes, I have Gears"
+                    },
+                    color = COLOR_THEME_SECONDARY3,
+                    label = "Gears",
+                    default = is_gear,
+                    get = function() return is_gear end,
+                    set = function(v) is_gear = v end,
+                },
             },
-            color = COLOR_THEME_SECONDARY3,
-            label = "Gears",
-            default = is_gear,
-            get = function() return is_gear end,
-            set = function(v) is_gear = v end,
-            -- labelX = x2
         },
 
-        {type="label", x=x1, y=45, color=BLACK, text="Gears Switch",
-            visible = function() return is_gear == 2 end
+        { type="setting", x=x1, y=1*line_height, w=LCD_W, title="Gears Switch", visible = function() return is_gear == 2 end,
+            children={
+                {type="source", x=x2, y=0, w=80*lvSCALE,
+                    title = "Switch for gears",
+                    get = function() return gear_switch_idx end,
+                    set = function(v) gear_switch_idx = v end,
+                },
+            },
         },
-        {type="source", x=x2, y=40, w=80,
-            title = "Switch for gears",
-            get = function() return gear_switch_idx end,
-            set = function(v) gear_switch_idx = v end,
-            visible = function() return is_gear == 2 end,
+        { type="setting", x=x1, y=2*line_height, w=LCD_W, title="Gears Channel", visible = function() return is_gear == 2 end,
+            children={
+                {type="choice", x=x2, y=0, w=80*lvSCALE,
+                    label = "Channel",
+                    default = gear_channel,
+                    values = m_utils.channels_list,
+                    color = COLOR_THEME_SECONDARY3,
+                    get = function() return gear_channel end,
+                    set = function(v) gear_channel = v end,
+                },
+            },
         },
 
-        {type="label", x=x1, y=85, color=BLACK, text="Gears Channel",
-            visible = function() return is_gear == 2 end
-        },
-        {type="choice", x=x2, y=80, w=80,
-            label = "Channel",
-            default = gear_channel,
-            values = m_utils.channels_list,
-            color = COLOR_THEME_SECONDARY3,
-            get = function() return gear_channel end,
-            set = function(v) gear_channel = v end,
-            visible = function() return is_gear == 2 end,
-        },
-        {type="label", x=x1, y=100, text=""}, --???
+        -- {type="box", x=0, y=M.height, w=LCD_W, h=20, color=RED} -- rectangle/box ???
     })
 
     return nil

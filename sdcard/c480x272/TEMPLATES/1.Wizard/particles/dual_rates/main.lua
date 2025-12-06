@@ -3,14 +3,17 @@ local m_log, m_utils, PRESET_FOLDER  = ...
 -- Author: Offer Shmuely (2025)
 local ver = "1.0"
 local app_name = "dual_rates_config"
-local safe_width = m_utils.get_max_width_left
+local safe_width = m_utils.safe_width
+local x1 = m_utils.x1
+local x2 = m_utils.x2
+local x3 = m_utils.x3
+local use_images = m_utils.use_images
 
 local M = {}
-M.height = 130
-local x1 = 20
-local x2 = (LCD_W>=470) and 180 or 150
-local use_images = (LCD_W>=470)
+local lvSCALE = lvgl.LCD_SCALE or 1
+local line_height = 6*lvSCALE + (lvgl.UI_ELEMENT_HEIGHT or 32)
 
+M.height = 3*line_height + 15*lvSCALE
 
 -- State
 local expo = 30         -- 0-100, default 30
@@ -48,35 +51,47 @@ end
 
 function M.init(box)
     box:build({
-        -- Expo setting
-        {type="label", text="Expo", x=x1, y=5, color=BLACK},
-        {type="numberEdit", x=x2, y=2, w=60, min=0, max=100,
-            default=expo,
-            get=function() return expo end,
-            set=function(v) expo = v end,
-            display=function(v) return string.format("%d%%", v) end,
-        },
-
         -- Dual Rate choice (No/Yes)
-        {type="label", text="Dual Rates", x=x1, y=45, color=BLACK},
-        {type="choice", x=x2, y=40, w=80,
-            label="Dual Rates",
-            values={"No", "Yes"},
-            default=is_dual_rate,
-            get=function() return is_dual_rate end,
-            set=function(v) is_dual_rate = v end,
+        { type="setting", x=x1, y=0*line_height, w=LCD_W, title="Dual Rates",
+            children={
+                -- {type="label", text="Dual safe_widthates", x=x1, y=45, color=BLACK},
+                {type="choice", x=x2, y=0, w=safe_width(x2, 180*lvSCALE),
+                    label="Dual Rates",
+                    values={
+                        "No", 
+                        "Yes, on Ail/Elev"},
+                    default=is_dual_rate,
+                    get=function() return is_dual_rate end,
+                    set=function(v) is_dual_rate = v end,
+                },
+            }
         },
 
-        -- Switch selector (visible when dual rates enabled)
-        {type="choice", x=x2+100, y=40, w=safe_width(x2+100, 80), color=COLOR_THEME_SECONDARY3,
-            label="Switch",
-            default=dr_switch,
-            values=switch_names,
-            get=function() return dr_switch end,
-            set=function(v) dr_switch = v end,
-            visible=function() return is_dual_rate == 2 end,
+        -- Expo setting
+        { type="setting", x=x1, y=1*line_height, w=LCD_W, title="Dual Rate Switch", visible=function() return is_dual_rate == 2 end,
+            children={
+                -- Switch selector (visible when dual rates enabled)
+                {type="choice", x=x2, y=0, w=safe_width(x2, 80*lvSCALE), color=COLOR_THEME_SECONDARY3,
+                    label="Switch",
+                    default=dr_switch,
+                    values=switch_names,
+                    get=function() return dr_switch end,
+                    set=function(v) dr_switch = v end,                    
+                },
+            }
         },
-        -- {type="label", text=function() return "is_dual_rate: ".. is_dual_rate end, x=x1, y=105, color=BLACK},
+
+        -- Expo setting
+        { type="setting", x=x1, y=2*line_height, w=LCD_W, title="Expo",
+            children={
+                {type="numberEdit", x=x2, y=2, w=80*lvSCALE, min=0, max=100,
+                    default=expo,
+                    get=function() return expo end,
+                    set=function(v) expo = v end,
+                    display=function(v) return string.format("%d%%", v) end,
+                },
+            }
+        },
 
     })
 

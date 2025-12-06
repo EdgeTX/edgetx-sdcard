@@ -47,6 +47,8 @@ local m_utils = loadScript(ENGINE_FOLDER .. "/lib_utils", "btd")(m_log, app_name
 -- better font names
 local FS={FONT_38=XXLSIZE,FONT_16=DBLSIZE,FONT_12=MIDSIZE,FONT_8=0,FONT_6=SMLSIZE}
 
+local lvSCALE = lvgl.LCD_SCALE or 1
+
 local preset_list = {
 }
 
@@ -62,8 +64,8 @@ local exitTool = false
 
 -- state machine
 local STATE = {
-    SELECTOR_INIT = 2,
-    SELECTOR = 3,
+    MAIN_INIT = 2,
+    MAIN = 3,
     UPDATE_MODEL_INIT = 8,
     UPDATE_MODEL = 9,
     ON_END_INIT = 10,
@@ -71,7 +73,7 @@ local STATE = {
     ERROR_PAGE_INIT = 12,
     ERROR_PAGE = 13,
 }
-local state = STATE.SELECTOR_INIT
+local state = STATE.MAIN_INIT
 
 local ImgBackground = ENGINE_FOLDER .. "/img/background.png"
 local ImgSummary    = ENGINE_FOLDER .. "/img/summary.png"
@@ -81,36 +83,10 @@ local function log(fmt, ...)
 end
 ---------------------------------------------------------------------------------------------------
 
-local function build_topbar(prev_state, next_state, isFirstPage)
-    if isFirstPage == nil then
-        isFirstPage = false
-    end
-    if isFirstPage==false or isFirstPage==nil then
-        lvgl.clear()
-    end
-
-    local bTopArea = lvgl.box({scrollDir=lvgl.SCROLL_OFF, x=0, y=0, w=LCD_W, h=30})
-    bTopArea.build({
-        -- {type="rectangle", x=0, y=0, w=LCD_W, h=LCD_H, color=BLACK , filled=true, hide=true},
-        -- {type="rectangle", x=0, y=0, w=LCD_W, h=LCD_H, color=COLOR_THEME_SECONDARY2 , filled=true, hide=true},
-        {type="rectangle", x=0, y=0, w=LCD_W, h=40, color=COLOR_THEME_SECONDARY1 , filled=true, visible=function() return isFirstPage==false end},
-        -- {type="rectangle", x=0, y=0, w=LCD_W, h=LCD_H, file=ImgBackground},
-
-        {type="label", x=75, y=10, color=COLOR_THEME_PRIMARY2, font=FS.FONT_8,
-            text=function()
-                return string.format("Preset: %s", preset_info["name"])
-            end,
-            visible=function() return isFirstPage==false end
-        },
-    })
-end
-
----------------------------------------------------------------------------------------------------
-
-local function load_preset(preset_name, pos_y)
+local function load_preset(preset_name, pos_y, page)
     log("load_preset(%s)", preset_name)
 
-    local bPresetArea1 = lvgl.box({scrollDir=lvgl.SCROLL_OFF, x=0, y=pos_y, w=LCD_W})
+    local bPresetArea1 = page:box({scrollDir=lvgl.SCROLL_OFF, x=0, y=pos_y, w=LCD_W})
     -- bPresetArea1:image({x=LCD_W-95, y=10, w=100, h=100, file=function() return string.format(SCRIPT_FOLDER .. "/%s/icon.png", preset_name) end})
 
      --------------------------------------------------------------
@@ -129,15 +105,16 @@ local function load_preset(preset_name, pos_y)
     log("name: %s", preset_info["name"])
     log("about: %s", preset_info["about"])
 
-    local height = preset_script_lib.height
-    bPresetArea1:rectangle({x=5, y=0, w=LCD_W-15, h=height, 
+    local topbar_h = 30
+    local preset_height = preset_script_lib.height + topbar_h
+    bPresetArea1:rectangle({x=5, y=0, w=LCD_W-15, h=preset_height, 
         color=lcd.RGB(0xFFEEAD), 
         -- color=COLOR_THEME_FOCUS, 
         filled=true, rounded=5, thickness=2 })
-    bPresetArea1:rectangle({x=5, y=0, w=LCD_W-15, h=30, color=GREY , filled=true, rounded=5, thickness=2 })
+    bPresetArea1:rectangle({x=5, y=0, w=LCD_W-15, h=topbar_h, color=GREY , filled=true, rounded=5, thickness=2 })
     bPresetArea1:label({x=20, y=5, color=WHITE, font=BOLD, text=preset_info["name"]})
 
-    local bPresetArea2 = bPresetArea1:box({x=0, y=35, h=height, w=LCD_W, scrollDir=lvgl.SCROLL_OFF})
+    local bPresetArea2 = bPresetArea1:box({x=0, y=topbar_h+5, h=5+preset_height, w=LCD_W, scrollDir=lvgl.SCROLL_OFF})
 
     --------------------------------------------------------------
     -- init the particle to create it's UI inside bPresetArea2
@@ -152,59 +129,48 @@ local function load_preset(preset_name, pos_y)
     end
 
     preset_list[#preset_list+1] = preset_script_lib
-    return preset_script_lib, bPresetArea1
+    return preset_script_lib, bPresetArea1, preset_height
 end
 
 ---------------------------------------------------------------------------------------------------
-local function state_SELECTOR_INIT()
+local function state_MAIN_INIT()
 
     lvgl.clear()
-
-    local bTopArea = lvgl.box({scrollDir=lvgl.SCROLL_OFF, x=0, y=0, w=LCD_W, h=30})
-    bTopArea.build({
-        -- {type="rectangle", x=0, y=0, w=LCD_W, h=LCD_H, color=BLACK , filled=true, hide=true},
-        -- {type="rectangle", x=0, y=0, w=LCD_W, h=LCD_H, color=COLOR_THEME_SECONDARY2 , filled=true, hide=true},
-        {type="rectangle", x=0, y=0, w=LCD_W, h=40, color=COLOR_THEME_SECONDARY1 , filled=true},
-        -- {type="rectangle", x=0, y=0, w=LCD_W, h=LCD_H, file=ImgBackground},
-
-        {type="label", x=75, y=10, color=COLOR_THEME_PRIMARY2, font=FS.FONT_8,
-            text=function()
-                return topbar_txt
-            end
-        },
+    local page = lvgl.page({x=0, y=0, w=LCD_W, h=0, title=topbar_txt, align=lvgl.CENTER, scrollDir=lvgl.SCROLL_ALL,
+        scrollBar=true,
+        backButton=true,
+        back=(function() exitTool = true end)
     })
-
-    local preset, box
-    local last_height = 50
 
     -- loop through paticles_list and load each preset UI block
+    local preset, box, preset_height
+    local last_height = 5
     for i = 1, #paticles_list do
         local particle_name = paticles_list[i]
-        preset, box = load_preset(particle_name, last_height)
-        last_height = last_height + preset.height + 10
+        preset, box, preset_height = load_preset(particle_name, last_height, page)
+        last_height = last_height + preset_height + 10
     end
 
-    local bApprove = lvgl.box({scrollDir=lvgl.SCROLL_OFF, x=0, y=last_height, w=LCD_W})
-    local space_left = 6
-    local space_right = 12
-    local space_middle = 12
+    -- Apply / Cancel buttons
+    local space_left = 6*lvSCALE
+    local space_right = 12*lvSCALE
+    local space_middle = 12*lvSCALE
     local btn_w = (LCD_W-space_left-space_right-space_middle)/2
-
-    bApprove:button({text="Cancel", 
-        x=space_left, y=2, w=btn_w, h=40,
-        press=(function()  exitTool = true end)
+    page:build({
+        {type="box", x=0, y=last_height, w=LCD_W, scrollDir=lvgl.SCROLL_OFF,
+            children={
+                {type="button", text="Cancel", x=space_left, y=2, w=btn_w, h=40*lvSCALE, press=(function()  exitTool = true end)},
+                {type="button", text="Apply" , x=LCD_W-space_right-btn_w, y=2, w=btn_w, h=40*lvSCALE, press=(function() state = STATE.UPDATE_MODEL_INIT end)},
+                {type="box", x=0, y=40*lvSCALE, w=LCD_W, h=15, color=RED} -- rectangle/box ???
+            }
+        }
     })
-    bApprove:button({text="Apply",
-        x=LCD_W-space_right-btn_w, y=2, w=btn_w, h=40,
-        press=(function() state = STATE.UPDATE_MODEL_INIT end)
-    })
-    bApprove:label({x=0, y=30, text=""})
 
-    state = STATE.SELECTOR
+    state = STATE.MAIN
     return 0
 end
 
-local function state_SELECTOR(event, touchState)
+local function state_MAIN(event, touchState)
     return 0
 end
 
@@ -238,14 +204,22 @@ end
 local function state_ON_END_INIT(event, touchState)
     log("state_ON_END_INIT()")
 
-    build_topbar(nil, nil)
-
+    lvgl.clear()
     lvgl.build({
-        {type="label",text="Model updated.", x=50, y=80, color=COLOR_THEME_PRIMARY1, font=FS.FONT_12},
-        {type="image", x=LCD_W-120, y=50, w=100, h=200, file=ImgSummary},
-        {type="button", x=LCD_W-120, y=LCD_H-45, w=110, h=40, text="Done",
-            press=(function() exitTool = true end)
-        },
+        {type="page", 
+            x=0, y=0, w=LCD_W, h=LCD_H, title=topbar_txt, align=lvgl.CENTER, scrollDir=lvgl.SCROLL_OFF,
+            scrollBar=false,
+            backButton=true,
+            back=(function() exitTool = true end),
+
+            children = {
+                {type="label",text="Model updated.", x=50, y=40*lvSCALE, color=COLOR_THEME_PRIMARY1, font=FS.FONT_12},
+                {type="image", x=LCD_W-120, y=0, w=100, h=200, file=ImgSummary},
+                {type="button", x=20, y=LCD_H-100*lvSCALE, w=LCD_W-40, h=40*lvSCALE, text="Done",
+                    press=(function() exitTool = true end)
+                },
+            }
+        }
     })
 
     state = STATE.ON_END
@@ -282,12 +256,12 @@ end
 local function run(event, touchState)
     if (exitTool) then return 2 end
 
-    if state == STATE.SELECTOR_INIT then
-        log("STATE.SELECTOR_INIT")
-        return state_SELECTOR_INIT(event, touchState)
-    elseif state == STATE.SELECTOR then
-        -- log("STATE.SELECTOR")
-        return state_SELECTOR(event, touchState)
+    if state == STATE.MAIN_INIT then
+        log("STATE.MAIN_INIT")
+        return state_MAIN_INIT(event, touchState)
+    elseif state == STATE.MAIN then
+        -- log("STATE.MAIN")
+        return state_MAIN(event, touchState)
 
     elseif state == STATE.UPDATE_MODEL_INIT then
         log("STATE.UPDATE_MODEL_INIT")
