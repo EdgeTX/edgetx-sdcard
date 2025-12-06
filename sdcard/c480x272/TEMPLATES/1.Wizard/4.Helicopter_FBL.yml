@@ -1,6 +1,6 @@
 semver: 2.11.3
 header: 
-   name: "New Plane"
+   name: "Helicopter"
    bitmap: ""
    labels: ""
 timers: 

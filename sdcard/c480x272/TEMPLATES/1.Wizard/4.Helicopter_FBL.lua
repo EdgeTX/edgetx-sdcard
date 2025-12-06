@@ -22,32 +22,30 @@
 -- default channels
 -- CH1  = Aileron
 -- CH2  = Elevator
--- CH3  = Throttle / Motor
+-- CH3  = collective (pitch)
 -- CH4  = Rudder (yaw)
 -- CH5  = Arm (elrs)
--- CH6  = Profile (mode/bank)
--- CH7  = Beeper
--- CH8  = 
--- CH9  = 
+-- CH6  = Motor (3 rpm)
+-- CH7  = Tail Gain
+-- CH8  = Bank (Profile/idle up)
+-- CH9  = Rescue (panic)
 -- CH10 = 
 
 -- default switches
--- SA = Profile (mode/bank)
+-- SA = Bank (Profile/idle up)
 -- SB = 
--- SD = Beeper
+-- SD = 
+-- SH = Rescue (Panic)
 -- SF↓ = Motor arm (safety)
-
 
 ---------------------------------------------------------------------------------------------------
 
-local topbar_txt = "Build a multirotor model with a wizard"
+local topbar_txt = "Build a Helicopter model with a wizard (Flight Controller)"
 
 local paticles_list = {
     "name",
-    "motor",
-    "beeper",
-    "profile1",
-    "dual_rates",
+    "heli_channels_order",
+    "heli_rates",
 }
 
 ---------------------------------------------------------------------------------------------------

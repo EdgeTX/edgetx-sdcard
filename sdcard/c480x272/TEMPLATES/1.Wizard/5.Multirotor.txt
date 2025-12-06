@@ -1,1 +1,1 @@
-Create a simple multirotor drone using the Lua Wizard to guide you.
+Create a simple multirotor using the Lua Wizard to guide you.
