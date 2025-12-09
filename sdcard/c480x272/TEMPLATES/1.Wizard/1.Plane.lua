@@ -43,6 +43,7 @@ local topbar_txt = "Build a plane model with a wizard"
 
 local paticles_list = {
     "name",
+    "image",
     "motor",
     "ailerons",
     "tail",

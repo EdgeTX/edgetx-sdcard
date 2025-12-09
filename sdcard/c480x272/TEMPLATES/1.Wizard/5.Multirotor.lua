@@ -44,6 +44,7 @@ local topbar_txt = "Build a multirotor model with a wizard"
 
 local paticles_list = {
     "name",
+    "image",
     "motor",
     "beeper",
     "profile1",
