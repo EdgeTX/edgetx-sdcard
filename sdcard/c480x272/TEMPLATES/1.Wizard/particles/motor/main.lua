@@ -74,7 +74,7 @@ function M.init(box)
                 },
                 -- Arm switch selector (conditional visibility)
                 {type="switch",
-                    x=370*lvSCALE, w=80*lvSCALE,
+                    x=x3+90, w=safe_width(x3+90, 80*lvSCALE),
                     title="Arm Switch",
                     get=function() return arm_switch_idx end,
                     set=function(val) arm_switch_idx = val end,                    
@@ -97,7 +97,7 @@ function M.init(box)
                     set=function(val) is_need_elrs_arm_channel = val end,
                 },
                 {type="source",
-                    x=370*lvSCALE, w=80*lvSCALE,
+                    x=x3+90, w=safe_width(x3+90, 80*lvSCALE),
                     title="Arm Switch",
                     get=function() return elrs_arm_source_idx end,
                     set=function(val) elrs_arm_source_idx = val end,
