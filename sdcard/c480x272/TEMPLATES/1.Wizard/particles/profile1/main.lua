@@ -3,10 +3,12 @@ local m_log, m_utils, PRESET_FOLDER  = ...
 -- Author: Offer Shmuely (2025)
 local ver = "1.0"
 local app_name = "profile_config"
-local safe_width = m_utils.safe_width
-local x1 = m_utils.x1
-local x2 = m_utils.x2
-local x3 = m_utils.x3
+
+local LP1 = m_utils.line_presets.p1
+local LP2 = m_utils.line_presets.p2
+local LP3 = m_utils.line_presets.p3
+local LP4 = m_utils.line_presets.p4
+local LP5 = m_utils.line_presets.p5
 local use_images = m_utils.use_images
 
 local M = {}
@@ -27,14 +29,11 @@ end
 ---------------------------------------------------------------------------------------------------
 
 function M.init(box)
-    log("Initializing %s v%s, LCD_W: %s, x2:%s, x2-left: %s, box.w: %s", app_name, ver, LCD_W, x2, LCD_W - x2, box.w)
     box:build({
-
-
-        { type="setting", x=x1, y=0*line_height, w=LCD_W, title="Profiles",
+        { type="setting", x=LP2.x1, y=0*line_height, w=LCD_W, title="Profiles",
             children={
                 -- {type="label", text="Profiles", x=x1, y=5, color=BLACK},
-                {type="choice", x=x2, y=2, w=safe_width(x2, 240),
+                {type="choice", x=LP2.x2, y=2, w=LP2.w2,
                     values = {
                         "No need, single profile is ok", 
                         "Yes, I need profiles",
@@ -50,12 +49,12 @@ function M.init(box)
             },
         },
 
-        { type="setting", x=x1, y=1*line_height, w=LCD_W, title="Profiles Switch", visible = function() return is_profile==2 end,
+        { type="setting", x=LP3.x1, y=1*line_height, w=LCD_W, title="Profiles Switch", visible = function() return is_profile==2 end,
             children={
                 -- {type="label", x=x1, y=45, color=BLACK, text="Profile Switch",
                 --     visible = function() return is_profile == 1 end
                 -- },
-                {type="source", x=x2, y=0, w=80,
+                {type="source", x=LP3.x2, y=0, w=LP3.w2,
                     title = "Switch for profiles",
                     get = function() return switch_idx end,
                     set = function(v) switch_idx = v end,
@@ -63,13 +62,13 @@ function M.init(box)
             },
         },
 
-        { type="setting", x=x1, y=2*line_height, w=LCD_W, title="Profiles Channel", visible = function() return is_profile==2 end,
+        { type="setting", x=LP3.x1, y=2*line_height, w=LCD_W, title="Profiles Channel", visible = function() return is_profile==2 end,
             children={
 
                 -- {type="label", x=x1, y=85, color=BLACK, text="Profiles Channel",
                 --     visible = function() return is_profile == 1 end
                 -- },
-                {type="choice", x=x2, y=0, w=80,
+                {type="choice", x=LP3.x2, y=0, w=LP3.w2,
                     label = "Channel",
                     default = profile_channel,
                     values = m_utils.channels_list,

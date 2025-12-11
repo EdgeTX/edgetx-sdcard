@@ -3,10 +3,13 @@ local m_log, m_utils, PRESET_FOLDER  = ...
 -- Author: Offer Shmuely (2025)
 local ver = "1.0"
 local app_name = "heli_channels_order_config"
-local safe_width = m_utils.safe_width
-local x1 = m_utils.x1
-local x2 = m_utils.x2
-local x3 = m_utils.x3
+
+local LP1 = m_utils.line_presets.p1
+local LP2 = m_utils.line_presets.p2
+local LP3 = m_utils.line_presets.p3
+local LP4 = m_utils.line_presets.p4
+local LP5 = m_utils.line_presets.p5
+local LP6 = m_utils.line_presets.p6
 local use_images = m_utils.use_images
 
 local M = {}
@@ -82,8 +85,8 @@ apply_preset(channel_type)
 function M.init(box)
     box:build({
         -- order presets
-        { type="setting", x=x1, y=0*line_height, w=LCD_W, title="Channel Order Preset:", children={
-            {type="choice", x=x2, y=2, w=safe_width(x2, 180),
+        { type="setting", x=LP4.x1, y=0*line_height, w=LCD_W, title="Channel Order Preset:", children={
+            {type="choice", x=LP4.x2, y=2, w=LP4.w2,
                 title="Channel Order Preset",
                 values={
                     "--manual--", 
@@ -99,8 +102,8 @@ function M.init(box)
             },        
         }},
         -- aileron
-        { type="setting", x=x1, y=1*line_height, w=LCD_W, title="Aileron:", children={
-            {type="choice", x=x2, y=0, w=80*lvSCALE,
+        { type="setting", x=LP3.x1, y=1*line_height, w=LCD_W, title="Aileron:", children={
+            {type="choice", x=LP3.x2, y=0, w=LP3.w2,
                 title="Ail Channel",
                 values=m_utils.channels_list,
                 get=function() return ch_ail end,
@@ -111,8 +114,8 @@ function M.init(box)
             },
         }},
         -- elevator
-        { type="setting", x=x1, y=2*line_height, w=LCD_W, title="Elevator:", children={
-            {type="choice", x=x2, y=0, w=80*lvSCALE, title="Elevator Channel",
+        { type="setting", x=LP3.x1, y=2*line_height, w=LCD_W, title="Elevator:", children={
+            {type="choice", x=LP3.x2, y=0, w=LP3.w2, title="Elevator Channel",
                 values=m_utils.channels_list,
                 get=function() return ch_ele end,
                 set=function(val) 
@@ -122,8 +125,8 @@ function M.init(box)
             },
         }},
         -- Collective
-        { type="setting", x=x1, y=3*line_height, w=LCD_W, title="Collective (pitch):", children={
-            {type="choice", x=x2, y=0, w=80*lvSCALE, title="Collective Channel",
+        { type="setting", x=LP3.x1, y=3*line_height, w=LCD_W, title="Collective (pitch):", children={
+            {type="choice", x=LP3.x2, y=0, w=LP3.w2, title="Collective Channel",
                 values=m_utils.channels_list,
                 get=function() return ch_col end,
                 set=function(val) 
@@ -133,8 +136,8 @@ function M.init(box)
             },
         }},
         -- Rudder
-        { type="setting", x=x1, y=4*line_height, w=LCD_W, title="Rudder:", children={
-            {type="choice", x=x2, y=0, w=80*lvSCALE, title="Rudder Channel",
+        { type="setting", x=LP3.x1, y=4*line_height, w=LCD_W, title="Rudder:", children={
+            {type="choice", x=LP3.x2, y=0, w=LP3.w2, title="Rudder Channel",
                 values=m_utils.channels_list,
                 get=function() return ch_rud end,
                 set=function(val) 
@@ -144,8 +147,8 @@ function M.init(box)
             },
         }},
         -- Arm
-        { type="setting", x=x1, y=5*line_height, w=LCD_W, title="Arm:", children={
-            {type="choice", x=x2, y=0, w=80*lvSCALE, title="Arm Channel",
+        { type="setting", x=LP6.x1, y=5*line_height, w=LCD_W, title="Arm:", children={
+            {type="choice", x=LP6.x2, y=0, w=LP6.w2, title="Arm Channel",
                 values=m_utils.channels_list,
                 get=function() return ch_arm end,
                 set=function(val) 
@@ -153,15 +156,15 @@ function M.init(box)
                     channel_type = 1  -- manual
                 end,
             },
-            {type="source", x=x3, y=0, w=safe_width(x3, 80),
+            {type="source", x=LP6.x3, y=0, w=LP6.w3,
                 -- filter=lvgl.SW_TRIM,
                 get=function() return arm_switch_idx end,
                 set=function(val) arm_switch_idx = val end,
             },
         }},
         -- Throttle
-        { type="setting", x=x1, y=6*line_height, w=LCD_W, title="Throttle:", children={
-            {type="choice", x=x2, y=0, w=80*lvSCALE, title="Throttle Channel",
+        { type="setting", x=LP3.x1, y=6*line_height, w=LCD_W, title="Throttle:", children={
+            {type="choice", x=LP3.x2, y=0, w=LP3.w2, title="Throttle Channel",
                 values=m_utils.channels_list,
                 get=function() return ch_thr end,
                 set=function(val) 
@@ -171,8 +174,8 @@ function M.init(box)
             },
         }},
         -- Tail Gain
-        { type="setting", x=x1, y=7*line_height, w=LCD_W, title="Tail Gain:", children={
-            {type="choice", x=x2, y=0, w=80*lvSCALE, title="Tail Gain Channel",
+        { type="setting", x=LP6.x1, y=7*line_height, w=LCD_W, title="Tail Gain:", children={
+            {type="choice", x=LP6.x2, y=0, w=LP6.w2, title="Tail Gain Channel",
                 values=m_utils.channels_list,
                 get=function() return ch_tail_gain end,
                 set=function(val) 
@@ -180,15 +183,15 @@ function M.init(box)
                     channel_type = 1  -- manual
                 end,
             },
-            {type="source", x=x3, y=0, w=safe_width(x3, 80),
+            {type="source", x=LP6.x3, y=0, w=LP6.w3,
                 filter=lvgl.SRC_POT,
                 get=function() return tail_gain_switch_idx end,
                 set=function(val) tail_gain_switch_idx = val end,
             },
         }},
         -- Bank (profile)
-        { type="setting", x=x1, y=8*line_height, w=LCD_W, title="Bank (profile):", children={
-            {type="choice", x=x2, y=0, w=80*lvSCALE, title="Bank Channel",
+        { type="setting", x=LP6.x1, y=8*line_height, w=LCD_W, title="Bank (profile):", children={
+            {type="choice", x=LP6.x2, y=0, w=LP6.w2, title="Bank Channel",
                 values=m_utils.channels_list,
                 get=function() return ch_bank end,
                 set=function(val) 
@@ -196,15 +199,15 @@ function M.init(box)
                     -- channel_type = 1  -- manual
                 end,
             },
-            {type="source", x=x3, y=0, w=safe_width(x3, 80),
+            {type="source", x=LP6.x3, y=0, w=LP6.w3,
                 filter=lvgl.SRC_SWITCH,
                 get=function() return bank_switch_idx end,
                 set=function(val) bank_switch_idx = val end,
             },
         }},
         -- Rescue (panic)
-        { type="setting", x=x1, y=9*line_height, w=LCD_W, title="Rescue (Panic):", children={
-            {type="choice", x=x2, y=0, w=80*lvSCALE, title="Rescue Channel",
+        { type="setting", x=LP6.x1, y=9*line_height, w=LCD_W, title="Rescue (Panic):", children={
+            {type="choice", x=LP6.x2, y=0, w=LP6.w2, title="Rescue Channel",
                 values=m_utils.channels_list,
                 get=function() return ch_rescue end,
                 set=function(val) 
@@ -212,7 +215,7 @@ function M.init(box)
                     -- channel_type = 1  -- manual
                 end,
             },
-            {type="source", x=x3, y=0, w=safe_width(x3, 80),
+            {type="source", x=LP6.x3, y=0, w=LP6.w3,
                 filter=lvgl.SRC_SWITCH,
                 get=function() return rescue_switch_idx end,
                 set=function(val) rescue_switch_idx = val end,

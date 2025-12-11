@@ -3,10 +3,11 @@ local m_log, m_utils, PRESET_FOLDER  = ...
 -- Author: Offer Shmuely (2025)
 local ver = "1.0"
 local app_name = "mmotor_config"
-local safe_width = m_utils.safe_width
-local x1 = m_utils.x1
-local x2 = m_utils.x2
-local x3 = m_utils.x3
+
+local LP1 = m_utils.line_presets.p1
+local LP2 = m_utils.line_presets.p2
+local LP3 = m_utils.line_presets.p3
+local LP4 = m_utils.line_presets.p4
 local use_images = m_utils.use_images
 
 local M = {}
@@ -33,10 +34,10 @@ function M.init(box)
     box:build({
         -- Motor question
         -- {type="label", text="Have a motor?", x=x1, y=5, color=BLACK},
-        { type="setting", x=x1, y=0*line_height, w=LCD_W, title="Have a Motor?",
+        { type="setting", x=LP4.x1, y=0*line_height, w=LCD_W, title="Motor?",
             children={
                 {type="choice",
-                    x=x2, y=2, w=safe_width(x2, 160*lvSCALE),
+                    x=LP4.x2, y=2, w=LP4.w2,
                     title="Have a Motor?",
                     values={ "No Motor", "Yes, I have motor" },
                     get=function() return is_motor end,
@@ -45,12 +46,12 @@ function M.init(box)
             },
         },
         -- Motor channel (conditional visibility)
-        { type="setting", x=x1, y=1*line_height, w=LCD_W, title="Motor channel:", visible=function() return is_motor == 2 end,
+        { type="setting", x=LP3.x1, y=1*line_height, w=LCD_W, title="Channel:", visible=function() return is_motor == 2 end,
             children={
                 -- {type="label", text="Motor channel:",
                 --     x=x1, y=5, color=BLACK,
                 -- },
-                {type="choice", x=x2, y=0, w=80*lvSCALE,
+                {type="choice", x=LP3.x2, y=0, w=LP3.w2,
                     title="Motor Channel",
                     values=m_utils.channels_list,
                     get=function() return motor_ch end,
@@ -60,21 +61,21 @@ function M.init(box)
         },
 
         -- Safety Switch question (conditional visibility)
-        { type="setting", x=x1, y=2*line_height, w=LCD_W, title="Safety Switch:", visible=function() return is_motor == 2 end,
+        { type="setting", x=LP2.x1, y=2*line_height, w=LCD_W, title="Switch", visible=function() return is_motor == 2 end,
             children={
             -- {type="label", text="Safety Switch:", x=x1, y=80, color=BLACK,
             -- visible=function() return is_motor == 2 end
             -- },
                 {type="choice",
-                    x=x2, y=0, w=safe_width(x2, 180*lvSCALE),
+                    x=LP2.x2, y=0, w=LP2.w2,
                     title="Safety (ARM) Switch",
-                    values={ "No arm switch", "Yes, use arm switch" },
+                    values={ "No arm switch", "Use arm switch" },
                     get=function() return is_need_arm_switch end,
                     set=function(val) is_need_arm_switch = val end,
                 },
                 -- Arm switch selector (conditional visibility)
                 {type="switch",
-                    x=x3+90, w=safe_width(x3+90, 80*lvSCALE),
+                    x=LP2.x3, w=LP2.w3,
                     title="Arm Switch",
                     get=function() return arm_switch_idx end,
                     set=function(val) arm_switch_idx = val end,                    
@@ -84,20 +85,20 @@ function M.init(box)
         },
 
         -- set channel CH5 as arm if elrs communication
-        { type="setting", x=x1, y=3*line_height, w=LCD_W, title="ELRS Arm:", visible=function() return is_motor == 2 end,
+        { type="setting", x=LP2.x1, y=3*line_height, w=LCD_W, title="ELRS Arm:", visible=function() return is_motor == 2 end,
             children={
                 {type="image", x=105, y=0, w=line_height, h=line_height, file=function() return PRESET_FOLDER .. "/icon.png" end, visible = function() return use_images end},
 
                 -- {type="label", text="ELRS Arm:", x=x1, y=120, color=BLACK},
                 {type="choice",
-                    x=x2, y=0, w=safe_width(x2, 180),
+                    x=LP2.x2, y=0, w=LP2.w2,
                     title="ELRS Arm channel CH5",
                     values={ "No ELRS", "CH5 as Arm channel" },
                     get=function() return is_need_elrs_arm_channel end,
                     set=function(val) is_need_elrs_arm_channel = val end,
                 },
                 {type="source",
-                    x=x3+90, w=safe_width(x3+90, 80*lvSCALE),
+                    x=LP2.x3, w=LP2.w3,
                     title="Arm Switch",
                     get=function() return elrs_arm_source_idx end,
                     set=function(val) elrs_arm_source_idx = val end,

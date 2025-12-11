@@ -3,10 +3,14 @@ local m_log, m_utils, PRESET_FOLDER  = ...
 -- Author: Offer Shmuely (2025)
 local ver = "1.0"
 local app_name = "gears_config"
-local safe_width = m_utils.safe_width
-local x1 = m_utils.x1
-local x2 = m_utils.x2
-local x3 = m_utils.x3
+
+local LP1 = m_utils.line_presets.p1
+local LP2 = m_utils.line_presets.p2
+local LP3 = m_utils.line_presets.p3
+local LP4 = m_utils.line_presets.p4
+local LP5 = m_utils.line_presets.p5
+local LP6 = m_utils.line_presets.p6
+
 local use_images = m_utils.use_images
 
 local M = {}
@@ -30,9 +34,9 @@ function M.init(box)
 
     box:build({
         -- Flaps type selection
-        { type="setting", x=x1, y=0*line_height, w=LCD_W, title="Have Gears?",
+        { type="setting", x=LP4.x1, y=0*line_height, w=LCD_W, title="Have Gears?",
             children={
-                {type="choice", x=x2, y=2, w=safe_width(x2, 160*lvSCALE),
+                {type="choice", x=LP4.x2, y=2, w=LP4.w2,
                     values = {
                         "No Gears", 
                         "Yes, I have Gears"
@@ -46,18 +50,18 @@ function M.init(box)
             },
         },
 
-        { type="setting", x=x1, y=1*line_height, w=LCD_W, title="Gears Switch", visible = function() return is_gear == 2 end,
+        { type="setting", x=LP3.x1, y=1*line_height, w=LCD_W, title="Gears Switch", visible = function() return is_gear == 2 end,
             children={
-                {type="source", x=x2, y=0, w=80*lvSCALE,
+                {type="source", x=LP3.x2, y=0, w=LP3.w2,
                     title = "Switch for gears",
                     get = function() return gear_switch_idx end,
                     set = function(v) gear_switch_idx = v end,
                 },
             },
         },
-        { type="setting", x=x1, y=2*line_height, w=LCD_W, title="Gears Channel", visible = function() return is_gear == 2 end,
+        { type="setting", x=LP3.x1, y=2*line_height, w=LCD_W, title="Gears Channel", visible = function() return is_gear == 2 end,
             children={
-                {type="choice", x=x2, y=0, w=80*lvSCALE,
+                {type="choice", x=LP3.x2, y=0, w=LP3.w2,
                     label = "Channel",
                     default = gear_channel,
                     values = m_utils.channels_list,

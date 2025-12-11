@@ -3,10 +3,13 @@ local m_log, m_utils, PRESET_FOLDER  = ...
 -- Author: Offer Shmuely (2025)
 local ver = "1.0"
 local app_name = "ailerons_config"
-local safe_width = m_utils.safe_width
-local x1 = m_utils.x1
-local x2 = m_utils.x2
-local x3 = m_utils.x3
+
+local LP1 = m_utils.line_presets.p1
+local LP2 = m_utils.line_presets.p2
+local LP3 = m_utils.line_presets.p3
+local LP4 = m_utils.line_presets.p4
+local LP5 = m_utils.line_presets.p5
+local LP6 = m_utils.line_presets.p6
 local use_images = m_utils.use_images
 
 local M = {}
@@ -30,9 +33,9 @@ function M.init(box)
 
     box:build({
         -- Aileron type selection
-        { type="setting", x=x1, y=0*line_height, w=LCD_W, title="Aileron Type",
+        { type="setting", x=LP4.x1, y=0*line_height, w=LCD_W, title="Type",
             children={
-                {type="choice", x=x2, y=2, --w=180,
+                {type="choice", x=LP4.x2, y=2, w=LP4.w2,
                     title="Aileron Type",
                     values={ 
                         "No Ailerons", 
@@ -45,10 +48,10 @@ function M.init(box)
             },
         },        
         -- First aileron channel (visible when ail_type >= 2)
-        { type="setting", x=x1, y=1*line_height, w=LCD_W, title="Aileron channels",
+        { type="setting", x=LP6.x1, y=1*line_height, w=LCD_W, title="Channels",
             children={
                 -- {type="label", text="Aileron channels:", x=x1, y=50, color=BLACK, visible=function() return ail_type==2 or ail_type==3 end },
-                {type="choice", x=x2, y=0, w=70*lvSCALE,
+                {type="choice", x=LP6.x2, y=0, w=LP6.w2,
                     title="Ail Channel",
                     values=m_utils.channels_list,
                     get=function() return ail_ch_a end,
@@ -56,7 +59,7 @@ function M.init(box)
                     visible=function() return ail_type==2 or ail_type==3 end
                 },
 
-                {type="choice", x=x3, y=0, w=safe_width(x3, 70*lvSCALE), title="Ail Left Channel",
+                {type="choice", x=LP6.x3, y=0, w=LP6.w3, title="Ail Left Channel",
                     values=m_utils.channels_list,
                     get=function() return ail_ch_b end,
                     set=function(val) ail_ch_b = val end,

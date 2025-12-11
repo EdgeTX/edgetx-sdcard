@@ -3,10 +3,13 @@ local m_log, m_utils, PRESET_FOLDER  = ...
 -- Author: Offer Shmuely (2025)
 local ver = "1.0"
 local app_name = "tail_config"
-local safe_width = m_utils.safe_width
-local x1 = m_utils.x1
-local x2 = m_utils.x2
-local x3 = m_utils.x3
+
+local LP1 = m_utils.line_presets.p1
+local LP2 = m_utils.line_presets.p2
+local LP3 = m_utils.line_presets.p3
+local LP4 = m_utils.line_presets.p4
+local LP5 = m_utils.line_presets.p5
+local LP6 = m_utils.line_presets.p6
 local use_images = m_utils.use_images
 
 local M = {}
@@ -33,10 +36,10 @@ function M.init(box)
 
     box:build({
         -- Tail type selection
-        -- {type="label", text="Pick the tail configuration:", x=x1, y=5, color=BLACK},
-        { type="setting", x=x1, y=0*line_height, w=LCD_W, title="Tail Configuration",
+        -- {type="label", text="Pick the tail configuration:", x=LP1.x1, y=5, color=BLACK},
+        { type="setting", x=LP4.x1, y=0*line_height, w=LCD_W, title="Configuration",
             children={
-                {type="choice", x=x2, y=2, w=safe_width(x2, 380),
+                {type="choice", x=LP4.x2, y=2, w=LP4.w2,
                     title="Tail Type",
                     values={ 
                         "1 Elevator, no Rudder", 
@@ -51,15 +54,15 @@ function M.init(box)
         },        
 
         -- Elevators
-        { type="setting", x=x1, y=1*line_height, w=LCD_W, title="Elevator channels", visible=function() return tail_type<4 end,
+        { type="setting", x=LP6.x1, y=1*line_height, w=LCD_W, title="Elevator channels", visible=function() return tail_type<4 end,
             children={
-                {type="choice", x=x2, y=0, w=80*lvSCALE,
+                {type="choice", x=LP6.x2, y=0, w=LP6.w2,
                     title="Elevator Ch",
                     values=m_utils.channels_list,
                     get=function() return ch_a end,
                     set=function(val) ch_a = val end
                 },
-                {type="choice", x=x3, y=0, w=safe_width(x3, 80*lvSCALE),
+                {type="choice", x=LP6.x3, y=0, w=LP6.w3,
                     title="Elevator Right Ch",
                     values=m_utils.channels_list,
                     get=function() return ch_c end,
@@ -70,12 +73,12 @@ function M.init(box)
         },
 
         -- Rudder - visible when tail_type >= 2
-        { type="setting", x=x1, y=2*line_height, w=LCD_W, title="Rudder channel", visible=function() return tail_type==2 or tail_type==3 end,
+        { type="setting", x=LP3.x1, y=2*line_height, w=LCD_W, title="Rudder channel", visible=function() return tail_type==2 or tail_type==3 end,
             children={
                 -- {type="label", text="Rudder channel:", x=x1, y=90, color=BLACK,
                 --     visible=function() return tail_type==2 or tail_type==3 end
                 -- },
-                {type="choice", x=x2, y=0, w=80, title="Rudder Ch",
+                {type="choice", x=LP3.x2, y=0, w=LP3.w2, title="Rudder Ch",
                     values=m_utils.channels_list,
                     get=function() return ch_b end,
                     set=function(val) ch_b = val end,
@@ -84,15 +87,15 @@ function M.init(box)
         },
 
         -- v-tail
-        { type="setting", x=x1, y=1*line_height, w=LCD_W, title="V-Tail  channels", visible=function() return tail_type==4 end,
+        { type="setting", x=LP3.x1, y=1*line_height, w=LCD_W, title="V-Tail  channels", visible=function() return tail_type==4 end,
             children={
-                {type="choice", x=x2, y=0, w=80*lvSCALE,
+                {type="choice", x=LP3.x2, y=0, w=LP3.w2,
                     title="v-tail-left ch",
                     values=m_utils.channels_list,
                     get=function() return ch_a end,
                     set=function(val) ch_a = val end
                 },
-                {type="choice", x=x3, y=0, w=safe_width(x3, 80*lvSCALE),
+                {type="choice", x=LP3.x3, y=0, w=LP3.w3,
                     title="v-tail-right ch",
                     values=m_utils.channels_list,
                     get=function() return ch_c end,

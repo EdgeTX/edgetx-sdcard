@@ -23,9 +23,64 @@ M.defaultChannel_THR = defaultChannel(M.STICK_NUMBER_THR) + 1
 M.defaultChannel_RUD = defaultChannel(M.STICK_NUMBER_RUD) + 1
 
 local lvSCALE = lvgl.LCD_SCALE or 1
-M.x1 = 10*lvSCALE
-M.x2 = (LCD_W>=470) and 180*lvSCALE or 150*lvSCALE
-M.x3 = (LCD_W>=470) and 280*lvSCALE or 235*lvSCALE
+-- M.x1 = 10*lvSCALE
+-- M.x2 = lvgl.PERCENT_SIZE + 30 -- (LCD_W>=470) and 180*lvSCALE or 150*lvSCALE
+-- M.x3 = lvgl.PERCENT_SIZE + 75 -- (LCD_W>=470) and 280*lvSCALE or 235*lvSCALE
+-- M.w1 = lvgl.PERCENT_SIZE + 25 -- M.x2 - M.x1
+-- M.w2 = lvgl.PERCENT_SIZE + 40 -- M.x3 - M.x2 - 10
+-- M.w3 = lvgl.PERCENT_SIZE + 20 -- LCD_W - M.x3 -15
+
+M.line_presets = {
+    -- setting line, 25% - 20%
+    p1 = {
+        x1 = 10*lvSCALE,
+        w1 = lvgl.PERCENT_SIZE + 25,
+        x2 = lvgl.PERCENT_SIZE + 30,
+        w2 = lvgl.PERCENT_SIZE + 20,
+    },
+    -- setting line, 25% - 40% - 20% (txt, wide, short)
+    p2 = {
+        x1 = 10*lvSCALE,
+        w1 = lvgl.PERCENT_SIZE + 25,
+        x2 = lvgl.PERCENT_SIZE + 30,
+        w2 = lvgl.PERCENT_SIZE + 45,
+        x3 = lvgl.PERCENT_SIZE + 77,
+        w3 = lvgl.PERCENT_SIZE + 15,
+    },
+    -- setting line, 25% - 20% - 40% (txt, short, wide)
+    p3 = {
+        x1 = 10*lvSCALE,
+        w1 = lvgl.PERCENT_SIZE + 25,
+        x2 = lvgl.PERCENT_SIZE + 30,
+        w2 = lvgl.PERCENT_SIZE + 20,
+        x3 = lvgl.PERCENT_SIZE + 50,
+        w3 = lvgl.PERCENT_SIZE + 40,
+    },
+    -- setting line, 20% - 65% - 0%  (txt, super wide, 0)
+    p4 = {
+        x1 = 10*lvSCALE,
+        w1 = lvgl.PERCENT_SIZE + 20,
+        x2 = lvgl.PERCENT_SIZE + 30,
+        w2 = lvgl.PERCENT_SIZE + 65,
+    },
+    -- setting line, 45% - 45% - 0%
+    p5 = {
+        x1 = 10*lvSCALE,
+        w1 = lvgl.PERCENT_SIZE + 45,
+        x2 = lvgl.PERCENT_SIZE + 50,
+        w2 = lvgl.PERCENT_SIZE + 45,
+    },
+    -- setting line, 25% - 20% - 40% (txt, short, short)
+    p6 = {
+        x1 = 10*lvSCALE,
+        w1 = lvgl.PERCENT_SIZE + 25,
+        x2 = lvgl.PERCENT_SIZE + 30,
+        w2 = lvgl.PERCENT_SIZE + 20,
+        x3 = lvgl.PERCENT_SIZE + 52,
+        w3 = lvgl.PERCENT_SIZE + 20,
+    },
+}
+
 M.use_images = (LCD_W>=470)
 
 ---------------------------------------------------------------------------------------------------
@@ -152,13 +207,13 @@ function M.set_output_name(channel, txt)
     model.setOutput(channel - 1, out_info)
 end
 
-function M.safe_width(startX, neededWidth)
-    local maxWidth = LCD_W - startX - 25
-    if neededWidth <= maxWidth then
-        return neededWidth
-    else
-        return maxWidth 
-    end    
-end
+-- function M.safe_width(startX, neededWidth)
+--     local maxWidth = LCD_W - startX - 25
+--     if neededWidth <= maxWidth then
+--         return neededWidth
+--     else
+--         return maxWidth 
+--     end    
+-- end
 
 return M

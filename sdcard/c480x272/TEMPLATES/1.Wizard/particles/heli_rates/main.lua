@@ -3,10 +3,13 @@ local m_log, m_utils, PRESET_FOLDER  = ...
 -- Author: Offer Shmuely (2025)
 local ver = "1.0"
 local app_name = "heli_rates_config"
-local safe_width = m_utils.safe_width
-local x1 = m_utils.x1
-local x2 = m_utils.x2
-local x3 = m_utils.x3
+
+local LP1 = m_utils.line_presets.p1
+local LP2 = m_utils.line_presets.p2
+local LP3 = m_utils.line_presets.p3
+local LP4 = m_utils.line_presets.p4
+local LP5 = m_utils.line_presets.p5
+local LP6 = m_utils.line_presets.p6
 local use_images = m_utils.use_images
 
 local M = {}
@@ -52,10 +55,10 @@ end
 function M.init(box)
     box:build({
 
-        { type="setting", x=x1, y=0*line_height, w=LCD_W, title="Style Rates?", 
+        { type="setting", x=LP4.x1, y=0*line_height, w=LCD_W, title="Style Rates?", 
             children={
                 -- {type="label", text="Style Rates?", x=x1, y=5, color=BLACK},
-                {type="choice", x=x2, y=2, w=safe_width(x2, 280*lvSCALE),
+                {type="choice", x=LP4.x2, y=2, w=LP4.w2,
                     label="Dual Rates",
                     values={
                         "No, single rate only", 
@@ -68,10 +71,10 @@ function M.init(box)
             },
         },
 
-        { type="setting", x=x1, y=1*line_height, w=LCD_W, title="Rate/Style Switch", visible = function() return is_dual_rate==2 end,
+        { type="setting", x=LP3.x1, y=1*line_height, w=LCD_W, title="Rate/Style Switch", visible = function() return is_dual_rate==2 end,
             children={
                 -- Switch selector (visible when dual rates enabled)
-                {type="choice", x=x2, y=0, w=safe_width(x2+100, 80*lvSCALE), color=COLOR_THEME_SECONDARY3,
+                {type="choice", x=LP3.x2, y=0, w=LP3.w2, color=COLOR_THEME_SECONDARY3,
                     label="Switch",
                     default=dr_switch,
                     values=switch_names,
@@ -84,12 +87,12 @@ function M.init(box)
             },
         },
 
-        { type="setting", x=x1, y=2*line_height, w=LCD_W, title="Expo", visible = function() return is_dual_rate==2 end,
+        { type="setting", x=LP3.x1, y=2*line_height, w=LCD_W, title="Expo", visible = function() return is_dual_rate==2 end,
             children={
 
                 -- Expo setting
                 -- {type="label", text="Expo", x=x1, y=0, color=BLACK},
-                {type="numberEdit", x=x2, y=0, w=80*lvSCALE, min=0, max=100,
+                {type="numberEdit", x=LP3.x2, y=0, w=LP3.w2+20,
                     default=expo,
                     get=function() return expo end,
                     set=function(v) expo = v end,

@@ -3,10 +3,14 @@ local m_log, m_utils, PRESET_FOLDER  = ...
 -- Author: Offer Shmuely (2025)
 local ver = "1.0"
 local app_name = "flaps_config"
-local safe_width = m_utils.safe_width
-local x1 = m_utils.x1
-local x2 = m_utils.x2
-local x3 = m_utils.x3
+
+local LP1 = m_utils.line_presets.p1
+local LP2 = m_utils.line_presets.p2
+local LP3 = m_utils.line_presets.p3
+local LP4 = m_utils.line_presets.p4
+local LP5 = m_utils.line_presets.p5
+local LP6 = m_utils.line_presets.p6
+
 local use_images = m_utils.use_images
 
 local M = {}
@@ -31,9 +35,9 @@ function M.init(box)
     box:build({
         -- Flaps type selection
         -- {type="label", text="Flaps", x=x1, y=5, color=BLACK},
-        { type="setting", x=x1, y=0*line_height, w=LCD_W, title="Have Flaps?",
+        { type="setting", x=LP4.x1, y=0*line_height, w=LCD_W, title="Have Flaps?",
             children={
-                {type="choice", x=x2, y=2, w=safe_width(x2, 220),
+                {type="choice", x=LP4.x2, y=2, w=LP4.w2,
                     title="Flaps Type",
                     values={ 
                         "No Flaps", 
@@ -48,11 +52,11 @@ function M.init(box)
             },
         },
 
-        { type="setting", x=x1, y=1*line_height, w=LCD_W, title="Flaps switch", visible=function() return flap_type ~=1 end,
+        { type="setting", x=LP3.x1, y=1*line_height, w=LCD_W, title="Flaps switch", visible=function() return flap_type ~=1 end,
             children={
             -- {type="label", text="Flaps switch:", x=x1, y=45, color=BLACK, visible=function() return flap_type >= 2 end},
                 {type="source",
-                    x=x2, y=0, w=80*lvSCALE,
+                    x=LP3.x2, y=0, w=LP3.w2,
                     title="Flap Switch",
                     get=function() 
                         return flaps_switch_idx 
@@ -64,10 +68,10 @@ function M.init(box)
             },
         },
 
-        { type="setting", x=x1, y=2*line_height, w=LCD_W, title="Flaps channels", visible=function() return flap_type ~=1 end,
+        { type="setting", x=LP6.x1, y=2*line_height, w=LCD_W, title="Flaps channels", visible=function() return flap_type ~=1 end,
             children={
                 -- flap channel left or dual
-                {type="choice", x=x2, y=0, w=80*lvSCALE,
+                {type="choice", x=LP6.x2, y=0, w=LP6.w2,
                     title="Flap Channel",
                     values=m_utils.channels_list,
                     get=function() return flap_ch_a end,
@@ -75,7 +79,7 @@ function M.init(box)
                 },
 
                 -- flap channel right
-                {type="choice", x=x3, y=0, w=safe_width(x3, 80*lvSCALE),
+                {type="choice", x=LP6.x3, y=0, w=LP6.w3,
                     title="Flap Right Channel",
                     values=m_utils.channels_list,
                     get=function() return flap_ch_b end,

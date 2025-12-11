@@ -3,10 +3,12 @@ local m_log, m_utils, PRESET_FOLDER  = ...
 -- Author: Offer Shmuely (2025)
 local ver = "1.0"
 local app_name = "elevrons_config"
-local safe_width = m_utils.safe_width
-local x1 = m_utils.x1
-local x2 = m_utils.x2
-local x3 = m_utils.x3
+local LP1 = m_utils.line_presets.p1
+local LP2 = m_utils.line_presets.p2
+local LP3 = m_utils.line_presets.p3
+local LP4 = m_utils.line_presets.p4
+local LP5 = m_utils.line_presets.p5
+local LP6 = m_utils.line_presets.p6
 local use_images = m_utils.use_images
 
 local M = {}
@@ -30,17 +32,17 @@ end
 function M.init(box)
 
     box:build({       
-        { type="setting", x=x1, y=0*line_height, w=LCD_W, title="Elevron Channels", 
+        { type="setting", x=LP6.x1, y=0*line_height, w=LCD_W, title="Elevron Channels", 
             children={
                 -- {type="label", text="channels:", x=x1, y=5, color=BLACK},
 
-                {type="choice", x=x2, y=2, w=80,
+                {type="choice", x=LP6.x2, y=2, w=LP6.w2,
                     title="Elevron CH Left",
                     values=m_utils.channels_list,
                     get=function() return ch_a end,
                     set=function(val) ch_a = val end
                 },
-                {type="choice", x=x3, y=2, w=safe_width(x3, 80),
+                {type="choice", x=LP6.x3, y=2, w=LP6.w3,
                     title="Elevron CH Right",
                     values=m_utils.channels_list,
                     get=function() return ch_b end,
