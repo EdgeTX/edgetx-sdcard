@@ -3,9 +3,8 @@ name: Build Releases
 on:
   push:
     branches:
-      - 2.10
-      - 2.11
-      - master
+      - 'master'
+      - '[0-9]+.[0-9]+'
     tags:
       - v*
     paths-ignore:
@@ -46,6 +45,7 @@ jobs:
           path: .
       - name: Deploy release
         uses: crowbarmaster/GH-Automatic-Releases@latest
+        if: '!startsWith(github.event.ref, ''refs/tags/v'')'
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           automatic_release_tag: "latest"
