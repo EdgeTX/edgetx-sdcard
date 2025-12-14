@@ -45,7 +45,7 @@ jobs:
           path: .
       - name: Deploy release
         uses: crowbarmaster/GH-Automatic-Releases@latest
-        if: '!startsWith(github.event.ref, ''refs/tags/v'')'
+        if: github.ref == 'refs/heads/master'
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           automatic_release_tag: "latest"
