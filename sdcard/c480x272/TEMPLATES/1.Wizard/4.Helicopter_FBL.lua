@@ -40,7 +40,7 @@
 
 ---------------------------------------------------------------------------------------------------
 
-local topbar_txt = "Build a Helicopter model with a wizard (Flight Controller)"
+local topbar_txt = "Build a Helicopter model (Flight Controller)"
 
 local paticles_list = {
     "name",

@@ -23,61 +23,70 @@ M.defaultChannel_THR = defaultChannel(M.STICK_NUMBER_THR) + 1
 M.defaultChannel_RUD = defaultChannel(M.STICK_NUMBER_RUD) + 1
 
 local lvSCALE = lvgl.LCD_SCALE or 1
--- M.x1 = 10*lvSCALE
--- M.x2 = lvgl.PERCENT_SIZE + 30 -- (LCD_W>=470) and 180*lvSCALE or 150*lvSCALE
--- M.x3 = lvgl.PERCENT_SIZE + 75 -- (LCD_W>=470) and 280*lvSCALE or 235*lvSCALE
--- M.w1 = lvgl.PERCENT_SIZE + 25 -- M.x2 - M.x1
--- M.w2 = lvgl.PERCENT_SIZE + 40 -- M.x3 - M.x2 - 10
--- M.w3 = lvgl.PERCENT_SIZE + 20 -- LCD_W - M.x3 -15
+
+local function lvglPercent(p)
+    -- if lvgl.PERCENT_SIZE then 
+    --     m_log.info("lvglPercent 1: %d%% => %d", p, lvgl.PERCENT_SIZE + p)
+    --     return lvgl.PERCENT_SIZE + p
+    -- else
+    --     m_log.info("lvglPercent 2: %d%% => %d", p, math.floor((LCD_W - 20) * p / 100))
+    --     return math.floor((LCD_W - 20) * p / 100)
+    -- end
+
+    m_log.info("lvglPercent 2: %d%% => %d", p, math.floor((LCD_W - 20) * p / 100))
+    return math.floor((LCD_W - 20) * p / 100)
+end
+
+-- local PERCENT_SIZE = lvgl.PERCENT_SIZE or math.floor(LCD_W / 100)
 
 M.line_presets = {
     -- setting line, 25% - 20%
     p1 = {
         x1 = 10*lvSCALE,
-        w1 = lvgl.PERCENT_SIZE + 25,
-        x2 = lvgl.PERCENT_SIZE + 30,
-        w2 = lvgl.PERCENT_SIZE + 20,
+        w1 = lvglPercent(25),
+        x2 = lvglPercent(30),
+        w2 = lvglPercent(20),
     },
     -- setting line, 25% - 40% - 20% (txt, wide, short)
     p2 = {
         x1 = 10*lvSCALE,
-        w1 = lvgl.PERCENT_SIZE + 25,
-        x2 = lvgl.PERCENT_SIZE + 30,
-        w2 = lvgl.PERCENT_SIZE + 45,
-        x3 = lvgl.PERCENT_SIZE + 77,
-        w3 = lvgl.PERCENT_SIZE + 15,
+        w1 = lvglPercent(25),
+        x2 = lvglPercent(30),
+        w2 = lvglPercent(45),
+        x3 = lvglPercent(77),
+        w3 = lvglPercent(15),
     },
     -- setting line, 25% - 20% - 40% (txt, short, wide)
     p3 = {
         x1 = 10*lvSCALE,
-        w1 = lvgl.PERCENT_SIZE + 25,
-        x2 = lvgl.PERCENT_SIZE + 30,
-        w2 = lvgl.PERCENT_SIZE + 20,
-        x3 = lvgl.PERCENT_SIZE + 50,
-        w3 = lvgl.PERCENT_SIZE + 40,
+        w1 = lvglPercent(25),
+        x2 = lvglPercent(30),
+        w2 = lvglPercent(20),
+        x3 = lvglPercent(50),
+        w3 = lvglPercent(40),
     },
     -- setting line, 20% - 65% - 0%  (txt, super wide, 0)
     p4 = {
         x1 = 10*lvSCALE,
-        w1 = lvgl.PERCENT_SIZE + 20,
-        x2 = lvgl.PERCENT_SIZE + 30,
-        w2 = lvgl.PERCENT_SIZE + 65,
+        w1 = lvglPercent(20),
+        x2 = lvglPercent(30),
+        w2 = lvglPercent(65),
     },
     -- setting line, 45% - 45% - 0%
     p5 = {
         x1 = 10*lvSCALE,
-        w1 = lvgl.PERCENT_SIZE + 45,
-        x2 = lvgl.PERCENT_SIZE + 50,
-        w2 = lvgl.PERCENT_SIZE + 45,
+        w1 = lvglPercent(45),
+        x2 = lvglPercent(50),
+        w2 = lvglPercent(45),
     },
     -- setting line, 25% - 20% - 40% (txt, short, short)
     p6 = {
         x1 = 10*lvSCALE,
-        w1 = lvgl.PERCENT_SIZE + 25,
-        x2 = lvgl.PERCENT_SIZE + 30,
-        w2 = lvgl.PERCENT_SIZE + 20,
-        x3 = lvgl.PERCENT_SIZE + 52,
-        w3 = lvgl.PERCENT_SIZE + 20,
+        w1 = lvglPercent(25),
+        x2 = lvglPercent(30),
+        w2 = lvglPercent(20),
+        x3 = lvglPercent(52),
+        w3 = lvglPercent(20),
     },
 }
 
