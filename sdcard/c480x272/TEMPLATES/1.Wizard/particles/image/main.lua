@@ -41,6 +41,8 @@ function M.init(box)
     
 
     local img_size = LP5.w2
+    local img_x = LP5.x1 + LP5.w1 + 10
+    img_size = LCD_W - img_x - 20*lvSCALE
     box:build({
         { type="label" , x=LP5.x1, y=0*line_height, text="Model Image:" },
         { type="choice", x=LP5.x1, y=1*line_height, w=LP5.w1,
@@ -49,8 +51,7 @@ function M.init(box)
             get=function() return image_name_idx end,
             set=function(val) image_name_idx = val end,
         },
-        -- { type="rectangle", x=LP5.x2, y=0, w=img_size, h=img_size, filled=false, color=RED},
-        { type="image",     x=LP5.x2, y=0, w=img_size, h=img_size, fill=false, file=function() return "/IMAGES/" .. image_list[image_name_idx] end },
+        { type="image",     x=img_x, y=0, w=img_size, h=img_size, fill=false, file=function() return "/IMAGES/" .. image_list[image_name_idx] end },
     })
 
     return nil
