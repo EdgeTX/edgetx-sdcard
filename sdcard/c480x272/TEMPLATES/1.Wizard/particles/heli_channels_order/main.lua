@@ -30,10 +30,10 @@ local ch_tail_gain = nil
 local ch_rescue = nil
 local ch_bank = nil
 
-local rescue_switch_idx     = getSourceIndex("SH")  -- switch SH
-local bank_switch_idx       = getSourceIndex("SA")  -- switch SA
-local tail_gain_switch_idx  = getSourceIndex("S1")  -- 
-local arm_switch_idx        = getSourceIndex("SF")  -- switch SF down
+local rescue_switch_idx     = getSourceIndex("SH") or getSourceIndex("SA") -- switch SH
+local bank_switch_idx       = getSourceIndex("SA") or getSourceIndex("SA")  -- switch SA
+local tail_gain_switch_idx  = getSourceIndex("S1") or getSourceIndex("SA")  -- 
+local arm_switch_idx        = getSourceIndex("SF") or getSourceIndex("SA")  -- switch SF down
 ---------------------------------------------------------------------------------------------------
 local function log(fmt, ...)
     m_log.info(fmt, ...)
@@ -41,8 +41,10 @@ end
 ---------------------------------------------------------------------------------------------------
 
 local function apply_preset(preset)
+    log("applying channel order preset %d", preset)
+
+    -- ELRS:   AECR1T23
     if preset == 2 then
-        -- ELRS:   AECR1T23
         ch_ail  = 1
         ch_ele  = 2
         ch_col  = 3
@@ -53,8 +55,8 @@ local function apply_preset(preset)
         ch_bank   = 8
         ch_rescue = 9
 
+    -- FrSky:  AETRC123
     elseif preset == 3 then
-        -- FrSky:  AETRC123
         ch_ail  = 1
         ch_ele  = 2
         ch_thr  = 3
@@ -65,8 +67,8 @@ local function apply_preset(preset)
         ch_bank   = 8
         ch_rescue = 9
 
+    -- Futaba: AETR1C23
     elseif preset == 4 then
-        -- Futaba: AETR1C23
         ch_ail  = 1
         ch_ele  = 2
         ch_thr  = 3
@@ -75,7 +77,16 @@ local function apply_preset(preset)
         ch_col  = 6
         ch_tail_gain = 7
         ch_bank   = 8
-        ch_rescue = 9
+        ch_rescue = 9    
+    
+    -- Goosky S2 Max: AETRLC
+    elseif preset == 5 then
+        ch_ail  = 1
+        ch_ele  = 2
+        ch_thr  = 3
+        ch_rud  = 4
+        ch_rescue = 5
+        ch_col  = 6
 
     end
 end
@@ -93,6 +104,7 @@ function M.init(box)
                     "ELRS:   AECR1T23", 
                     "FrSky:  AETRC123", 
                     "Futaba: AETR1C23",
+                    "Goosky S2 Max: AETRLC",
                 },
                 get=function() return channel_type end,
                 set=function(val) 
