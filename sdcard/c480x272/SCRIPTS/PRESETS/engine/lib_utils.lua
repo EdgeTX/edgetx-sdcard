@@ -27,12 +27,87 @@ M.defaultChannel_0_ELE = defaultChannel(M.STICK_NUMBER_ELE)
 M.defaultChannel_0_THR = defaultChannel(M.STICK_NUMBER_THR)
 M.defaultChannel_0_RUD = defaultChannel(M.STICK_NUMBER_RUD)
 
------------------------------------------------------------------
+local lvSCALE = lvgl.LCD_SCALE or 1
+
+local function lvglPercent(p)
+    -- if lvgl.PERCENT_SIZE then 
+    --     m_log.info("lvglPercent 1: %d%% => %d", p, lvgl.PERCENT_SIZE + p)
+    --     return lvgl.PERCENT_SIZE + p
+    -- else
+    --     m_log.info("lvglPercent 2: %d%% => %d", p, math.floor((LCD_W - 20) * p / 100))
+    --     return math.floor((LCD_W - 20) * p / 100)
+    -- end
+
+    m_log.info("lvglPercent 2: %d%% => %d", p, math.floor((LCD_W - 20) * p / 100))
+    return math.floor((LCD_W - 20) * p / 100)
+end
+
+-- local PERCENT_SIZE = lvgl.PERCENT_SIZE or math.floor(LCD_W / 100)
+
+M.line_presets = {
+    -- setting line, 25% - 20%
+    p1 = {
+        x1 = 10*lvSCALE,
+        w1 = lvglPercent(25),
+        x2 = lvglPercent(30),
+        w2 = lvglPercent(20),
+    },
+    -- setting line, 25% - 40% - 20% (txt, wide, short)
+    p2 = {
+        x1 = 10*lvSCALE,
+        w1 = lvglPercent(25),
+        x2 = lvglPercent(30),
+        w2 = lvglPercent(45),
+        x3 = lvglPercent(77),
+        w3 = lvglPercent(15),
+    },
+    -- setting line, 25% - 20% - 40% (txt, short, wide)
+    p3 = {
+        x1 = 10*lvSCALE,
+        w1 = lvglPercent(25),
+        x2 = lvglPercent(30),
+        w2 = lvglPercent(20),
+        x3 = lvglPercent(50),
+        w3 = lvglPercent(40),
+    },
+    -- setting line, 20% - 65% - 0%  (txt, super wide, 0)
+    p4 = {
+        x1 = 10*lvSCALE,
+        w1 = lvglPercent(20),
+        x2 = lvglPercent(30),
+        w2 = lvglPercent(65),
+    },
+    -- setting line, 45% - 45% - 0%
+    p5 = {
+        x1 = 10*lvSCALE,
+        w1 = lvglPercent(45),
+        x2 = lvglPercent(50),
+        w2 = lvglPercent(45),
+    },
+    -- setting line, 25% - 20% - 40% (txt, short, short)
+    p6 = {
+        x1 = 10*lvSCALE,
+        w1 = lvglPercent(25),
+        x2 = lvglPercent(30),
+        w2 = lvglPercent(20),
+        x3 = lvglPercent(52),
+        w3 = lvglPercent(20),
+    },
+}
+
+M.use_images = (LCD_W>=470)
+
+---------------------------------------------------------------------------------------------------
+local function log(fmt, ...)
+    m_log.info(fmt, ...)
+end
+---------------------------------------------------------------------------------------------------
 
 -- better font names
 -- local FS={FONT_38=XXLSIZE,FONT_16=DBLSIZE,FONT_12=MIDSIZE,FONT_8=0,FONT_6=SMLSIZE}
 M.FS={FONT_38=XXLSIZE,FONT_16=DBLSIZE,FONT_12=MIDSIZE,FONT_8=0,FONT_6=SMLSIZE}
 
+M.channels_list = {"CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8", "CH9", "CH10", "CH11", "CH12", "CH13", "CH14", "CH15", "CH16"}
 
 local function lcdSizeTextFixed(txt, font_size)
     local ts_w, ts_h = lcd.sizeText(txt, font_size)
@@ -63,7 +138,7 @@ end
 -----------------------------------------------------------------
 
 function M.readFileToString(filename)
-    m_log.info("readFileToString: %s", filename)
+    log("readFileToString: %s", filename)
     local file = io.open(filename, "r") -- Open the file in read mode
     if not file then
         return nil -- File does not exist or could not be opened
@@ -73,15 +148,15 @@ function M.readFileToString(filename)
     local content = io.read(file, 2000) -- Read the entire file content
     io.close(file) -- Close the file
 
-    m_log.info("readFileToString: - content: %s", content)
+    log("readFileToString: - content: %s", content)
     return content
 end
 
 function M.readMeta(filename)
-    m_log.info("readMeta: %s", filename)
+    log("readMeta: %s", filename)
 
     local content = M.readFileToString(filename)
-    m_log.info("readMeta: content: %s", content)
+    log("readMeta: content: %s", content)
 
     local properties = {}
     if content == nil then
@@ -90,12 +165,12 @@ function M.readMeta(filename)
 
     --for line in string.gmatch(content, "([^,]+),?") do
     for line in string.gmatch(content, "(.-)\r?\n") do
-        m_log.info("line: %s", line)
+        log("line: %s", line)
 
         local key, value = string.match(line, "^(.-)%s*=%s*(.*)$")
         if key and value then
             properties[key] = value
-            m_log.info("%s: %s", key, value)
+            log("%s: %s", key, value)
         end
     end
 
@@ -107,10 +182,10 @@ end
 function M.input_search_by_name(neededInputName)
     for inputIdx = 0, 3 do
         for lineNo = 0, 2 do
-            m_log.info("%d/%d", inputIdx,lineNo)
+            log("%d/%d", inputIdx,lineNo)
             local inInfo = model.getInput(inputIdx, lineNo)
             if inInfo ~= nil then
-                m_log.info("%d/%d, name:%s, inputName:%s, source: %s", inputIdx,lineNo, inInfo.name, inInfo.inputName, inInfo.source)
+                log("%d/%d, name:%s, inputName:%s, source: %s", inputIdx,lineNo, inInfo.name, inInfo.inputName, inInfo.source)
                 if inInfo.inputName == neededInputName then
                     return inputIdx
                 end
@@ -121,5 +196,38 @@ function M.input_search_by_name(neededInputName)
 end
 
 -----------------------------------------------------------------------
+
+function M.addMix(channel, input, name, weight, index)
+    local mix = {
+        source = input,
+        name = name,
+        --carryTrim= 0 -- 0=on
+        --trimSource= 0 -- 0=on
+    }
+    if weight ~= nil then
+        mix.weight = weight
+    end
+    if index == nil then
+        index = 0
+    end
+    model.insertMix(channel, index, mix)
+end
+-----------------------------------------------------------------------
+
+function M.set_output_name(channel, txt)
+    log("Setting output name for channel CH%s to '%s'", channel, txt)
+    local out_info = model.getOutput(channel - 1)
+    out_info.name = txt
+    model.setOutput(channel - 1, out_info)
+end
+
+-- function M.safe_width(startX, neededWidth)
+--     local maxWidth = LCD_W - startX - 25
+--     if neededWidth <= maxWidth then
+--         return neededWidth
+--     else
+--         return maxWidth 
+--     end    
+-- end
 
 return M
