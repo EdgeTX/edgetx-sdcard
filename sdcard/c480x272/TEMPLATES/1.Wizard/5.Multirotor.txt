@@ -1,1 +1,0 @@
-Create a simple multirotor using the Lua Wizard to guide you.
