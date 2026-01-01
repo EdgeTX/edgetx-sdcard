@@ -3,13 +3,49 @@
 set -euo pipefail
 
 # Check prerequisites
+error_msg() {
+    if [ -z "${GITHUB_ACTIONS:-}" ]; then
+        echo "❌ Error: $1" >&2
+    else
+        echo "::error::$1"
+    fi
+}
+
 if [ ! -d "sdcard" ]; then
-    echo "::error::sdcard directory not found"
+    error_msg "sdcard directory not found"
     exit 1
 fi
 
 if [ ! -d "global" ]; then
-    echo "::error::global directory not found"
+    error_msg "global directory not found"
+    exit 1
+fi
+
+if [ ! -f "sdcard.json" ]; then
+    error_msg "sdcard.json not found"
+    exit 1
+fi
+
+# Extract unique variants from sdcard.json and validate they exist
+echo "Validating variants..."
+variants=$(grep -oE '"(bw[0-9]+x[0-9]+|c[0-9]+x[0-9]+)"' sdcard.json | tr -d '"' | sort -u)
+missing_variants=()
+
+for variant in $variants; do
+    if [ ! -d "sdcard/$variant" ]; then
+        missing_variants+=("$variant")
+    fi
+done
+
+if [ ${#missing_variants[@]} -gt 0 ]; then
+    error_msg "Missing variant directories:"
+    for variant in "${missing_variants[@]}"; do
+        if [ -z "${GITHUB_ACTIONS:-}" ]; then
+            echo "  - sdcard/$variant" >&2
+        else
+            echo "::error::  sdcard/$variant"
+        fi
+    done
     exit 1
 fi
 
@@ -34,7 +70,7 @@ done
 for dir in sdcard-build/*/; do
     dir_name=$(basename "$dir")
     if [ "$dir_name" != "bw" ] && [ "$dir_name" != "color" ]; then
-        cp -r global/* "$dir"
+        rsync -r global/ "$dir"
     fi
 done
 
@@ -44,7 +80,7 @@ for dir in sdcard-build/*/; do
     dir_name=$(basename "$dir")
     if [ "$dir_name" != "bw" ] && [ "$dir_name" != "color" ]; then
         echo "  Building $dir_name.zip..."
-        zip -qr "dist/$dir_name.zip" "$dir"*
+        (cd "$dir" && zip -qr "../../dist/$dir_name.zip" *)
     fi
 done
 
@@ -53,5 +89,6 @@ if [ -z "${GITHUB_ACTIONS:-}" ]; then
     rm -r sdcard-build
 fi
 
-echo "✓ Build complete"
+echo ""
+echo "Generated Packages:"
 ls -lh dist/*.zip 2>/dev/null | awk '{print "  " $9 " (" $5 ")"}'
