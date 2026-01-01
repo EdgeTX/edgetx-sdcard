@@ -50,9 +50,9 @@ if [ ${#missing_variants[@]} -gt 0 ]; then
 fi
 
 # Create distribution directory
-rm -rf dist
-mkdir -p dist
-cp -r sdcard sdcard-build
+rm -rf dist sdcard-build
+mkdir -p dist sdcard-build
+rsync -r sdcard/ sdcard-build/
 
 # Copy generic variant content
 for dir in sdcard-build/*/; do
@@ -60,9 +60,9 @@ for dir in sdcard-build/*/; do
     
     # Determine variant, copy content only if it doesn't exist
     if [[ "$dir_name" == bw* && "$dir_name" != "bw" ]]; then
-        [ -d "sdcard-build/bw" ] && rsync --ignore-existing sdcard-build/bw/ "$dir"
+        [ -d "sdcard-build/bw" ] && rsync -r --ignore-existing sdcard-build/bw/ "$dir"
     elif [[ "$dir_name" == c* && "$dir_name" != "color" ]]; then
-        [ -d "sdcard-build/color" ] && rsync --ignore-existing sdcard-build/color/ "$dir"
+        [ -d "sdcard-build/color" ] && rsync -r --ignore-existing sdcard-build/color/ "$dir"
     fi
 done
 
