@@ -16,8 +16,8 @@ if [ ! -d "sdcard" ]; then
     exit 1
 fi
 
-if [ ! -d "global" ]; then
-    error_msg "global directory not found"
+if [ ! -d "sdcard/global" ]; then
+    error_msg "sdcard/global directory not found"
     exit 1
 fi
 
@@ -54,6 +54,9 @@ rm -rf dist sdcard-build
 mkdir -p dist sdcard-build
 rsync -r sdcard/ sdcard-build/
 
+# Get absolute path to dist for use in subshells
+dist_path="$(cd dist && pwd)"
+
 # Copy generic variant content
 for dir in sdcard-build/*/; do
     dir_name=$(basename "$dir")
@@ -69,8 +72,8 @@ done
 # Copy global content into each variant
 for dir in sdcard-build/*/; do
     dir_name=$(basename "$dir")
-    if [ "$dir_name" != "bw" ] && [ "$dir_name" != "color" ]; then
-        rsync -r global/ "$dir"
+    if [ "$dir_name" != "bw" ] && [ "$dir_name" != "color" ] && [ "$dir_name" != "global" ]; then
+        rsync -r sdcard-build/global/ "$dir"
     fi
 done
 
@@ -78,9 +81,9 @@ done
 echo "Creating distribution packages..."
 for dir in sdcard-build/*/; do
     dir_name=$(basename "$dir")
-    if [ "$dir_name" != "bw" ] && [ "$dir_name" != "color" ]; then
+    if [ "$dir_name" != "bw" ] && [ "$dir_name" != "color" ] && [ "$dir_name" != "global" ]; then
         echo "  Building $dir_name.zip..."
-        (cd "$dir" && zip -qr "../../dist/$dir_name.zip" *)
+        (cd "$dir" && zip -qr "$dist_path/$dir_name.zip" *)
     fi
 done
 
