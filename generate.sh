@@ -54,3 +54,4 @@ if [ -z "${GITHUB_ACTIONS:-}" ]; then
 fi
 
 echo "✓ Build complete"
+ls -lh dist/*.zip 2>/dev/null | awk '{print "  " $9 " (" $5 ")"}'
