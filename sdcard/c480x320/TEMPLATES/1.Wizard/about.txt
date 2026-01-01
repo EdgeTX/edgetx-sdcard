@@ -1,3 +1,0 @@
-Model wizard's (Official)
-
-creating new model using lua scripts & templates
