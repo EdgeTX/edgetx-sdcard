@@ -18,7 +18,7 @@
 
 -- Author: Offer Shmuely
 -- Date: 2023-2025
-local ver = "0.3"
+local ver = "0.5"
 
 -- to get help:
 -- change in lib_log.lua to "ENABLE_LOG_FILE=true"
@@ -60,49 +60,32 @@ local preset_selection_idx = 1
 
 -- state machine
 local STATE = {
-    SPLASH = 0,
-    INIT = 1,
-    SELECTION_INIT = 2,
-    SELECTION = 3,
-    SCRIPT_RUNNER_INIT = 4,
-    SCRIPT_RUNNER = 5,
-    CONFIRM_REQUEST_INIT = 6,
-    CONFIRM_REQUEST = 7,
-    UPDATE_MODEL_INIT = 8,
-    UPDATE_MODEL = 9,
-    ON_END_INIT = 10,
-    ON_END = 11,
-    ERROR_PAGE_INIT = 12,
-    ERROR_PAGE = 13,
+    INIT = 0,
+    SELECTION_INIT = 1,
+    SELECTION = 2,
+    SCRIPT_RUNNER_INIT = 3,
+    SCRIPT_RUNNER = 4,
+    CONFIRM_REQUEST_INIT = 5,
+    CONFIRM_REQUEST = 6,
+    UPDATE_MODEL_INIT = 7,
+    UPDATE_MODEL = 8,
+    ON_END_INIT = 9,
+    ON_END = 10,
+    ERROR_PAGE_INIT = 11,
+    ERROR_PAGE = 12,
 }
-local state = STATE.SPLASH
+local state = STATE.INIT
 
-local ImgSplash     = ENGINE_FOLDER .. "/img/splash.png"
-local ImgBackground = ENGINE_FOLDER .. "/img/background.png"
+-- local ImgSplash     = ENGINE_FOLDER .. "/img/splash.png"
+-- local ImgBackground = ENGINE_FOLDER .. "/img/background.png"
 local ImgSummary    = ENGINE_FOLDER .. "/img/summary.png"
+
+local TOPBAR_H = 50
 ---------------------------------------------------------------------------------------------------
 local function log(fmt, ...)
     m_log.info(fmt, ...)
 end
 ---------------------------------------------------------------------------------------------------
-
-local splash_start_time = 0
-local function state_SPLASH(event, touchState)
-
-    if splash_start_time == 0 then
-        splash_start_time = getTime()
-    end
-    local elapsed = getTime() - splash_start_time;
-    log('elapsed: %d (t.durationMili: %d)', elapsed, splash_start_time)
-    local elapsedMili = elapsed * 10;
-    -- was 1500, but most the time will go anyway from the load of the scripts
-    if (elapsedMili >= 50) then
-        ImgSplash = nil
-        state = STATE.INIT
-    end
-
-    return 0
-end
 
 local function build_topbar(prev_state, next_state, isFirstPage)
     -- log("build_topbar(%s)", preset_folder_name)
@@ -112,30 +95,24 @@ local function build_topbar(prev_state, next_state, isFirstPage)
     if isFirstPage==false or isFirstPage==nil then
         lvgl.clear()
     end
-
-    local bTopArea = lvgl.box({scrollDir=lvgl.SCROLL_OFF, x=0, y=0, w=LCD_W, h=30})
-    bTopArea.build({
-        -- {type="rectangle", x=0, y=0, w=LCD_W, h=LCD_H, color=BLACK , filled=true, hide=true},
-        -- {type="rectangle", x=0, y=0, w=LCD_W, h=LCD_H, color=COLOR_THEME_SECONDARY2 , filled=true, hide=true},
-        {type="rectangle", x=0, y=0, w=LCD_W, h=40, color=COLOR_THEME_SECONDARY1 , filled=true, visible=function() return isFirstPage==false end},
-        -- {type="rectangle", x=0, y=0, w=LCD_W, h=LCD_H, file=ImgBackground},
-
-        {type="button", x=5, y=3, w=50, h=35, text="<", visible=function() return prev_state ~= nil end,
-            press=(function() state = prev_state end)
-        },
-        {type="button", x=LCD_W-55, y=3, w=50, h=35, text=">", visible=function() return next_state ~= nil end,
-            press=(function() state = next_state end)
-        },
-
-        {type="label", x=75, y=10, color=COLOR_THEME_PRIMARY2, font=FS.FONT_8,
-            text=function()
-                return string.format("Preset: %s", preset_info["name"])
-            end,
-            visible=function() return isFirstPage==false end
+    local pg = lvgl.page({title="Preset Loader",
+        subtitle=function() return preset_info["name"] or "" end,
+        backButton=true,
+        -- icon="/SCRIPTS/RF2-dashboards/widgets/img/rf2_logo.png",
+        -- flexFlow=lvgl.FLOW_COLUMN,
+        -- flexFlow=lvgl.FLOW_ROW,
+        -- flexPad=30,
+        prevButton={press=function() state = prev_state end},
+        nextButton={press=function()
+            if preset_folder_name~="---" then
+                state = next_state
+            end
+        end
         },
     })
+    return pg
 end
----------------------------------------------------------------------------------------------------
+
 local function state_INIT()
     log("PRESETS: init - start")
     preset_list[#preset_list+1] = "---"
@@ -151,7 +128,6 @@ local function state_INIT()
     return 0
 end
 
----------------------------------------------------------------------------------------------------
 local function on_change_preset_selection(i)
     preset_folder_name = preset_list[i]
     log("Selected preset_name: %s. %s",i, preset_folder_name)
@@ -164,13 +140,15 @@ local function on_change_preset_selection(i)
     log("about: %s", preset_info["about"])
 end
 
----------------------------------------------------------------------------------------------------
 local function state_SELECTION_INIT()
 
     lvgl.clear()
-    lvgl.build({
-        {type="image", x=0, y=0, w=LCD_W, h=LCD_H, file=ImgBackground},
-        {type="label", text="Preset:", x=75, y=65, color=BLACK},
+    local pg = build_topbar(nil, STATE.SCRIPT_RUNNER_INIT, true)
+
+    pg.build({
+        -- {type="image", x=0, y=0, w=LCD_W, h=LCD_H, file=ImgBackground},
+        {type="rectangle", x=20, y=55, w=450, h=43, filled=true, color=lcd.RGB(0x8B8D94), filed=true, rounded=6},
+        {type="label", text="Preset:", x=40, y=65, color=BLACK},
         {type="choice", x=130, y=60, w=298, title="Select Preset",
             values=preset_list,
             get=function() return preset_selection_idx end,
@@ -181,7 +159,8 @@ local function state_SELECTION_INIT()
         },
 
         -- draw preset info
-        {type="label", x=60, y=120, color=WHITE, font=FS.FONT_6,
+        {type="rectangle", x=20, y=105, w=450, h=LCD_H-30-105, filled=true, color=lcd.RGB(0x393C41), filed=true, rounded=7, opacity=200},
+        {type="label", x=40, y=120, w=350, color=WHITE, font=FS.FONT_6,
             text=function()
                 if preset_info["about"] == nil then
                     return "---"
@@ -193,25 +172,18 @@ local function state_SELECTION_INIT()
         },
 
         -- dreaw status bar
-        {type="label", x=10, y=252, color=BLACK, font=FS.FONT_6,
+        {type="rectangle", x=0, y=LCD_H-22, w=LCD_W, h=22, filled=true, color=lcd.RGB(0x8B8D94), filed=true, rounded=0},
+        {type="label", x=10, y=LCD_H-20, color=BLACK, font=FS.FONT_6,
             text=function()
                 return string.format("Category: %s", preset_info["category"])
             end
         },
-        {type="label", x=300, y=250, color=BLACK, font=FS.FONT_6,
+        {type="label", x=300, y=LCD_H-20, color=BLACK, font=FS.FONT_6,
             text=function()
                 return string.format("ver: %s  author: %s", preset_info["ver"], preset_info["author"])
             end
         },
-        {type="image", x=LCD_W-95, y=105, w=50, h=50, file=function() return string.format(SCRIPT_FOLDER .. "/%s/icon.png", preset_folder_name) end},
-
-    })
-
-    build_topbar(nil, STATE.SCRIPT_RUNNER_INIT, true)
-
-    lvgl.build({
-        -- {type="image", x=0, y=0, w=LCD_W, h=LCD_H, file=ImgBackground},
-        {type="label", text="Preset Loader ", x=145, y=8, color=COLOR_THEME_PRIMARY1, font=FS.FONT_8},
+        -- {type="image", x=LCD_W-95, y=105, w=50, h=50, file=function() return string.format(SCRIPT_FOLDER .. "/%s/icon.png", preset_folder_name) end},
 
     })
 
@@ -223,7 +195,6 @@ local function state_SELECTION_INIT()
     return 0
 end
 
----------------------------------------------------------------------------------------------------
 local function state_SELECTION(event, touchState)
     if event == EVT_TOUCH_FIRST and (touchState.x <= 40 and touchState.y >= 100 and touchState.y <= 160) then
         log("(%s) %s - %s", page, touchState.x, touchState.y)
@@ -247,16 +218,12 @@ local function state_SELECTION(event, touchState)
     return 0
 end
 
----------------------------------------------------------------------------------------------------
-
 local function state_SCRIPT_RUNNER_INIT()
     log("state_SCRIPT_RUNNER_INIT(%s)", preset_folder_name)
+    local pg = build_topbar(STATE.SELECTION_INIT, STATE.CONFIRM_REQUEST_INIT)
 
-    build_topbar(STATE.SELECTION_INIT, STATE.CONFIRM_REQUEST_INIT)
-
-    local bPresetArea = lvgl.box({scrollDir=lvgl.SCROLL_VER, x=0, y=30, w=LCD_W, h=LCD_H-30})
+    local bPresetArea = pg:box({scrollDir=lvgl.SCROLL_VER, x=0, y=5, w=LCD_W, h=LCD_H-TOPBAR_H})
     bPresetArea:image({x=LCD_W-95, y=10, w=100, h=100, file=function() return string.format(SCRIPT_FOLDER .. "/%s/icon.png", preset_folder_name) end})
-
 
     -- validate module exist
     local script_name = SCRIPT_FOLDER .. "/" .. preset_folder_name .. "/main.lua"
@@ -317,16 +284,14 @@ local function state_SCRIPT_RUNNER(event, touchState)
     return 0
 end
 
----------------------------------------------------------------------------------------------------
-
 local function state_CONFIRM_REQUEST_INIT(event)
     log("state_CONFIRM_REQUEST_INIT()")
+    local pg = build_topbar(STATE.SCRIPT_RUNNER_INIT, nil)
 
-    build_topbar(STATE.SCRIPT_RUNNER_INIT, nil)
-
-    lvgl.build({
-        {type="label",text="Update the current model?", x=60, y=80, color=COLOR_THEME_PRIMARY1, font=FS.FONT_12},
-        {type="label",text="Note: this will change the current plane settings!!", x=60, y=120, color=RED},
+    pg:build({
+        {type="label",text="Update the current model?", x=60, y=30, color=COLOR_THEME_PRIMARY1, font=FS.FONT_12},
+        {type="rectangle", x=40, y=105, w=400, h=55, filled=true, color=lcd.RGB(0xA2A5AD), filed=true, rounded=6},
+        {type="label",text="Note: \nthis will change the current plane settings !!!", x=60, y=110, color=RED},
 
         {type="button", x=LCD_W-240, y=LCD_H-45, w=110, h=40, text="Cancel",
             press=(function()  exitTool = true end)
@@ -346,7 +311,6 @@ local function state_CONFIRM_REQUEST(event, touchState)
         state = STATE.SCRIPT_RUNNER_INIT
         return 0
     end
-
     return 0
 end
 
@@ -368,9 +332,9 @@ end
 local function state_ON_END_INIT(event, touchState)
     log("state_ON_END_INIT()")
 
-    build_topbar(nil, nil)
+    local pg = build_topbar(nil, nil)
 
-    lvgl.build({
+    pg:build({
         {type="label",text="Model updated.", x=50, y=80, color=COLOR_THEME_PRIMARY1, font=FS.FONT_12},
         {type="image", x=LCD_W-120, y=50, w=100, h=200, file=ImgSummary},
         {type="button", x=LCD_W-120, y=LCD_H-45, w=110, h=40, text="Done",
@@ -385,11 +349,11 @@ end
 local function state_ON_END(event, touchState)
     return 0
 end
----------------------------------------------------------------------------------------------------
 
 local function state_ERROR_PAGE_INIT(event, touchState)
     lvgl.clear()
-    lvgl.build({
+    local pg = build_topbar(nil, nil)
+    pg:build({
         {type="label",text=error_desc or "Unknown error",x=40,y=80,w=LCD_W - 80,color=COLOR_THEME_PRIMARY1},
         {type="label",text="Hold [RTN] to exit.",x=100,y=200,color=COLOR_THEME_PRIMARY1}
     })
@@ -409,18 +373,13 @@ end
 ---------------------------------------------------------------------------------------------------
 
 local function init()
-    lcd.drawBitmap(ImgSplash, 0, 0)
 
 end
 
 local function run(event, touchState)
     if (exitTool) then return 2 end
 
-    if state == STATE.SPLASH then
-        log("STATE.SPLASH")
-        return state_SPLASH()
-
-    elseif state == STATE.INIT then
+    if state == STATE.INIT then
         log("STATE.INIT")
         return state_INIT()
 
