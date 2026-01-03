@@ -35,7 +35,15 @@ function M.init(box)
 
     for img in dir("/IMAGES") do
         m_log.info("image: %s", img)
-        image_list[#image_list + 1] = img
+        if string.sub(img, 1,2) ~= "._" then  -- skip macos hidden files
+            -- add only image files
+            local ext = string.sub(img, -4)
+            ext = string.lower(ext)
+            if ext == ".jpg" or ext == ".png" or ext == ".bmp" then
+                image_list[#image_list + 1] = img
+            end
+        end
+        -- image_list[#image_list + 1] = img
     end
     collectgarbage()
 
@@ -54,6 +62,7 @@ function M.init(box)
         -- { type="rectangle", x=img_x, y=0, w=img_size, h=img_size, filled=false, color=RED},
         -- { type="label" , x=LP5.x1, y=100, text=function() return "img_size:" .. img_size end },
         { type="image",     x=img_x, y=0, w=img_size, h=img_size, fill=false, file=function() return "/IMAGES/" .. image_list[image_name_idx] end },
+        { type="label" , x=LP5.x1, y=100, text="No images found in dir /IMAGES", color=RED, visible=function() return #image_list == 1 end },
     })
 
     return nil

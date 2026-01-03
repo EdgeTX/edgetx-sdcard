@@ -32,7 +32,7 @@ local ch_bank = nil
 
 local rescue_switch_idx     = getSourceIndex("SH") or getSourceIndex("SA") -- switch SH
 local bank_switch_idx       = getSourceIndex("SA") or getSourceIndex("SA")  -- switch SA
-local tail_gain_switch_idx  = getSourceIndex("S1") or getSourceIndex("SA")  -- 
+local tail_gain_switch_idx  = getSourceIndex("S1") or getSourceIndex("SA")  --
 local arm_switch_idx        = getSourceIndex("SF") or getSourceIndex("SA")  -- switch SF down
 ---------------------------------------------------------------------------------------------------
 local function log(fmt, ...)
@@ -77,8 +77,8 @@ local function apply_preset(preset)
         ch_col  = 6
         ch_tail_gain = 7
         ch_bank   = 8
-        ch_rescue = 9    
-    
+        ch_rescue = 9
+
     -- Goosky S2 Max: AETRLC
     elseif preset == 5 then
         ch_ail  = 1
@@ -96,22 +96,22 @@ apply_preset(channel_type)
 function M.init(box)
     box:build({
         -- order presets
-        { type="setting", x=LP4.x1, y=0*line_height, w=LCD_W, title="Channel Order Preset:", children={
+        { type="setting", x=LP4.x1, y=0*line_height, w=LCD_W, title="Channel Order:", children={
             {type="choice", x=LP4.x2, y=2, w=LP4.w2,
                 title="Channel Order Preset",
                 values={
-                    "--manual--", 
-                    "ELRS:   AECR1T23", 
-                    "FrSky:  AETRC123", 
+                    "--manual--",
+                    "ELRS:   AECR1T23",
+                    "FrSky:  AETRC123",
                     "Futaba: AETR1C23",
                     "Goosky S2 Max: AETRLC",
                 },
                 get=function() return channel_type end,
-                set=function(val) 
-                    channel_type = val 
+                set=function(val)
+                    channel_type = val
                     apply_preset(channel_type)
                 end
-            },        
+            },
         }},
         -- aileron
         { type="setting", x=LP3.x1, y=1*line_height, w=LCD_W, title="Aileron:", children={
@@ -119,7 +119,7 @@ function M.init(box)
                 title="Ail Channel",
                 values=m_utils.channels_list,
                 get=function() return ch_ail end,
-                set=function(val) 
+                set=function(val)
                     ch_ail = val
                     channel_type = 1  -- manual
                 end,
@@ -130,8 +130,8 @@ function M.init(box)
             {type="choice", x=LP3.x2, y=0, w=LP3.w2, title="Elevator Channel",
                 values=m_utils.channels_list,
                 get=function() return ch_ele end,
-                set=function(val) 
-                    ch_ele = val 
+                set=function(val)
+                    ch_ele = val
                     channel_type = 1  -- manual
                 end,
             },
@@ -141,8 +141,8 @@ function M.init(box)
             {type="choice", x=LP3.x2, y=0, w=LP3.w2, title="Collective Channel",
                 values=m_utils.channels_list,
                 get=function() return ch_col end,
-                set=function(val) 
-                    ch_col = val 
+                set=function(val)
+                    ch_col = val
                     channel_type = 1  -- manual
                 end,
             },
@@ -152,8 +152,8 @@ function M.init(box)
             {type="choice", x=LP3.x2, y=0, w=LP3.w2, title="Rudder Channel",
                 values=m_utils.channels_list,
                 get=function() return ch_rud end,
-                set=function(val) 
-                    ch_rud = val 
+                set=function(val)
+                    ch_rud = val
                     channel_type = 1  -- manual
                 end,
             },
@@ -163,8 +163,8 @@ function M.init(box)
             {type="choice", x=LP6.x2, y=0, w=LP6.w2, title="Arm Channel",
                 values=m_utils.channels_list,
                 get=function() return ch_arm end,
-                set=function(val) 
-                    ch_arm = val 
+                set=function(val)
+                    ch_arm = val
                     channel_type = 1  -- manual
                 end,
             },
@@ -179,8 +179,8 @@ function M.init(box)
             {type="choice", x=LP3.x2, y=0, w=LP3.w2, title="Throttle Channel",
                 values=m_utils.channels_list,
                 get=function() return ch_thr end,
-                set=function(val) 
-                    ch_thr = val 
+                set=function(val)
+                    ch_thr = val
                     channel_type = 1  -- manual
                 end,
             },
@@ -190,8 +190,8 @@ function M.init(box)
             {type="choice", x=LP6.x2, y=0, w=LP6.w2, title="Tail Gain Channel",
                 values=m_utils.channels_list,
                 get=function() return ch_tail_gain end,
-                set=function(val) 
-                    ch_tail_gain = val 
+                set=function(val)
+                    ch_tail_gain = val
                     channel_type = 1  -- manual
                 end,
             },
@@ -206,8 +206,8 @@ function M.init(box)
             {type="choice", x=LP6.x2, y=0, w=LP6.w2, title="Bank Channel",
                 values=m_utils.channels_list,
                 get=function() return ch_bank end,
-                set=function(val) 
-                    ch_bank = val 
+                set=function(val)
+                    ch_bank = val
                     -- channel_type = 1  -- manual
                 end,
             },
@@ -222,8 +222,8 @@ function M.init(box)
             {type="choice", x=LP6.x2, y=0, w=LP6.w2, title="Rescue Channel",
                 values=m_utils.channels_list,
                 get=function() return ch_rescue end,
-                set=function(val) 
-                    ch_rescue = val 
+                set=function(val)
+                    ch_rescue = val
                     -- channel_type = 1  -- manual
                 end,
             },
@@ -264,7 +264,7 @@ function M.do_update_model()
     model.insertMix(ch_thr - 1, 0, mixInfo3)
     model.insertMix(ch_thr - 1, 1, mixInfo2)
     model.insertMix(ch_thr - 1, 2, mixInfo1)
-    
+
 
     m_utils.addMix(ch_arm-1, arm_switch_idx, "Arm", 100, 0)
     m_utils.addMix(ch_tail_gain-1, tail_gain_switch_idx, "Tail Gain", 100, 0)
@@ -272,7 +272,7 @@ function M.do_update_model()
     m_utils.addMix(ch_bank-1, bank_switch_idx, "Bank", 100, 0)
 
 
-    
+
     return m_utils.PRESET_RC.OK_CONTINUE
 end
 

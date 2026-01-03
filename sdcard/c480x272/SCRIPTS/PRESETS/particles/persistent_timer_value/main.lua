@@ -18,9 +18,9 @@ local selected_timer_id = 3
 
 ---------------------------------------------------------------------------------------------------
 local Fields = {
-    timer1_hour = { text = 'Hours', x = 160, y = 100 , w = 30, is_visible = 1, default_value = 6, min = 0, max = 1000 },
-    timer1_min  = { text = 'Min'  , x = 220, y = 100 , w = 30, is_visible = 1, default_value = 6, min = 0, max = 60   },
-    timer1_sec  = { text = 'Sec'  , x = 280, y = 100 , w = 30, is_visible = 1, default_value = 6, min = 0, max = 60   },
+    timer1_hour = { text = 'Hours', x = 160, y = 70 , w = 30, is_visible = 1, default_value = 6, min = 0, max = 1000 },
+    timer1_min  = { text = 'Min'  , x = 220, y = 70 , w = 30, is_visible = 1, default_value = 6, min = 0, max = 60   },
+    timer1_sec  = { text = 'Sec'  , x = 280, y = 70 , w = 30, is_visible = 1, default_value = 6, min = 0, max = 60   },
 }
 ---------------------------------------------------------------------------------------------------
 
@@ -84,14 +84,16 @@ function M.init(box)
     local p_min = Fields.timer1_min
     local p_sec = Fields.timer1_sec
 
-    box:build({{type="label", text="original time:", x=240, y=10, color=BLACK},
-        {type="label", x=340, y=10, color=BLACK, text=function() return formatTime2(org_hh, org_mm, org_ss) end},
-        {type="choice",x=50, y=40, w=100, title="Select Timer",
+    box:build({
+        {type="rectangle", x=280, y=3, w=180, h=25, rounded=9, filled=true, color=LIGHTGREY},
+        {type="label", text="original time:", x=290, y=5, color=BLACK},
+        {type="label", x=390, y=5, color=BLACK, text=function() return formatTime2(org_hh, org_mm, org_ss) end},
+        {type="choice",x=50, y=10, w=100, title="Select Timer",
             values=preset_list,
             get=function() return selected_timer_id end,
             set=function(val) selected_timer_id=val end
         },
-        {type="label", text="new time:", x=50, y=90, color=BLACK},
+        {type="label", text="new time:", x=50, y=60, color=BLACK},
         {type="label", text=p_hour.text, x=p_hour.x, y=p_hour.y - 20, color=BLACK},
         {type="numberEdit", x=p_hour.x, y=p_hour.y, w=p_hour.w, min=p_hour.min, max=p_hour.max,
             get=function() return timer_hh end,
@@ -107,8 +109,10 @@ function M.init(box)
             get=function() return timer_ss end,
             set=function(val) timer_ss=val end
         },
-        {type="label", x=180, y=140, color=BLACK, font=m_utils.FS.FONT_16, text=function() return formatTime2(timer_hh, timer_mm, timer_ss) end},
-        {type="label",text="Note: Changing the timer to count up\nNote: Changing the timer to be persistent", x=50, y=190, color=GREY}
+
+        {type="rectangle", x=160, y=110, w=150, h=40, rounded=9, filled=true, color=LIGHTGREY},
+        {type="label", x=200, y=110, color=BLACK, font=m_utils.FS.FONT_16, text=function() return formatTime2(timer_hh, timer_mm, timer_ss) end},
+        {type="label",text="Note: Changing the timer to count up\nNote: Changing the timer to be persistent", x=50, y=160, color=GREY}
     })
 
     return nil

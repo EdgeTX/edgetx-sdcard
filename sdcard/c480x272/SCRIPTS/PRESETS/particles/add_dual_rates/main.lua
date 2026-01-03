@@ -20,13 +20,13 @@ local expo_low = 30
 
 ---------------------------------------------------------------------------------------------------
 local Fields = {
-    dual_rate_switch={ text='Dual Rate switch:', x=180, y=30,  w=80, is_visible=1, default_value=3, avail_values={ "SA", "SB", "SC", "SD", "SE", "SF", "SG", "SH" } },
-    rate_high       ={ text='High Rate:'       , x=180, y=90,  w=50, is_visible=1, default_value=100, min=50, max=100 },
-    expo_high       ={ text=nil                , x=250, y=90,  w=50, is_visible=1, default_value=50 , min=0 , max=100 }, -- expo
-    rate_med        ={ text='Medium Rate:'     , x=180, y=130, w=50, is_visible=1, default_value=75 , min=40, max=90  },
-    expo_med        ={ text=nil                , x=250, y=130, w=50, is_visible=1, default_value=40 , min=0 , max=100 }, -- expo
-    rate_low        ={ text='Low Rate:'        , x=180, y=170, w=50, is_visible=1, default_value=50 , min=30, max=80  },
-    expo_low        ={ text=nil                , x=250, y=170, w=50, is_visible=1, default_value=30 , min=0 , max=100 }, -- expo
+    dual_rate_switch={ text='Dual Rate switch:', x=180, y=10,  w=80, is_visible=1, default_value=3, avail_values={ "SA", "SB", "SC", "SD", "SE", "SF", "SG", "SH" } },
+    rate_high       ={ text='High Rate:'       , x=180, y=65,  w=50, is_visible=1, default_value=100, min=50, max=100 },
+    expo_high       ={ text=nil                , x=250, y=65,  w=50, is_visible=1, default_value=50 , min=0 , max=100 }, -- expo
+    rate_med        ={ text='Medium Rate:'     , x=180, y=100, w=50, is_visible=1, default_value=75 , min=40, max=90  },
+    expo_med        ={ text=nil                , x=250, y=100, w=50, is_visible=1, default_value=40 , min=0 , max=100 }, -- expo
+    rate_low        ={ text='Low Rate:'        , x=180, y=135, w=50, is_visible=1, default_value=50 , min=30, max=80  },
+    expo_low        ={ text=nil                , x=250, y=135, w=50, is_visible=1, default_value=30 , min=0 , max=100 }, -- expo
 }
 ---------------------------------------------------------------------------------------------------
 
@@ -80,8 +80,8 @@ function M.init(box)
 
     box:build({
         -- Column headers
-        {type="label", text="Rate", x=180, y=70, color=BLACK },
-        {type="label", text="Expo", x=250, y=70, color=BLACK},
+        {type="label", text="Rate", x=180, y=45, color=BLACK },
+        {type="label", text="Expo", x=250, y=45, color=BLACK},
         -- Dual Rate Switch
         {type="label", text=Fields.dual_rate_switch.text, x=50, y=Fields.dual_rate_switch.y, color=BLACK},
         {type="choice",
