@@ -316,14 +316,6 @@ end
 
 local function background(widget)
     -- Runs periodically only when widget instance is not visible
-
-    -- Safety check in refresh too
-    if T == nil or type(T) ~= "table" then
-        T = {}
-    end
-
-    -- Update the % telemetry sensor even if not displayed
-    setTelemetryValue(0x0310, 0, 1, getCellTotalPercent(T), 13, 0, "%bat")
 end
 
 local function refresh(widget, event, touchState)
@@ -340,8 +332,6 @@ local function refresh(widget, event, touchState)
         lcd.drawText(0, 0, "No LVGL detected", COLOR_THEME_WARNING)
     end
 
-    -- Create a % telemetry sensor
-    setTelemetryValue(0x0310, 0, 1, getCellTotalPercent(T), 13, 0, "%bat")
 end
 
 return {

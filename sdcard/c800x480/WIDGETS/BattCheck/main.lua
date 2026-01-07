@@ -20,7 +20,7 @@
 -- 3djc & Offer Shmuely
 -- Date: 2022
 -- ver: 0.7
-local version = "v0.7"
+local version = "v0.8"
 
 local _options = {
   { "Sensor", SOURCE, 0   }, -- default to 'Cels'
@@ -365,32 +365,73 @@ end
 --- Zone size: 70x39 1/8th top bar
 local function refreshZoneTiny(wgt)
   local myString = string.format("%2.1fV", wgt.mainValue)
-  lcd.drawText(wgt.zone.x + wgt.zone.w - 25, wgt.zone.y + 5, wgt.cellPercent .. "%", RIGHT + SMLSIZE + wgt.text_color + wgt.no_telem_blink)
-  lcd.drawText(wgt.zone.x + wgt.zone.w - 25, wgt.zone.y + 20, myString, RIGHT + SMLSIZE + wgt.text_color + wgt.no_telem_blink)
+  
+  -- 动态计算电池尺寸和位置，适应不同屏幕尺寸
+  -- 电池宽度：根据zone宽度按比例计算，但限制在合理范围
+  local min_batt_width = 14
+  local max_batt_width = 20
+  local batt_width_ratio = 0.18  -- 占zone宽度的18%
+  local batt_w = math.max(min_batt_width, math.min(max_batt_width, math.floor(wgt.zone.w * batt_width_ratio)))
+  
+  -- 电池位置：从右侧开始，留出安全边距
+  local right_margin = math.max(2, math.floor(wgt.zone.w * 0.02))  -- 右侧边距为zone宽度的2%，最小2像素
+  local batt_x = wgt.zone.w - batt_w - right_margin
+  local batt_y = 9
+  local batt_h = 25
+  
+  -- 文字区域：明确限制在电池左侧，留出安全间距
+  local text_safe_margin = 4  -- 文字和电池之间的安全间距
+  local text_right_x = batt_x - text_safe_margin  -- 文字右对齐的位置
+  
+  -- 动态计算上下文字位置，确保有足够间距
+  local text_line_height = math.max(12, math.floor(wgt.zone.h * 0.35))  -- 行间距至少12像素，或zone高度的35%
+  local text_y1 = math.max(3, math.floor(wgt.zone.h * 0.12))  -- 第一行位置：至少3像素，或zone高度的12%
+  local text_y2 = text_y1 + text_line_height  -- 第二行位置
+  
+  -- 绘制文字（右对齐到text_right_x位置）
+  lcd.drawText(wgt.zone.x + text_right_x, wgt.zone.y + text_y1, wgt.cellPercent .. "%", RIGHT + SMLSIZE + wgt.text_color + wgt.no_telem_blink)
+  lcd.drawText(wgt.zone.x + text_right_x, wgt.zone.y + text_y2, myString, RIGHT + SMLSIZE + wgt.text_color + wgt.no_telem_blink)
 
-  -- draw battery
+  -- 绘制电池
   local batt_color = wgt.options.Color
-  lcd.drawRectangle(wgt.zone.x + 50, wgt.zone.y + 9, 16, 25, batt_color, 2)
-  lcd.drawFilledRectangle(wgt.zone.x + 50 + 4, wgt.zone.y + 7, 6, 3, batt_color)
-  local rect_h = math.floor(25 * wgt.cellPercent / 100)
-  lcd.drawFilledRectangle(wgt.zone.x + 50, wgt.zone.y + 9 + 25 - rect_h, 16, rect_h, batt_color + wgt.no_telem_blink)
+  local terminal_w = math.max(4, batt_w - 10)  -- 正极宽度，至少4像素
+  lcd.drawRectangle(wgt.zone.x + batt_x, wgt.zone.y + batt_y, batt_w, batt_h, batt_color, 2)
+  lcd.drawFilledRectangle(wgt.zone.x + batt_x + (batt_w - terminal_w) / 2, wgt.zone.y + batt_y - 3, terminal_w, 3, batt_color)
+  local rect_h = math.floor(batt_h * wgt.cellPercent / 100)
+  lcd.drawFilledRectangle(wgt.zone.x + batt_x, wgt.zone.y + batt_y + batt_h - rect_h, batt_w, rect_h, batt_color + wgt.no_telem_blink)
 end
 
 --- Zone size: 160x32 1/8th
 local function refreshZoneSmall(wgt)
-  local myBatt = { ["x"] = 0, ["y"] = 0, ["w"] = 155, ["h"] = 35, ["segments_w"] = 25, ["color"] = WHITE, ["cath_w"] = 6, ["cath_h"] = 20 }
+  -- 动态计算电池尺寸，适应不同屏幕尺寸
+  -- 电池宽度：根据zone宽度计算，留出左右边距
+  local batt_margin = 5  -- 左右边距
+  local myBatt_w = math.max(100, wgt.zone.w - batt_margin * 2)  -- 电池宽度，至少100像素
+  local myBatt_h = math.min(35, wgt.zone.h - 2)  -- 电池高度，不超过zone高度-2
+  
+  local myBatt = { 
+    ["x"] = batt_margin, 
+    ["y"] = 0, 
+    ["w"] = myBatt_w, 
+    ["h"] = myBatt_h, 
+    ["segments_w"] = 25, 
+    ["color"] = WHITE, 
+    ["cath_w"] = 6, 
+    ["cath_h"] = 20 
+  }
 
   -- fill battery
   local fill_color = getPercentColor(wgt.cellPercent)
-  lcd.drawGauge(wgt.zone.x, wgt.zone.y, myBatt.w, myBatt.h, wgt.cellPercent, 100, fill_color)
+  lcd.drawGauge(wgt.zone.x + myBatt.x, wgt.zone.y + myBatt.y, myBatt.w, myBatt.h, wgt.cellPercent, 100, fill_color)
 
   -- draw battery
   lcd.drawRectangle(wgt.zone.x + myBatt.x, wgt.zone.y + myBatt.y, myBatt.w, myBatt.h, WHITE, 2)
 
 
-  -- write text
+  -- write text - 动态调整位置以适应电池框
   local topLine = string.format("%2.1fV      %2.0f%%", wgt.mainValue, wgt.cellPercent)
-  lcd.drawText(wgt.zone.x + 20, wgt.zone.y + 2, topLine, MIDSIZE + wgt.text_color + wgt.shadowed + wgt.no_telem_blink)
+  local text_x = wgt.zone.x + myBatt.x + math.min(20, myBatt_w * 0.15)  -- 文字左侧边距，至少20像素或电池宽度的15%
+  lcd.drawText(text_x, wgt.zone.y + 2, topLine, MIDSIZE + wgt.text_color + wgt.shadowed + wgt.no_telem_blink)
 
 end
 
@@ -398,16 +439,30 @@ end
 --- Zone size: 180x70 1/4th  (with sliders/trim)
 --- Zone size: 225x98 1/4th  (no sliders/trim)
 local function refreshZoneMedium(wgt)
-  local myBatt = { ["x"] = 0, ["y"] = 0, ["w"] = 85, ["h"] = 35, ["segments_w"] = 15, ["color"] = WHITE, ["cath_w"] = 6, ["cath_h"] = 20 }
+  -- 动态计算电池大小，适应不同屏幕尺寸
+  -- 电池宽度：根据zone宽度按比例，但保持合理范围
+  local batt_w = math.max(70, math.min(100, math.floor(wgt.zone.w * 0.35)))  -- 电池宽度为zone宽度的35%，限制在70-100像素
+  local batt_h = math.min(35, math.floor(wgt.zone.h * 0.45))  -- 电池高度不超过zone高度的45%，最大35像素
+  
+  local myBatt = { ["x"] = 0, ["y"] = 0, ["w"] = batt_w, ["h"] = batt_h, ["segments_w"] = 15, ["color"] = WHITE, ["cath_w"] = 6, ["cath_h"] = 20 }
 
+  -- 动态计算文字位置，避免上下数据重合
+  -- 主电压值位置：基于zone高度动态计算
+  local main_v_y = math.max(30, math.floor(wgt.zone.h * 0.35))  -- 至少30像素，或zone高度的35%
+  
   -- draw values
-  lcd.drawText(wgt.zone.x, wgt.zone.y + 35, string.format("%2.1fV", wgt.mainValue), DBLSIZE + wgt.text_color + wgt.shadowed + wgt.no_telem_blink)
+  lcd.drawText(wgt.zone.x, wgt.zone.y + main_v_y, string.format("%2.1fV", wgt.mainValue), DBLSIZE + wgt.text_color + wgt.shadowed + wgt.no_telem_blink)
 
   -- more info if 1/4 is high enough (without trim & slider)
+  -- 动态计算附加信息的位置，确保与主电压有足够间距
+  local info_spacing = math.max(25, math.floor(wgt.zone.h * 0.25))  -- 行间距至少25像素，或zone高度的25%
   if wgt.zone.h > 80 then
+    local dV_y = main_v_y + info_spacing
+    local min_y = dV_y + math.max(12, math.floor(info_spacing * 0.5))  -- 第二行和第三行之间也有间距
+    
     --lcd.drawText(wgt.zone.x + 50     , wgt.zone.y + 70, string.format("%2.2fV"   , wgt.secondaryValue), SMLSIZE + wgt.text_color + wgt.no_telem_blink)
-    lcd.drawText(wgt.zone.x, wgt.zone.y + 70, string.format("dV %2.2fV", wgt.cellMax - wgt.cellMin), SMLSIZE + wgt.text_color + wgt.no_telem_blink)
-    lcd.drawText(wgt.zone.x, wgt.zone.y + 84, string.format("Min %2.2fV", wgt.cellDataHistoryCellLowest), SMLSIZE + wgt.text_color + wgt.no_telem_blink)
+    lcd.drawText(wgt.zone.x, wgt.zone.y + dV_y, string.format("dV %2.2fV", wgt.cellMax - wgt.cellMin), SMLSIZE + wgt.text_color + wgt.no_telem_blink)
+    lcd.drawText(wgt.zone.x, wgt.zone.y + min_y, string.format("Min %2.2fV", wgt.cellDataHistoryCellLowest), SMLSIZE + wgt.text_color + wgt.no_telem_blink)
   end
 
   -- fill battery
@@ -440,7 +495,21 @@ local function refreshZoneMedium(wgt)
   -- draw battery
   lcd.drawRectangle(wgt.zone.x + myBatt.x, wgt.zone.y + myBatt.y, myBatt.w, myBatt.h, WHITE, 2)
   lcd.drawFilledRectangle(wgt.zone.x + myBatt.x + myBatt.w, wgt.zone.y + myBatt.h / 2 - myBatt.cath_h / 2, myBatt.cath_w, myBatt.cath_h, WHITE)
-  lcd.drawText(wgt.zone.x + myBatt.x + 20, wgt.zone.y + myBatt.y + 5, string.format("%2.0f%%", wgt.cellPercent), LEFT + MIDSIZE + WHITE + wgt.shadowed)
+  
+  -- 动态计算数字位置，确保完全在电池框内
+  -- 计算文字大小，确定合适的位置
+  local percent_text = string.format("%2.0f%%", wgt.cellPercent)
+  local text_w, text_h = lcd.sizeText(percent_text, MIDSIZE)
+  
+  -- 数字居中在电池框内，留出安全边距
+  local text_x = wgt.zone.x + myBatt.x + (myBatt.w - text_w) / 2  -- 水平居中
+  local text_y = wgt.zone.y + myBatt.y + (myBatt.h - text_h) / 2  -- 垂直居中
+  
+  -- 确保数字不超出电池框边界（至少留出2像素边距）
+  text_x = math.max(wgt.zone.x + myBatt.x + 2, math.min(text_x, wgt.zone.x + myBatt.x + myBatt.w - text_w - 2))
+  text_y = math.max(wgt.zone.y + myBatt.y + 2, math.min(text_y, wgt.zone.y + myBatt.y + myBatt.h - text_h - 2))
+  
+  lcd.drawText(text_x, text_y, percent_text, LEFT + MIDSIZE + WHITE + wgt.shadowed)
 
 end
 
@@ -457,12 +526,14 @@ local function refreshZoneLarge(wgt)
   lcd.drawFilledRectangle(wgt.zone.x + myBatt.x, wgt.zone.y + myBatt.y + myBatt.h + myBatt.cath_h - math.floor(wgt.cellPercent / 100 * myBatt.h), myBatt.w, math.floor(wgt.cellPercent / 100 * myBatt.h), fill_color)
   -- draw cells
   local pos = { { x = 80, y = 90 }, { x = 138, y = 90 }, { x = 80, y = 109 }, { x = 138, y = 109 }, { x = 80, y = 128 }, { x = 138, y = 128 } }
-  for i = 1, wgt.cellCount, 1 do
-    local fill_color = getRangeColor(wgt.cellDataLive[i], wgt.cellMax, wgt.cellMax - 0.2)
-    lcd.drawFilledRectangle(wgt.zone.x + pos[i].x, wgt.zone.y + pos[i].y, 58, 20, fill_color)
+  for i = 1, math.min(wgt.cellCount, #pos), 1 do
+    if pos[i] and wgt.cellDataLive[i] then
+      local fill_color = getRangeColor(wgt.cellDataLive[i], wgt.cellMax, wgt.cellMax - 0.2)
+      lcd.drawFilledRectangle(wgt.zone.x + pos[i].x, wgt.zone.y + pos[i].y, 58, 20, fill_color)
 
-    lcd.drawText(wgt.zone.x + pos[i].x + 10, wgt.zone.y + pos[i].y, string.format("%.2f", wgt.cellDataLive[i]), WHITE + wgt.shadowed)
-    lcd.drawRectangle(wgt.zone.x + pos[i].x, wgt.zone.y + pos[i].y, 59, 20, WHITE, 1)
+      lcd.drawText(wgt.zone.x + pos[i].x + 10, wgt.zone.y + pos[i].y, string.format("%.2f", wgt.cellDataLive[i]), WHITE + wgt.shadowed)
+      lcd.drawRectangle(wgt.zone.x + pos[i].x, wgt.zone.y + pos[i].y, 59, 20, WHITE, 1)
+    end
   end
 
   -- draw battery
@@ -491,20 +562,24 @@ local function refreshAppModeImpl(wgt, x, w, y, h)
 
   -- draw cells
   local pos = { { x = 111, y = 38 }, { x = 164, y = 38 }, { x = 217, y = 38 }, { x = 111, y = 57 }, { x = 164, y = 57 }, { x = 217, y = 57 } }
-  for i = 1, wgt.cellCount, 1 do
-    local cell_color =  getRangeColor(wgt.cellDataLive[i], wgt.cellMax, wgt.cellMax - 0.2)
-    lcd.drawFilledRectangle(x + pos[i].x, y + pos[i].y, 53, 20, cell_color)
-    lcd.drawText(x + pos[i].x + 10, y + pos[i].y, string.format("%.2f", wgt.cellDataLive[i]), WHITE + wgt.shadowed + wgt.no_telem_blink)
-    lcd.drawRectangle(x + pos[i].x, y + pos[i].y, 54, 20, WHITE, 1)
+  for i = 1, math.min(wgt.cellCount, #pos), 1 do
+    if pos[i] and wgt.cellDataLive[i] then
+      local cell_color =  getRangeColor(wgt.cellDataLive[i], wgt.cellMax, wgt.cellMax - 0.2)
+      lcd.drawFilledRectangle(x + pos[i].x, y + pos[i].y, 53, 20, cell_color)
+      lcd.drawText(x + pos[i].x + 10, y + pos[i].y, string.format("%.2f", wgt.cellDataLive[i]), WHITE + wgt.shadowed + wgt.no_telem_blink)
+      lcd.drawRectangle(x + pos[i].x, y + pos[i].y, 54, 20, WHITE, 1)
+    end
   end
   -- draw cells for lowest cells
   local pos = { { x = 111, y = 110 }, { x = 164, y = 110 }, { x = 217, y = 110 }, { x = 111, y = 129 }, { x = 164, y = 129 }, { x = 217, y = 129 } }
-  for i = 1, wgt.cellCount, 1 do
-    local cell_color = getRangeColor(wgt.cellDataHistoryLowest[i], wgt.cellDataLive[i], wgt.cellDataLive[i] - 0.3)
-    lcd.drawFilledRectangle(x + pos[i].x, y + pos[i].y, 53, 20, cell_color)
+  for i = 1, math.min(wgt.cellCount, #pos), 1 do
+    if pos[i] and wgt.cellDataHistoryLowest[i] and wgt.cellDataLive[i] then
+      local cell_color = getRangeColor(wgt.cellDataHistoryLowest[i], wgt.cellDataLive[i], wgt.cellDataLive[i] - 0.3)
+      lcd.drawFilledRectangle(x + pos[i].x, y + pos[i].y, 53, 20, cell_color)
 
-    lcd.drawRectangle(x + pos[i].x, y + pos[i].y, 54, 20, WHITE, 1)
-    lcd.drawText(x + pos[i].x + 10, y + pos[i].y, string.format("%.2f", wgt.cellDataHistoryLowest[i]), WHITE + wgt.shadowed + wgt.no_telem_blink)
+      lcd.drawRectangle(x + pos[i].x, y + pos[i].y, 54, 20, WHITE, 1)
+      lcd.drawText(x + pos[i].x + 10, y + pos[i].y, string.format("%.2f", wgt.cellDataHistoryLowest[i]), WHITE + wgt.shadowed + wgt.no_telem_blink)
+    end
   end
 
   -- draws battery
@@ -589,12 +664,22 @@ local function refresh(wgt, event, touchState)
   local t4 = getUsage();
   if (event ~= nil) then
     refreshAppMode(wgt, event, touchState)
-  elseif wgt.zone.w > 380 and wgt.zone.h > 165 then   refreshZoneXLarge(wgt)
-  elseif wgt.zone.w > 180 and wgt.zone.h > 145 then   refreshZoneLarge(wgt)
-  elseif wgt.zone.w > 170 and wgt.zone.h > 65 then    refreshZoneMedium(wgt)
-  elseif wgt.zone.w > 150 and wgt.zone.h > 28 then    refreshZoneSmall(wgt)
-  elseif wgt.zone.w > 65 and wgt.zone.h > 35 then
-    refreshZoneTiny(wgt)
+  else
+    -- 使用屏幕百分比来判断布局，适应不同屏幕尺寸
+    local w_percent = (wgt.zone.w / LCD_W) * 100  -- 宽度占屏幕百分比
+    local h_percent = (wgt.zone.h / LCD_H) * 100   -- 高度占屏幕百分比
+    
+    if w_percent > 70 and h_percent > 50 then
+      refreshZoneXLarge(wgt)                      --最大这两没区别
+    elseif w_percent > 30 and h_percent > 40 then
+      refreshZoneLarge(wgt)                       --最大这两没区别
+    elseif w_percent > 30 and h_percent > 25 then
+      refreshZoneMedium(wgt)                      --中等大小
+    elseif w_percent > 30 and h_percent > 10 then
+      refreshZoneSmall(wgt)                     --1/4格
+    else  --if w_percent > 15 and h_percent > 15 then
+      refreshZoneTiny(wgt)                        --小屏幕  
+    end
   end
   --cpuProfilerAdd(wgt, 'main-loop-4', t4);
 
