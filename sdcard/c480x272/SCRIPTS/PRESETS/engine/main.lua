@@ -87,6 +87,12 @@ local function log(fmt, ...)
 end
 ---------------------------------------------------------------------------------------------------
 
+local function onPageX()
+  lvgl.confirm({title="Exit", message="Exit?",
+    confirm=(function() exitTool=true end)
+  })
+end
+
 local function build_topbar(prev_state, next_state, isFirstPage)
     -- log("build_topbar(%s)", preset_folder_name)
     if isFirstPage == nil then
@@ -98,6 +104,7 @@ local function build_topbar(prev_state, next_state, isFirstPage)
     local pg = lvgl.page({title="Preset Loader",
         subtitle=function() return preset_info["name"] or "" end,
         backButton=true,
+        back=onPageX,
         -- icon="/SCRIPTS/RF2-dashboards/widgets/img/rf2_logo.png",
         -- flexFlow=lvgl.FLOW_COLUMN,
         -- flexFlow=lvgl.FLOW_ROW,
