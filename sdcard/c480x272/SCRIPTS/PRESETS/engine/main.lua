@@ -155,8 +155,8 @@ local function state_SELECTION_INIT()
     pg.build({
         -- {type="image", x=0, y=0, w=LCD_W, h=LCD_H, file=ImgBackground},
         {type="rectangle", x=20, y=55, w=450, h=43, filled=true, color=lcd.RGB(0x8B8D94), filed=true, rounded=6},
-        {type="label", text="Preset:", x=40, y=65, color=BLACK},
-        {type="choice", x=130, y=60, w=298, title="Select Preset",
+        -- {type="label", text="Preset:", x=90, y=65, color=BLACK},
+        {type="choice", x=100, y=60, w=LCD_W-100-20, title="Select Preset",
             values=preset_list,
             get=function() return preset_selection_idx end,
             set=function(val)
@@ -177,6 +177,9 @@ local function state_SELECTION_INIT()
                 return about
             end
         },
+
+        -- Mr-Eddie
+        {type="image", x=0, y=25, w=100, h=100, file=ENGINE_FOLDER .. "/img/Mr-Eddie.png"},
 
         -- dreaw status bar
         {type="rectangle", x=0, y=LCD_H-22, w=LCD_W, h=22, filled=true, color=lcd.RGB(0x8B8D94), filed=true, rounded=0},
