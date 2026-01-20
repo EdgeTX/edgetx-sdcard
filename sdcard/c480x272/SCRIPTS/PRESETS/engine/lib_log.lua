@@ -1,4 +1,4 @@
-local app_name, script_dir = ...
+local app_name, app_folder = ...
 
 local function is_simulator()
     local _, rv = getVersion()
@@ -11,10 +11,10 @@ local ENABLE_LOG_TO_FILE    = false
 
 local M = {}
 M.app_name = app_name
-M.script_dir = script_dir
+M.app_folder = app_folder
 
 local log = {
-    outfile = script_dir .. "/app.log",
+    outfile = app_folder .. "/app.log",
     enable_file = ENABLE_LOG_TO_FILE,
     enable_console = ENABLE_LOG_TO_CONSOLE,
     current_level = nil,
