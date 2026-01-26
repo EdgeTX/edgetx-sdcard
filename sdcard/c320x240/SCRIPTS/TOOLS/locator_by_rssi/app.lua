@@ -299,7 +299,7 @@ local function build_ui()
             children={
                 {type="image", x=0,y=0,w=LCD_W,h=LCD_H-30, fill=true, file=script_folder.."/locator1.png"},
                 -- {type="rectangle", x=20, y=30+20, w=LCD_W-20*2, h=LCD_H-30-20*2, color=GREY, filled=true, opacity=230},
-                {type="label", x=50, y=170, text="No signal found \nwaiting for: RSSI/1RSS/2RSS", color=RED, font=FS.FONT_12},
+                {type="label", x=30, y=150, text="No signal found \nwaiting for: RSSI/1RSS/2RSS", color=RED, font=FS.FONT_12},
             },
             visible=function()
                 return getRSSI() == 0
@@ -347,4 +347,3 @@ local function main(event, touchState)
 end
 
 return { init=init, run=main }
-
