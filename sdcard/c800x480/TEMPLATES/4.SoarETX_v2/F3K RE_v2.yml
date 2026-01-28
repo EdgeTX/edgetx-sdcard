@@ -1,0 +1,579 @@
+semver: 2.9.1
+header: 
+   name: "F3K RE_v2"
+   bitmap: ""
+   labels: ""
+timers: 
+   0:
+      start: 0
+      swtch: "L16"
+      value: 0
+      mode: ON
+      countdownBeep: 0
+      minuteBeep: 0
+      persistent: 0
+      countdownStart: -1
+      showElapsed: 0
+      extraHaptic: 0
+      name: "Flight"
+   1:
+      start: 0
+      swtch: "L15"
+      value: 0
+      mode: ON
+      countdownBeep: 0
+      minuteBeep: 0
+      persistent: 0
+      countdownStart: -1
+      showElapsed: 0
+      extraHaptic: 0
+      name: "Window"
+telemetryProtocol: 0
+thrTrim: 0
+noGlobalFunctions: 0
+displayTrims: 2
+ignoreSensorIds: 0
+trimInc: 0
+disableThrottleWarning: 1
+displayChecklist: 0
+extendedLimits: 1
+extendedTrims: 0
+throttleReversed: 0
+enableCustomThrottleWarning: 0
+disableTelemetryWarning: 0
+showInstanceIds: 0
+customThrottleWarningPosition: 0
+beepANACenter: 0
+mixData: 
+ -
+   weight: 100
+   destCh: 0
+   srcRaw: I0
+   carryTrim: 0
+   mixWarn: 0
+   mltpx: ADD
+   offset: 0
+   swtch: "NONE"
+   flightModes: 000000000
+   delayUp: 0
+   delayDown: 0
+   speedUp: 0
+   speedDown: 0
+   name: ""
+ -
+   weight: 100
+   destCh: 1
+   srcRaw: I1
+   carryTrim: 0
+   mixWarn: 0
+   mltpx: ADD
+   offset: 0
+   swtch: "NONE"
+   flightModes: 000000000
+   delayUp: 0
+   delayDown: 0
+   speedUp: 0
+   speedDown: 0
+   name: ""
+limitData: 
+   0:
+      min: 0
+      max: 0
+      ppmCenter: 0
+      offset: 0
+      symetrical: 0
+      revert: 0
+      curve: 0
+      name: "Rudd"
+   1:
+      min: 0
+      max: 0
+      ppmCenter: 0
+      offset: 0
+      symetrical: 0
+      revert: 0
+      curve: 0
+      name: "Elev"
+expoData: 
+ -
+   mode: 3
+   scale: 0
+   trimSource: 0
+   srcRaw: Ail
+   chn: 0
+   swtch: "NONE"
+   flightModes: 000000000
+   weight: 100
+   name: "Rudder"
+   offset: 0
+ -
+   mode: 3
+   scale: 0
+   trimSource: 0
+   srcRaw: Ele
+   chn: 1
+   swtch: "NONE"
+   flightModes: 000000000
+   weight: GV7
+   name: "Elevat"
+   offset: 0
+   curve: 
+      type: 1
+      value: GV9
+ -
+   mode: 3
+   scale: 0
+   trimSource: 1
+   srcRaw: S1
+   chn: 2
+   swtch: "NONE"
+   flightModes: 000000000
+   weight: 100
+   name: "Dial"
+   offset: 0
+curves: 
+   31:
+      type: 0
+      smooth: 0
+      points: 0
+      name: "Mem"
+logicalSw: 
+   0:
+      func: FUNC_AND
+      def: "!SA1,NONE"
+      andsw: "L16"
+      delay: 0
+      duration: 0
+   1:
+      func: FUNC_AND
+      def: "SA2,NONE"
+      andsw: "NONE"
+      delay: 0
+      duration: 0
+   2:
+      func: FUNC_AND
+      def: "SB0,NONE"
+      andsw: "NONE"
+      delay: 0
+      duration: 0
+   3:
+      func: FUNC_AND
+      def: "L7,NONE"
+      andsw: "NONE"
+      delay: 0
+      duration: 3
+   4:
+      func: FUNC_AND
+      def: "SD0,NONE"
+      andsw: "NONE"
+      delay: 0
+      duration: 0
+   5:
+      func: FUNC_AND
+      def: "SD2,NONE"
+      andsw: "L1"
+      delay: 0
+      duration: 0
+   6:
+      func: FUNC_OR
+      def: "SF2,L4"
+      andsw: "NONE"
+      delay: 0
+      duration: 0
+   7:
+      func: FUNC_AND
+      def: "SH2,NONE"
+      andsw: "NONE"
+      delay: 0
+      duration: 0
+   9:
+      func: FUNC_ADIFFEGREATER
+      def: "Ail,6"
+      andsw: "NONE"
+      delay: 0
+      duration: 0
+   10:
+      func: FUNC_ADIFFEGREATER
+      def: "Ele,6"
+      andsw: "NONE"
+      delay: 0
+      duration: 0
+   11:
+      func: FUNC_OR
+      def: "L10,L11"
+      andsw: "NONE"
+      delay: 0
+      duration: 0
+   12:
+      func: FUNC_STICKY
+      def: "FM1,L12"
+      andsw: "NONE"
+      delay: 0
+      duration: 0
+   14:
+      func: FUNC_STICKY
+      def: "L15,NONE"
+      andsw: "NONE"
+      delay: 0
+      duration: 0
+   15:
+      func: FUNC_STICKY
+      def: "L16,NONE"
+      andsw: "NONE"
+      delay: 0
+      duration: 0
+   17:
+      func: FUNC_OR
+      def: "FM1,FM2"
+      andsw: "NONE"
+      delay: 0
+      duration: 0
+   18:
+      func: FUNC_AND
+      def: "L18,L16"
+      andsw: "L8"
+      delay: 0
+      duration: 0
+   19:
+      func: FUNC_AND
+      def: "!L19,L16"
+      andsw: "L8"
+      delay: 0
+      duration: 0
+customFn: 
+   0:
+      swtch: "L2"
+      func: VARIO
+      def: ""
+   1:
+      swtch: "L5"
+      func: PLAY_VALUE
+      def: "TIMER2,10"
+   2:
+      swtch: "L19"
+      func: LOGS
+      def: "10"
+   3:
+      swtch: "L20"
+      func: LOGS
+      def: "100"
+   4:
+      swtch: "FM0"
+      func: PLAY_TRACK
+      def: "cruise,1x"
+   5:
+      swtch: "FM3"
+      func: PLAY_TRACK
+      def: "speed,1x"
+flightModeData: 
+   0:
+      name: "Cruise"
+      swtch: "NONE"
+      fadeIn: 0
+      fadeOut: 0
+      gvars: 
+         0:
+            val: 0
+         1:
+            val: 0
+         2:
+            val: 0
+         3:
+            val: 0
+         4:
+            val: 0
+         5:
+            val: 0
+         6:
+            val: 100
+         7:
+            val: 0
+         8:
+            val: 50
+   1:
+      trim: 
+         0:
+            value: 40
+            mode: 1
+         1:
+            value: -60
+            mode: 2
+         2:
+            value: 0
+            mode: 2
+         3:
+            value: 0
+            mode: 1
+      name: "Launch"
+      swtch: "L7"
+      fadeIn: 0
+      fadeOut: 0
+   2:
+      trim: 
+         0:
+            value: 20
+            mode: 1
+         1:
+            value: 20
+            mode: 1
+         2:
+            value: 0
+            mode: 31
+         3:
+            value: 0
+            mode: 1
+      name: "Zoom"
+      swtch: "L13"
+      fadeIn: 0
+      fadeOut: 0
+   3:
+      trim: 
+         1:
+            value: 20
+            mode: 1
+         2:
+            value: 0
+            mode: 31
+      name: "Speed"
+      swtch: "L3"
+      fadeIn: 0
+      fadeOut: 0
+      gvars: 
+         6:
+            val: 100
+         8:
+            val: 50
+thrTraceSrc: Thr
+switchWarningState: 
+gvars: 
+   6:
+      name: "Ele"
+      min: 0
+      max: 0
+      popup: 0
+      prec: 0
+      unit: 0
+   8:
+      name: "Exp"
+      min: 0
+      max: 0
+      popup: 0
+      prec: 0
+      unit: 0
+varioData: 
+   source: 6
+   centerSilent: 0
+   centerMax: 0
+   centerMin: 0
+   min: 0
+   max: 0
+rssiSource: none
+rfAlarms: 
+   warning: 45
+   critical: 42
+thrTrimSw: 0
+potsWarnMode: WARN_OFF
+jitterFilter: GLOBAL
+failsafeChannels: 
+   4:
+      val: 1024
+   5:
+      val: -1024
+   6:
+      val: -1024
+trainerData: 
+   mode: MASTER_TRAINER_JACK
+   channelsStart: 0
+   channelsCount: -8
+   frameLength: 0
+   delay: 0
+   pulsePol: 0
+inputNames: 
+   0:
+      val: "Rudd"
+   1:
+      val: "Elev"
+   2:
+      val: "Pokr"
+potsWarnEnabled: 0
+screenData: 
+   0:
+      LayoutId: "Layout1x1"
+      layoutData: 
+         zones: 
+            0:
+               widgetName: "SoarETX"
+               widgetData: 
+                  options: 
+                     0:
+                        type: Signed
+                        value: 
+                           signedValue: 1
+                     1:
+                        type: String
+                        value: 
+                           stringValue: "f3k"
+                     2:
+                        type: String
+                        value: 
+                           stringValue: ""
+         options: 
+            0:
+               type: Bool
+               value: 
+                  boolValue: 1
+            1:
+               type: Bool
+               value: 
+                  boolValue: 1
+            2:
+               type: Bool
+               value: 
+                  boolValue: 0
+            3:
+               type: Bool
+               value: 
+                  boolValue: 1
+            4:
+               type: Bool
+               value: 
+                  boolValue: 0
+   1:
+      LayoutId: "Layout2x3"
+      layoutData: 
+         zones: 
+            0:
+               widgetName: "SoarETX"
+               widgetData: 
+                  options: 
+                     0:
+                        type: Signed
+                        value: 
+                           signedValue: 2
+                     1:
+                        type: String
+                        value: 
+                           stringValue: "outputs"
+                     2:
+                        type: String
+                        value: 
+                           stringValue: "F3K_RE"
+            1:
+               widgetName: "SoarETX"
+               widgetData: 
+                  options: 
+                     0:
+                        type: Signed
+                        value: 
+                           signedValue: 2
+                     1:
+                        type: String
+                        value: 
+                           stringValue: "mixes"
+                     2:
+                        type: String
+                        value: 
+                           stringValue: "F3K_RE"
+            3:
+               widgetName: "SoarETX"
+               widgetData: 
+                  options: 
+                     0:
+                        type: Signed
+                        value: 
+                           signedValue: 2
+                     1:
+                        type: String
+                        value: 
+                           stringValue: "graph"
+                     2:
+                        type: String
+                        value: 
+                           stringValue: "F3K_RE"
+            5:
+               widgetName: "SoarETX"
+               widgetData: 
+                  options: 
+                     0:
+                        type: Signed
+                        value: 
+                           signedValue: 2
+                     1:
+                        type: String
+                        value: 
+                           stringValue: "switch"
+                     2:
+                        type: String
+                        value: 
+                           stringValue: "F3K_RE"
+         options: 
+            0:
+               type: Bool
+               value: 
+                  boolValue: 1
+            1:
+               type: Bool
+               value: 
+                  boolValue: 1
+            2:
+               type: Bool
+               value: 
+                  boolValue: 0
+            3:
+               type: Bool
+               value: 
+                  boolValue: 1
+            4:
+               type: Bool
+               value: 
+                  boolValue: 0
+topbarData: 
+   zones: 
+      0:
+         widgetName: "SoarETX"
+         widgetData: 
+            options: 
+               0:
+                  type: Signed
+                  value: 
+                     signedValue: 1
+               1:
+                  type: String
+                  value: 
+                     stringValue: "name"
+               2:
+                  type: String
+                  value: 
+                     stringValue: ""
+      3:
+         widgetName: "SoarETX"
+         widgetData: 
+            options: 
+               0:
+                  type: Signed
+                  value: 
+                     signedValue: 1
+               1:
+                  type: String
+                  value: 
+                     stringValue: "battery"
+               2:
+                  type: String
+                  value: 
+                     stringValue: ""
+view: 1
+modelRegistrationID: "670112G-"
+usbJoystickExtMode: 0
+usbJoystickIfMode: JOYSTICK
+usbJoystickCircularCut: 0
+radioThemesDisabled: GLOBAL
+radioGFDisabled: GLOBAL
+radioTrainerDisabled: GLOBAL
+modelHeliDisabled: GLOBAL
+modelFMDisabled: GLOBAL
+modelCurvesDisabled: GLOBAL
+modelGVDisabled: GLOBAL
+modelLSDisabled: GLOBAL
+modelSFDisabled: GLOBAL
+modelCustomScriptsDisabled: GLOBAL
+modelTelemetryDisabled: GLOBAL
