@@ -1,0 +1,1 @@
+DLG model with "traditional" mixes, but the same features as the advanced F3K model.

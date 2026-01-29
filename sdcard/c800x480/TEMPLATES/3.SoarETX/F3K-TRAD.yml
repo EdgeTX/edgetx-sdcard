@@ -1,0 +1,1192 @@
+header:
+  name: F3K-TRAD
+  bitmap: ""
+timers:
+  0:
+    swtch: L16
+    mode: ON
+    name: Flight
+    minuteBeep: 0
+    countdownBeep: 0
+    start: 0
+    persistent: 0
+    countdownStart: -1
+    value: 0
+  1:
+    swtch: L15
+    mode: ON
+    name: Window
+    minuteBeep: 0
+    countdownBeep: 0
+    start: 0
+    persistent: 0
+    countdownStart: -1
+    value: 0
+noGlobalFunctions: 0
+thrTrim: 0
+trimInc: 0
+displayTrims: 2
+ignoreSensorIds: 0
+disableThrottleWarning: 1
+enableCustomThrottleWarning: 0
+customThrottleWarningPosition: 0
+beepANACenter: 0
+extendedLimits: 1
+extendedTrims: 0
+throttleReversed: 0
+flightModeData:
+  0:
+    trim:
+      2:
+        value: -20
+        mode: 0
+    name: Cruise
+    fadeIn: 0
+    fadeOut: 0
+    gvars:
+      0:
+        val: 66
+      1:
+        val: 67
+      2:
+        val: 10
+      4:
+        val: 12
+      5:
+        val: 25
+      6:
+        val: 100
+      7:
+        val: 100
+      8:
+        val: 50
+  1:
+    trim:
+      0:
+        value: 0
+        mode: 1
+      1:
+        value: -60
+        mode: 2
+      2:
+        value: 0
+        mode: 2
+      3:
+        value: 0
+        mode: 1
+    swtch: L7
+    name: Launch
+    fadeIn: 0
+    fadeOut: 0
+  2:
+    trim:
+      0:
+        value: 0
+        mode: 1
+      1:
+        value: 0
+        mode: 1
+      2:
+        value: 0
+        mode: 31
+      3:
+        value: 0
+        mode: 1
+    swtch: L21
+    name: Zoom
+    fadeIn: 0
+    fadeOut: 0
+  3:
+    trim:
+      1:
+        value: 0
+        mode: 1
+      2:
+        value: 0
+        mode: 31
+    swtch: L3
+    name: Speed
+    fadeIn: 0
+    fadeOut: 0
+    gvars:
+      6:
+        val: 100
+      7:
+        val: 100
+      8:
+        val: 50
+  4:
+    trim:
+      1:
+        value: 0
+        mode: 1
+      2:
+        value: -40
+        mode: 8
+    swtch: L4
+    name: Float
+    fadeIn: 0
+    fadeOut: 0
+    gvars:
+      6:
+        val: 100
+      7:
+        val: 100
+      8:
+        val: 50
+mixData:
+  - destCh: 0
+    srcRaw: I0
+    weight: 100
+    swtch: NONE
+    curve:
+      type: 0
+      value: 0
+    delayUp: 0
+    delayDown: 0
+    speedUp: 0
+    speedDown: 0
+    carryTrim: 0
+    mltpx: ADD
+    mixWarn: 0
+    flightModes: 000000000
+    offset: 0
+    name: ""
+  - destCh: 0
+    srcRaw: I2
+    weight: GV3
+    swtch: NONE
+    curve:
+      type: 0
+      value: 0
+    delayUp: 0
+    delayDown: 0
+    speedUp: 0
+    speedDown: 0
+    carryTrim: 1
+    mltpx: ADD
+    mixWarn: 0
+    flightModes: 000000000
+    offset: 0
+    name: AilRud
+  - destCh: 1
+    srcRaw: I1
+    weight: 100
+    swtch: NONE
+    curve:
+      type: 0
+      value: 0
+    delayUp: 0
+    delayDown: 0
+    speedUp: 0
+    speedDown: 0
+    carryTrim: 0
+    mltpx: ADD
+    mixWarn: 0
+    flightModes: 000000000
+    offset: 0
+    name: ""
+  - destCh: 1
+    srcRaw: ch(29)
+    weight: -GV5
+    swtch: NONE
+    curve:
+      type: 3
+      value: 3
+    delayUp: 0
+    delayDown: 0
+    speedUp: 0
+    speedDown: 0
+    carryTrim: 0
+    mltpx: ADD
+    mixWarn: 0
+    flightModes: 000000000
+    offset: GV5
+    name: BrkEle
+  - destCh: 2
+    srcRaw: I2
+    weight: GV1
+    swtch: "!L13"
+    curve:
+      type: 0
+      value: -GV4
+    delayUp: 0
+    delayDown: 0
+    speedUp: 0
+    speedDown: 0
+    carryTrim: 0
+    mltpx: ADD
+    mixWarn: 0
+    flightModes: 000000000
+    offset: 0
+    name: ""
+  - destCh: 2
+    srcRaw: ch(31)
+    weight: -100
+    swtch: NONE
+    curve:
+      type: 0
+      value: 0
+    delayUp: 0
+    delayDown: 0
+    speedUp: 0
+    speedDown: 0
+    carryTrim: 0
+    mltpx: ADD
+    mixWarn: 0
+    flightModes: 000000000
+    offset: 0
+    name: ""
+  - destCh: 3
+    srcRaw: I2
+    weight: GV1
+    swtch: "!L13"
+    curve:
+      type: 0
+      value: GV4
+    delayUp: 0
+    delayDown: 0
+    speedUp: 0
+    speedDown: 0
+    carryTrim: 0
+    mltpx: ADD
+    mixWarn: 0
+    flightModes: 000000000
+    offset: 0
+    name: ""
+  - destCh: 3
+    srcRaw: ch(31)
+    weight: 100
+    swtch: NONE
+    curve:
+      type: 0
+      value: 0
+    delayUp: 0
+    delayDown: 0
+    speedUp: 0
+    speedDown: 0
+    carryTrim: 0
+    mltpx: ADD
+    mixWarn: 0
+    flightModes: 000000000
+    offset: 0
+    name: ""
+  - destCh: 29
+    srcRaw: I3
+    weight: 100
+    swtch: NONE
+    curve:
+      type: 3
+      value: 6
+    delayUp: 0
+    delayDown: 0
+    speedUp: 0
+    speedDown: 0
+    carryTrim: 0
+    mltpx: ADD
+    mixWarn: 0
+    flightModes: 000000000
+    offset: 0
+    name: ""
+  - destCh: 29
+    srcRaw: MAX
+    weight: 100
+    swtch: L25
+    curve:
+      type: 0
+      value: 0
+    delayUp: 0
+    delayDown: 0
+    speedUp: 0
+    speedDown: 0
+    carryTrim: 0
+    mltpx: REPL
+    mixWarn: 0
+    flightModes: 000000000
+    offset: 0
+    name: BrkOff
+  - destCh: 30
+    srcRaw: I5
+    weight: 10
+    swtch: NONE
+    curve:
+      type: 3
+      value: 6
+    delayUp: 0
+    delayDown: 0
+    speedUp: 0
+    speedDown: 0
+    carryTrim: 0
+    mltpx: ADD
+    mixWarn: 0
+    flightModes: 011001111
+    offset: -10
+    name: Slider
+  - destCh: 30
+    srcRaw: I4
+    weight: 100
+    swtch: NONE
+    curve:
+      type: 0
+      value: 0
+    delayUp: 0
+    delayDown: 0
+    speedUp: 0
+    speedDown: 0
+    carryTrim: 0
+    mltpx: ADD
+    mixWarn: 0
+    flightModes: 000000000
+    offset: 0
+    name: ""
+  - destCh: 30
+    srcRaw: I1
+    weight: GV6
+    swtch: NONE
+    curve:
+      type: 3
+      value: 4
+    delayUp: 0
+    delayDown: 0
+    speedUp: 0
+    speedDown: 0
+    carryTrim: 0
+    mltpx: ADD
+    mixWarn: 0
+    flightModes: 000000000
+    offset: 0
+    name: SnpFlp
+  - destCh: 31
+    srcRaw: ch(29)
+    weight: GV2
+    swtch: NONE
+    curve:
+      type: 0
+      value: 0
+    delayUp: 0
+    delayDown: 0
+    speedUp: 0
+    speedDown: 0
+    carryTrim: 0
+    mltpx: ADD
+    mixWarn: 0
+    flightModes: 000000000
+    offset: 0
+    name: Brake
+  - destCh: 31
+    srcRaw: MAX
+    weight: GV2
+    swtch: NONE
+    curve:
+      type: 0
+      value: 0
+    delayUp: 0
+    delayDown: 0
+    speedUp: 0
+    speedDown: 0
+    carryTrim: 0
+    mltpx: ADD
+    mixWarn: 0
+    flightModes: 000000000
+    offset: -100
+    name: Offset
+  - destCh: 31
+    srcRaw: ch(30)
+    weight: 100
+    swtch: "!L13"
+    curve:
+      type: 0
+      value: 0
+    delayUp: 0
+    delayDown: 0
+    speedUp: 0
+    speedDown: 0
+    carryTrim: 0
+    mltpx: ADD
+    mixWarn: 0
+    flightModes: 000000000
+    offset: 0
+    name: Camber
+  - destCh: 31
+    srcRaw: I6
+    weight: 100
+    swtch: L11
+    curve:
+      type: 0
+      value: 0
+    delayUp: 0
+    delayDown: 0
+    speedUp: 0
+    speedDown: 0
+    carryTrim: 0
+    mltpx: REPL
+    mixWarn: 0
+    flightModes: 000000000
+    offset: 0
+    name: Align
+limitData:
+  0:
+    min: 0
+    max: 0
+    revert: 0
+    offset: 0
+    ppmCenter: 0
+    symetrical: 0
+    name: Rudd
+    curve: 0
+  1:
+    min: 0
+    max: 0
+    revert: 0
+    offset: 0
+    ppmCenter: 0
+    symetrical: 0
+    name: Elev
+    curve: 0
+  2:
+    min: 0
+    max: 0
+    revert: 0
+    offset: 0
+    ppmCenter: 0
+    symetrical: 0
+    name: Left
+    curve: 1
+  3:
+    min: 0
+    max: 0
+    revert: 0
+    offset: 0
+    ppmCenter: 0
+    symetrical: 0
+    name: Right
+    curve: 2
+  4:
+    min: 0
+    max: 0
+    revert: 0
+    offset: 0
+    ppmCenter: 0
+    symetrical: 0
+    name: ""
+    curve: 0
+  5:
+    min: 0
+    max: 0
+    revert: 0
+    offset: 0
+    ppmCenter: 0
+    symetrical: 0
+    name: ""
+    curve: 0
+  6:
+    min: 0
+    max: 0
+    revert: 0
+    offset: 0
+    ppmCenter: 0
+    symetrical: 0
+    name: ""
+    curve: 0
+expoData:
+  - srcRaw: Rud
+    scale: 0
+    mode: 3
+    chn: 0
+    swtch: NONE
+    flightModes: 000000000
+    weight: 100
+    offset: 0
+    curve:
+      type: 0
+      value: 0
+    carryTrim: 0
+    name: Rudder
+  - srcRaw: Ele
+    scale: 0
+    mode: 3
+    chn: 1
+    swtch: NONE
+    flightModes: 000000000
+    weight: GV7
+    offset: 0
+    curve:
+      type: 1
+      value: GV9
+    carryTrim: 0
+    name: Elevat
+  - srcRaw: Ail
+    scale: 0
+    mode: 3
+    chn: 2
+    swtch: NONE
+    flightModes: 000000000
+    weight: GV8
+    offset: 0
+    curve:
+      type: 1
+      value: GV9
+    carryTrim: 0
+    name: Ailero
+  - srcRaw: Thr
+    scale: 0
+    mode: 3
+    chn: 3
+    swtch: NONE
+    flightModes: 000000000
+    weight: 100
+    offset: 0
+    curve:
+      type: 0
+      value: 0
+    carryTrim: 1
+    name: Brake
+  - srcRaw: TrimThr
+    scale: 0
+    mode: 3
+    chn: 4
+    swtch: NONE
+    flightModes: 000000000
+    weight: 50
+    offset: 0
+    curve:
+      type: 0
+      value: -100
+    carryTrim: 1
+    name: CambPs
+  - srcRaw: MAX
+    scale: 0
+    mode: 3
+    chn: 5
+    swtch: NONE
+    flightModes: 000000000
+    weight: 100
+    offset: 0
+    curve:
+      type: 0
+      value: 0
+    carryTrim: 1
+    name: Camber
+  - srcRaw: Thr
+    scale: 0
+    mode: 3
+    chn: 6
+    swtch: NONE
+    flightModes: 000000000
+    weight: 100
+    offset: 0
+    curve:
+      type: 3
+      value: 7
+    carryTrim: 1
+    name: Align
+  - srcRaw: S1
+    scale: 0
+    mode: 3
+    chn: 7
+    swtch: NONE
+    flightModes: 000000000
+    weight: 100
+    offset: 0
+    curve:
+      type: 0
+      value: 0
+    carryTrim: 1
+    name: Dial
+inputNames:
+  0:
+    val: Rudd
+  1:
+    val: Elev
+  2:
+    val: Aile
+  3:
+    val: Brk
+  4:
+    val: CbPS
+  5:
+    val: Cmb
+  6:
+    val: Aln
+  7:
+    val: Pokr
+curves:
+  0:
+    type: 0
+    smooth: 1
+    points: 0
+    name: Lft
+  1:
+    type: 0
+    smooth: 1
+    points: 0
+    name: Rgt
+  2:
+    type: 0
+    smooth: 0
+    points: -2
+    name: BrF
+  3:
+    type: 1
+    smooth: 0
+    points: -1
+    name: Snp
+  4:
+    type: 0
+    smooth: 0
+    points: -2
+    name: Abs
+  5:
+    type: 1
+    smooth: 0
+    points: -2
+    name: DB
+  6:
+    type: 1
+    smooth: 0
+    points: 5
+    name: Aln
+  31:
+    type: 0
+    smooth: 0
+    points: 0
+    name: Mem
+points:
+  0:
+    val: -100
+  1:
+    val: -50
+  2:
+    val: 0
+  3:
+    val: 50
+  4:
+    val: 100
+  5:
+    val: -100
+  6:
+    val: -50
+  7:
+    val: 0
+  8:
+    val: 50
+  9:
+    val: 100
+  10:
+    val: -100
+  11:
+    val: 50
+  12:
+    val: 100
+  13:
+    val: -100
+  14:
+    val: -100
+  15:
+    val: 0
+  16:
+    val: 0
+  17:
+    val: -50
+  18:
+    val: 0
+  19:
+    val: 100
+  20:
+    val: 0
+  21:
+    val: 100
+  22:
+    val: -100
+  23:
+    val: 100
+  24:
+    val: 100
+  25:
+    val: 90
+  26:
+    val: -100
+  27:
+    val: -100
+  28:
+    val: -50
+  29:
+    val: -50
+  30:
+    val: 0
+  31:
+    val: 0
+  32:
+    val: 50
+  33:
+    val: 50
+  34:
+    val: 100
+  35:
+    val: 100
+  36:
+    val: -75
+  37:
+    val: -75
+  38:
+    val: -25
+  39:
+    val: -25
+  40:
+    val: 25
+  41:
+    val: 25
+  42:
+    val: 75
+  43:
+    val: 75
+  164:
+    val: 0
+  165:
+    val: 0
+  166:
+    val: 0
+  167:
+    val: 0
+  168:
+    val: 0
+logicalSw:
+  0:
+    func: FUNC_AND
+    def: "!SA1,NONE"
+    delay: 0
+    duration: 0
+    andsw: L16
+  1:
+    func: FUNC_AND
+    def: SA2,NONE
+    delay: 0
+    duration: 0
+    andsw: NONE
+  2:
+    func: FUNC_AND
+    def: SB0,NONE
+    delay: 0
+    duration: 0
+    andsw: NONE
+  3:
+    func: FUNC_AND
+    def: SB2,NONE
+    delay: 0
+    duration: 0
+    andsw: NONE
+  4:
+    func: FUNC_AND
+    def: SD0,NONE
+    delay: 0
+    duration: 0
+    andsw: NONE
+  5:
+    func: FUNC_AND
+    def: SD2,NONE
+    delay: 0
+    duration: 0
+    andsw: L1
+  6:
+    func: FUNC_OR
+    def: SF2,L9
+    delay: 0
+    duration: 0
+    andsw: NONE
+  7:
+    func: FUNC_AND
+    def: SH2,NONE
+    delay: 0
+    duration: 0
+    andsw: NONE
+  8:
+    func: FUNC_AND
+    def: L7,NONE
+    delay: 0
+    duration: 3
+    andsw: NONE
+  10:
+    func: FUNC_STICKY
+    def: L11,NONE
+    delay: 0
+    duration: 0
+    andsw: NONE
+  11:
+    func: FUNC_STICKY
+    def: L12,NONE
+    delay: 0
+    duration: 0
+    andsw: NONE
+  12:
+    func: FUNC_OR
+    def: L11,L12
+    delay: 0
+    duration: 0
+    andsw: NONE
+  14:
+    func: FUNC_STICKY
+    def: L15,NONE
+    delay: 0
+    duration: 0
+    andsw: NONE
+  15:
+    func: FUNC_STICKY
+    def: L16,NONE
+    delay: 0
+    duration: 0
+    andsw: NONE
+  17:
+    func: FUNC_ADIFFEGREATER
+    def: Ail,6
+    delay: 0
+    duration: 0
+    andsw: NONE
+  18:
+    func: FUNC_ADIFFEGREATER
+    def: Ele,6
+    delay: 0
+    duration: 0
+    andsw: NONE
+  19:
+    func: FUNC_OR
+    def: L18,L19
+    delay: 0
+    duration: 0
+    andsw: NONE
+  20:
+    func: FUNC_STICKY
+    def: FM1,L20
+    delay: 0
+    duration: 0
+    andsw: NONE
+  22:
+    func: FUNC_VPOS
+    def: I3,90
+    delay: 0
+    duration: 0
+    andsw: "!FM1"
+  23:
+    func: FUNC_STICKY
+    def: FM1,L23
+    delay: 0
+    duration: 0
+    andsw: NONE
+  24:
+    func: FUNC_OR
+    def: L24,L13
+    delay: 0
+    duration: 0
+    andsw: NONE
+  25:
+    func: FUNC_AND
+    def: "!FM1,L24"
+    delay: 30
+    duration: 0
+    andsw: "!L23"
+  27:
+    func: FUNC_OR
+    def: FM1,FM2
+    delay: 0
+    duration: 0
+    andsw: NONE
+  28:
+    func: FUNC_AND
+    def: L28,L16
+    delay: 0
+    duration: 0
+    andsw: L8
+  29:
+    func: FUNC_AND
+    def: "!L29,L16"
+    delay: 0
+    duration: 0
+    andsw: L8
+customFn:
+  0:
+    swtch: L2
+    func: VARIO
+  1:
+    swtch: L5
+    func: PLAY_VALUE
+    def: TIMER2,10
+  2:
+    swtch: L26
+    func: PLAY_TRACK
+    def: flapup,5
+  3:
+    swtch: L29
+    func: LOGS
+    def: 10
+  4:
+    swtch: L30
+    func: LOGS
+    def: 100
+swashR:
+  type: TYPE_NONE
+  value: 0
+  collectiveSource: NONE
+  aileronSource: NONE
+  elevatorSource: NONE
+  collectiveWeight: 0
+  aileronWeight: 0
+  elevatorWeight: 0
+thrTraceSrc: Thr
+switchWarningState: ""
+thrTrimSw: 0
+potsWarnMode: WARN_OFF
+jitterFilter: GLOBAL
+potsWarnEnabled: 0
+displayChecklist: 0
+gvars:
+  0:
+    name: Ail
+    min: 0
+    max: 0
+    popup: 0
+    prec: 0
+    unit: 0
+  1:
+    name: Brk
+    min: 0
+    max: 0
+    popup: 0
+    prec: 0
+    unit: 0
+  2:
+    name: AiR
+    min: 0
+    max: 0
+    popup: 0
+    prec: 0
+    unit: 0
+  3:
+    name: Dif
+    min: 0
+    max: 0
+    popup: 0
+    prec: 0
+    unit: 0
+  4:
+    name: BkE
+    min: 0
+    max: 0
+    popup: 0
+    prec: 0
+    unit: 0
+  5:
+    name: Snp
+    min: 0
+    max: 0
+    popup: 0
+    prec: 0
+    unit: 0
+  6:
+    name: Ele
+    min: 0
+    max: 0
+    popup: 0
+    prec: 0
+    unit: 0
+  7:
+    name: Ail
+    min: 0
+    max: 0
+    popup: 0
+    prec: 0
+    unit: 0
+  8:
+    name: Exp
+    min: 0
+    max: 0
+    popup: 0
+    prec: 0
+    unit: 0
+telemetryProtocol: 0
+varioData:
+  source: 6
+  centerSilent: 0
+  centerMax: 0
+  centerMin: 0
+  min: 0
+  max: 0
+rssiSource: none
+rssiAlarms:
+  disabled: 0
+  warning: 0
+  critical: 0
+failsafeChannels:
+  4:
+    val: 1024
+  5:
+    val: -1024
+  6:
+    val: -1024
+trainerData:
+  mode: MASTER_TRAINER_JACK
+  channelsStart: 0
+  channelsCount: -8
+  frameLength: 0
+  delay: 0
+  pulsePol: 0
+screenData:
+  0:
+    LayoutId: Layout1x1
+    layoutData:
+      zones:
+        0:
+          widgetName: SoarETX
+          widgetData:
+            options:
+              0:
+                type: Signed
+                value:
+                  signedValue: 1
+              1:
+                type: String
+                value:
+                  stringValue: f3k
+      options:
+        0:
+          type: Bool
+          value:
+            boolValue: 1
+        1:
+          type: Bool
+          value:
+            boolValue: 1
+        2:
+          type: Bool
+          value:
+            boolValue: 0
+        3:
+          type: Bool
+          value:
+            boolValue: 1
+        4:
+          type: Bool
+          value:
+            boolValue: 0
+  1:
+    LayoutId: Layout2x3
+    layoutData:
+      zones:
+        0:
+          widgetName: SoarETX
+          widgetData:
+            options:
+              0:
+                type: Signed
+                value:
+                  signedValue: 1
+              1:
+                type: String
+                value:
+                  stringValue: outputs
+        1:
+          widgetName: SoarETX
+          widgetData:
+            options:
+              0:
+                type: Signed
+                value:
+                  signedValue: 1
+              1:
+                type: String
+                value:
+                  stringValue: wing2
+        2:
+          widgetName: SoarETX
+          widgetData:
+            options:
+              0:
+                type: Signed
+                value:
+                  signedValue: 1
+              1:
+                type: String
+                value:
+                  stringValue: f3k_mix
+        3:
+          widgetName: SoarETX
+          widgetData:
+            options:
+              0:
+                type: Signed
+                value:
+                  signedValue: 1
+              1:
+                type: String
+                value:
+                  stringValue: f3k_ctr
+        4:
+          widgetName: SoarETX
+          widgetData:
+            options:
+              0:
+                type: Signed
+                value:
+                  signedValue: 1
+              1:
+                type: String
+                value:
+                  stringValue: graph
+        5:
+          widgetName: SoarETX
+          widgetData:
+            options:
+              0:
+                type: Signed
+                value:
+                  signedValue: 1
+              1:
+                type: String
+                value:
+                  stringValue: f3k_sw
+      options:
+        0:
+          type: Bool
+          value:
+            boolValue: 1
+        1:
+          type: Bool
+          value:
+            boolValue: 1
+        2:
+          type: Bool
+          value:
+            boolValue: 0
+        3:
+          type: Bool
+          value:
+            boolValue: 1
+        4:
+          type: Bool
+          value:
+            boolValue: 0
+topbarData:
+  zones:
+    0:
+      widgetName: SoarETX
+      widgetData:
+        options:
+          0:
+            type: Signed
+            value:
+              signedValue: 1
+          1:
+            type: String
+            value:
+              stringValue: name
+    3:
+      widgetName: SoarETX
+      widgetData:
+        options:
+          0:
+            type: Signed
+            value:
+              signedValue: 1
+          1:
+            type: String
+            value:
+              stringValue: battery
+view: 0

@@ -4,12 +4,12 @@ This repo contains the SD Card contents for all supported EdgeTX Radios.
 
 ### Preparing your SD Card
 
-Tools like [Buddy](https://buddy.edgetx.org) will do most of this automatically for you with a couple of clicks. 
+Tools like [Buddy](https://buddy.edgetx.org) will do most of this automatically for you with a couple of clicks.
 
 However, if you want to do this manually:
-1. Download the appropriate zip file for your radio (either listed below, or in [sdcard.json](https://github.com/EdgeTX/edgetx-sdcard/blob/master/sdcard.json)) from the [releases page](https://github.com/EdgeTX/edgetx-sdcard/releases) (expand the Assets heading if you don't see the files). 
-2. Unzip the zip archive and put the contents onto a FAT32-formatted (NOT exFAT!) SD Card (preferably smaller than 32GB). 
-3. If you want the voice pack also, download your preferred voicepack language from the [Voice Pack Repo](https://github.com/EdgeTX/edgetx-sdcard-sounds/releases), unzip the archive, and add it to your SD card. 
+1. Download the appropriate zip file for your radio (either listed below, or in [sdcard.json](https://github.com/EdgeTX/edgetx-sdcard/blob/master/sdcard.json)) from the [releases page](https://github.com/EdgeTX/edgetx-sdcard/releases) (expand the Assets heading if you don't see the files).
+2. Unzip the zip archive and put the contents onto a FAT32-formatted (NOT exFAT!) SD Card (preferably smaller than 32GB).
+3. If you want the voice pack also, download your preferred voicepack language from the [Voice Pack Repo](https://github.com/EdgeTX/edgetx-sdcard-sounds/releases), unzip the archive, and add it to your SD card.
 
 ### Platforms
 
@@ -34,6 +34,8 @@ A non-exhaustive list of targets (look at the [sdcard.json](https://github.com/E
     - Flysky Elysium EL18
 - **c320x240.zip** (320x240 pixel landscape orientation color screen radios)
     - Flysky PA01
+- **800x480.zip** (800x480 pixel landscape orientation color screen radios)
+    - RadioMaster TX16S MK3
 - **bw128x64.zip** (128x64 pixel black and white screen radios)
     - BetaFPV LiteRadio3 Pro
     - FrSky Taranis Q X7
@@ -52,4 +54,3 @@ A non-exhaustive list of targets (look at the [sdcard.json](https://github.com/E
     - FrSky Taranis X9D
     - FrSky Taranis X9D+
     - FrSky Taranis X9D+ 2019
-
