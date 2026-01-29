@@ -1,7 +1,7 @@
 {
   "targets": [
     ["BETAFPV LiteRadio 3 Pro", "lr3pro-", "bw128x64"],
-    ["Fatfish F16", "f16-", "c480x272"],    
+    ["Fatfish F16", "f16-", "c480x272"],
     ["Flysky EL18", "el18-", "c320x480"],
     ["Flysky NB4+", "nb4p-", "c320x480"],
     ["Flysky NV14", "nv14-", "c320x480"],
@@ -51,6 +51,7 @@
     ["RadioMaster TX12MK2", "tx12mk2-", "bw128x64"],
     ["RadioMaster TX15", "tx15-", "c480x320"],
     ["RadioMaster TX16S", "tx16s-", "c480x272"],
+    ["RadioMaster TX16S MK3", "tx16smk3-", "c800x480"],
     ["RadioMaster Zorro", "zorro-", "bw128x64"]
   ]
 }
