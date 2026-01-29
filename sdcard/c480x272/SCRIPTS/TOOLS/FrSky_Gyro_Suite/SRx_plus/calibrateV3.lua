@@ -102,7 +102,7 @@ end
 
 -- horus
 local function drawScreenTitle(title, page, pages)
-  lcd.drawFilledRectangle(0, 0, LCD_W, 30, TITLE_BGCOLOR)
+  lcd.drawFilledRectangle(0, 0, LCD_W, 30, COLOR_THEME_SECONDARY1)
   lcd.drawText(1, 5, title, COLOR_THEME_PRIMARY2)
   lcd.drawText(LCD_W-40, 5, page.."/"..pages, COLOR_THEME_PRIMARY2)
 end
