@@ -54,4 +54,3 @@ A non-exhaustive list of targets (look at the [sdcard.json](https://github.com/E
     - FrSky Taranis X9D
     - FrSky Taranis X9D+
     - FrSky Taranis X9D+ 2019
-
