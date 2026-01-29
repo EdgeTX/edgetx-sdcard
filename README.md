@@ -34,7 +34,7 @@ A non-exhaustive list of targets (look at the [sdcard.json](https://github.com/E
     - Flysky Elysium EL18
 - **c320x240.zip** (320x240 pixel landscape orientation color screen radios)
     - Flysky PA01
-- **800x480.zip** (800x480 pixel landscape orientation color screen radios)
+- **c800x480.zip** (800x480 pixel landscape orientation color screen radios)
     - RadioMaster TX16S MK3
 - **bw128x64.zip** (128x64 pixel black and white screen radios)
     - BetaFPV LiteRadio3 Pro
@@ -54,3 +54,4 @@ A non-exhaustive list of targets (look at the [sdcard.json](https://github.com/E
     - FrSky Taranis X9D
     - FrSky Taranis X9D+
     - FrSky Taranis X9D+ 2019
+
