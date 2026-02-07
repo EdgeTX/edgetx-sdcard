@@ -49,4 +49,76 @@ A non-exhaustive list of targets (look at the [sdcard.json](https://github.com/E
     - Jumper T15
     - Jumper T15 Pro
     - RadioMaster TX15
-- **c800x480.zip** (800x480 pixel, landscape orientation)    - RadioMaster TX16S MK3
+- **c800x480.zip** (800x480 pixel, landscape orientation)
+    - RadioMaster TX16S MK3
+
+## For Developers
+
+### Working with Symlinks (Linux/macOS/Windows)
+
+This repository uses symlinks to avoid duplicating shared template files across different screen sizes. The same `.lua`, `.txt` files, and `img/` folders are used across multiple screen configurations, with only the `.yml` configuration files being unique to each screen size.
+
+**For Linux and macOS users:** Symlinks work natively. Just clone and go.
+
+**For Windows users:** You need to enable symlink support:
+
+1. **Enable Developer Mode:**
+   - Open Settings → Privacy & Security → For Developers
+   - Toggle "Developer Mode" to ON
+   - This allows Git to create symlinks without requiring administrator privileges
+
+2. **Configure Git:**
+```cmd
+   git config --global core.symlinks true
+```
+
+3. **Clone the repository:**
+```cmd
+   git clone https://github.com/EdgeTX/edgetx-sdcard.git
+```
+
+**If you cannot enable Developer Mode** (e.g., corporate restrictions), symlinks will appear as small text files containing the link path. You can still work on the repository using the sync script below.
+
+### Sync Script for Windows (Without Symlink Support)
+
+If you cannot use symlinks on Windows, use this batch script to manually sync shared files from the canonical location to all screen size variants:
+
+**`sync-shared.bat`:**
+```batch
+@echo off
+setlocal enabledelayedexpansion
+
+echo Syncing shared template files...
+echo.
+
+set CANONICAL=sdcard\color\TEMPLATES\1.Wizard
+set VARIANTS=c320x240 c320x480 c480x272 c480x320 c800x480
+
+for %%V in (%VARIANTS%) do (
+    set TARGET=sdcard\%%V\TEMPLATES\1.Wizard
+    echo Syncing to !TARGET!...
+
+    REM Copy .lua and .txt files
+    for %%F in (%CANONICAL%\*.lua %CANONICAL%\*.txt) do (
+        copy /Y "%%F" "!TARGET!\" >nul
+    )
+
+    REM Copy img directory
+    xcopy /E /I /Y "%CANONICAL%\img" "!TARGET!\img" >nul
+
+    echo   Done.
+)
+
+echo.
+echo All shared files synced successfully!
+echo Remember to commit your changes when ready.
+pause
+```
+
+**Usage:**
+1. Save this as `sync-shared.bat` in the repository root
+2. After editing any `.lua`, `.txt` files, or images in `sdcard/color/TEMPLATES/1.Wizard/`, run the script
+3. The script will copy the shared files to all variant directories
+4. Commit your changes as normal
+
+**Note:** Only edit the `.yml` files directly in each variant directory (e.g., `sdcard/c480x272/TEMPLATES/1.Wizard/*.yml`). All other files should be edited in the canonical `color/` directory and then synced using this script.

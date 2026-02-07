@@ -1,3 +1,1 @@
-Model wizard's (Official)
-
-creating new model using lua scripts & templates
+../../../color/TEMPLATES/1.Wizard/about.txt

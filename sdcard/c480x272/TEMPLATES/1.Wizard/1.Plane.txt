@@ -1,1 +1,1 @@
-Create a simple power plane using the Lua Wizard to guide you.
+../../../color/TEMPLATES/1.Wizard/1.Plane.txt

@@ -52,7 +52,9 @@ fi
 # Create distribution directory
 rm -rf dist sdcard-build
 mkdir -p dist sdcard-build
-rsync -r sdcard/ sdcard-build/
+
+echo "Building distribution (dereferencing symlinks)..."
+rsync -rL sdcard/ sdcard-build/
 
 # Get absolute path to dist for use in subshells
 dist_path="$(cd dist && pwd)"
@@ -60,7 +62,7 @@ dist_path="$(cd dist && pwd)"
 # Copy generic variant content
 for dir in sdcard-build/*/; do
     dir_name=$(basename "$dir")
-    
+
     # Determine variant, copy content only if it doesn't exist
     if [[ "$dir_name" == bw* && "$dir_name" != "bw" ]]; then
         [ -d "sdcard-build/bw" ] && rsync -r --ignore-existing sdcard-build/bw/ "$dir"

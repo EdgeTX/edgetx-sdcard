@@ -1,0 +1,3 @@
+Create a simple helicopter using the Lua Wizard to guide you. 
+
+NOTE: This needs firmware with the HELI option enabled to be fully functional. 
