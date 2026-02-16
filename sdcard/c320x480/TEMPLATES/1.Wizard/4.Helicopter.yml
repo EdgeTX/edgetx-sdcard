@@ -1,6 +1,21 @@
-header: 
-   name: "Helicopter"
+semver: 2.12.0
+header:
+   name: "New Helicopter"
    bitmap: ""
+   labels: ""
+timers:
+   0:
+      start: 360
+      swtch: "NONE"
+      value: 0
+      mode: THR
+      countdownBeep: 0
+      minuteBeep: 1
+      persistent: 0
+      countdownStart: 0
+      showElapsed: 0
+      extraHaptic: 0
+      name: ""
 telemetryProtocol: 0
 thrTrim: 0
 noGlobalFunctions: 0
@@ -13,166 +28,179 @@ extendedLimits: 0
 extendedTrims: 0
 throttleReversed: 0
 enableCustomThrottleWarning: 0
+disableTelemetryWarning: 0
+showInstanceIds: 0
+checklistInteractive: 0
 customThrottleWarningPosition: 0
 beepANACenter: 0
-mixData: 
- -
-   weight: 100
-   destCh: 0
-   srcRaw: I0
-   carryTrim: 0
-   mixWarn: 0
-   mltpx: ADD
-   offset: 0
-   swtch: "NONE"
-   flightModes: 000000000
-   delayUp: 0
-   delayDown: 0
-   speedUp: 0
-   speedDown: 0
-   name: ""
- -
-   weight: 100
-   destCh: 1
-   srcRaw: I1
-   carryTrim: 0
-   mixWarn: 0
-   mltpx: ADD
-   offset: 0
-   swtch: "NONE"
-   flightModes: 000000000
-   delayUp: 0
-   delayDown: 0
-   speedUp: 0
-   speedDown: 0
-   name: ""
- -
-   weight: 100
-   destCh: 2
-   srcRaw: I2
-   carryTrim: 0
-   mixWarn: 0
-   mltpx: ADD
-   offset: 0
-   swtch: "NONE"
-   flightModes: 000000000
-   delayUp: 0
-   delayDown: 0
-   speedUp: 0
-   speedDown: 0
-   name: ""
- -
-   weight: 100
-   destCh: 3
-   srcRaw: I3
-   carryTrim: 0
-   mixWarn: 0
-   mltpx: ADD
-   offset: 0
-   swtch: "NONE"
-   flightModes: 000000000
-   delayUp: 0
-   delayDown: 0
-   speedUp: 0
-   speedDown: 0
-   name: ""
-expoData: 
- -
-   mode: 3
-   scale: 0
-   srcRaw: Rud
-   carryTrim: 0
-   chn: 0
-   swtch: "NONE"
-   flightModes: 000000000
-   weight: 100
-   name: ""
-   offset: 0
-   curve: 
-      type: 1
-      value: 0
- -
-   mode: 3
-   scale: 0
-   srcRaw: Ele
-   carryTrim: 0
-   chn: 1
-   swtch: "NONE"
-   flightModes: 000000000
-   weight: 100
-   name: ""
-   offset: 0
-   curve: 
-      type: 1
-      value: 0
- -
-   mode: 3
-   scale: 0
-   srcRaw: Thr
-   carryTrim: 0
-   chn: 2
-   swtch: "NONE"
-   flightModes: 000000000
-   weight: 100
-   name: ""
-   offset: 0
-   curve: 
-      type: 1
-      value: 0
- -
-   mode: 3
-   scale: 0
-   srcRaw: Ail
-   carryTrim: 0
-   chn: 3
-   swtch: "NONE"
-   flightModes: 000000000
-   weight: 100
-   name: ""
-   offset: 0
-   curve: 
-      type: 1
-      value: 0
-thrTraceSrc: Thr
-switchWarningState: AuBuCuDuEuFuGuHu
 rssiSource: none
 thrTrimSw: 0
 potsWarnMode: WARN_OFF
 jitterFilter: GLOBAL
-inputNames: 
-   0:
-      val: "Rud"
-   1:
-      val: "Ele"
-   2:
-      val: "Thr"
-   3:
-      val: "Ail"
 potsWarnEnabled: 0
-screenData: 
+screenData:
    0:
-      LayoutId: "Layout2P1"
-      layoutData: 
-         options: 
+      LayoutId: Layout1P2
+      layoutData:
+         zones:
+            0:
+               widgetName: ModelBmp
+               widgetData:
+                  options:
+                     0:
+                        type: Color
+                        value:
+                           color: COLIDX3
+                     1:
+                        type: Unsigned
+                        value:
+                           unsignedValue: 0
+                     2:
+                        type: Bool
+                        value:
+                           boolValue: 0
+                     3:
+                        type: Color
+                        value:
+                           color: COLIDX5
+                     4:
+                        type: Bool
+                        value:
+                           boolValue: 1
+            1:
+               widgetName: Timer2
+               widgetData:
+                  options:
+                     0:
+                        type: Color
+                        value:
+                           color: COLIDX29
+                     1:
+                        type: Signed
+                        value:
+                           signedValue: 1
+                     2:
+                        type: Bool
+                        value:
+                           boolValue: 0
+         options:
             0:
                type: Bool
-               value: 
+               value:
                   boolValue: 1
             1:
                type: Bool
-               value: 
-                  boolValue: 1
+               value:
+                  boolValue: 0
             2:
                type: Bool
-               value: 
-                  boolValue: 1
+               value:
+                  boolValue: 0
             3:
                type: Bool
-               value: 
+               value:
                   boolValue: 1
             4:
                type: Bool
-               value: 
+               value:
                   boolValue: 0
+   1:
+      LayoutId: Layout1x1
+      layoutData:
+         zones:
+            0:
+               widgetName: Outputs
+               widgetData:
+                  options:
+                     0:
+                        type: Signed
+                        value:
+                           signedValue: 1
+                     1:
+                        type: Bool
+                        value:
+                           boolValue: 0
+                     2:
+                        type: Color
+                        value:
+                           color: 0x000000
+                     3:
+                        type: Color
+                        value:
+                           color: 0x000000
+                     4:
+                        type: Color
+                        value:
+                           color: 0x000000
+         options:
+            0:
+               type: Bool
+               value:
+                  boolValue: 1
+            1:
+               type: Bool
+               value:
+                  boolValue: 0
+            2:
+               type: Bool
+               value:
+                  boolValue: 0
+            3:
+               type: Bool
+               value:
+                  boolValue: 1
+            4:
+               type: Bool
+               value:
+                  boolValue: 0
+topbarData:
+   zones:
+      2:
+         widgetName: Radio Info
+         widgetData:
+            options:
+               0:
+                  type: Color
+                  value:
+                     color: 0xF04030
+               1:
+                  type: Color
+                  value:
+                     color: 0xF8C000
+               2:
+                  type: Color
+                  value:
+                     color: 0x48AC50
+      3:
+         widgetName: Date Time
+         widgetData:
+            options:
+               0:
+                  type: Color
+                  value:
+                     color: COLIDX1
+topbarWidgetWidth:
+   0:
+      val: 1
+   1:
+      val: 1
+   2:
+      val: 1
+   3:
+      val: 1
 view: 0
 modelRegistrationID: ""
+usbJoystickExtMode: 0
+usbJoystickIfMode: JOYSTICK
+usbJoystickCircularCut: 0
+radioThemesDisabled: GLOBAL
+radioGFDisabled: GLOBAL
+radioTrainerDisabled: GLOBAL
+modelHeliDisabled: ON
+modelFMDisabled: GLOBAL
+modelCurvesDisabled: GLOBAL
+modelGVDisabled: GLOBAL
+modelLSDisabled: GLOBAL
+modelSFDisabled: GLOBAL
+modelCustomScriptsDisabled: OFF
+modelTelemetryDisabled: GLOBAL
