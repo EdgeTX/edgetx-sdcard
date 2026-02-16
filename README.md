@@ -63,18 +63,14 @@ This repository uses symlinks to avoid duplicating shared template files across 
 **For Windows users:** You need to enable symlink support:
 
 1. **Enable Developer Mode:**
-   - Open Settings → Privacy & Security → For Developers
+   - Open Settings → Privacy & Security → For Developers (or System → Advanced → For Developers on some Windows 11)
    - Toggle "Developer Mode" to ON
    - This allows Git to create symlinks without requiring administrator privileges
 
 2. **Configure Git:**
+In the repo directory.
 ```cmd
-   git config --global core.symlinks true
-```
-
-3. **Clone the repository:**
-```cmd
-   git clone https://github.com/EdgeTX/edgetx-sdcard.git
+   git config core.symlinks true
 ```
 
 **If you cannot enable Developer Mode** (e.g., corporate restrictions), symlinks will appear as small text files containing the link path. You can still work on the repository using the sync script below.
