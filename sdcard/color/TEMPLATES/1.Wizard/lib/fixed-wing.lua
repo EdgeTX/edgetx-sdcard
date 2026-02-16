@@ -967,7 +967,7 @@ local function runConfigSummary()
 		{
 			type = "label",
 			w = lvgl.PERCENT_SIZE + 100,
-			text = "After review press next to appy the configuration.",
+			text = "After review press next to apply the configuration.",
 		},
 	}
 
