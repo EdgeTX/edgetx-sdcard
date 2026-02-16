@@ -20,7 +20,6 @@ showInstanceIds: 0
 checklistInteractive: 0
 customThrottleWarningPosition: 0
 beepANACenter: 0
-thrTraceSrc: Thr
 rssiSource: none
 thrTrimSw: 0
 potsWarnMode: WARN_OFF
@@ -38,7 +37,7 @@ screenData:
                      0:
                         type: Color
                         value:
-                           color: 0x000000
+                           color: COLIDX3
                      1:
                         type: Unsigned
                         value:
@@ -50,11 +49,19 @@ screenData:
                      3:
                         type: Color
                         value:
-                           color: 0x000000
+                           color: COLIDX5
                      4:
                         type: Bool
                         value:
                            boolValue: 1
+            1:
+               widgetName: Timer
+               widgetData:
+                  options:
+                     0:
+                        type: Unsigned
+                        value:
+                           unsignedValue: 0
          options:
             0:
                type: Bool
@@ -95,15 +102,15 @@ screenData:
                      2:
                         type: Color
                         value:
-                           color: 0x000000
+                           color: COLIDX5
                      3:
                         type: Color
                         value:
-                           color: 0x000000
+                           color: COLIDX0
                      4:
                         type: Color
                         value:
-                           color: 0x000000
+                           color: COLIDX3
          options:
             0:
                type: Bool

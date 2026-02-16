@@ -3,19 +3,6 @@ header:
    name: "New Glider"
    bitmap: ""
    labels: ""
-timers:
-   0:
-      start: 360
-      swtch: "NONE"
-      value: 0
-      mode: THR
-      countdownBeep: 0
-      minuteBeep: 1
-      persistent: 0
-      countdownStart: 0
-      showElapsed: 0
-      extraHaptic: 0
-      name: ""
 telemetryProtocol: 0
 thrTrim: 0
 noGlobalFunctions: 0
@@ -33,7 +20,6 @@ showInstanceIds: 0
 checklistInteractive: 0
 customThrottleWarningPosition: 0
 beepANACenter: 0
-thrTraceSrc: Thr
 rssiSource: none
 thrTrimSw: 0
 potsWarnMode: WARN_OFF
@@ -51,7 +37,7 @@ screenData:
                      0:
                         type: Color
                         value:
-                           color: 0x000000
+                           color: COLIDX3
                      1:
                         type: Unsigned
                         value:
@@ -63,7 +49,7 @@ screenData:
                      3:
                         type: Color
                         value:
-                           color: 0x000000
+                           color: COLIDX5
                      4:
                         type: Bool
                         value:
@@ -75,11 +61,11 @@ screenData:
                      0:
                         type: Color
                         value:
-                           color: 0xF8FC00
+                           color: COLIDX0
                      1:
                         type: Signed
                         value:
-                           signedValue: 2
+                           signedValue: 1
                      2:
                         type: Bool
                         value:
@@ -124,15 +110,15 @@ screenData:
                      2:
                         type: Color
                         value:
-                           color: 0x000000
+                           color: COLIDX5
                      3:
                         type: Color
                         value:
-                           color: 0x000000
+                           color: COLIDX0
                      4:
                         type: Color
                         value:
-                           color: 0x000000
+                           color: COLIDX3
          options:
             0:
                type: Bool
@@ -156,6 +142,22 @@ screenData:
                   boolValue: 0
 topbarData:
    zones:
+      3:
+         widgetName: Radio Info
+         widgetData:
+            options:
+               0:
+                  type: Color
+                  value:
+                     color: 0xF04030
+               1:
+                  type: Color
+                  value:
+                     color: 0xF8C000
+               2:
+                  type: Color
+                  value:
+                     color: 0x48AC50
       4:
          widgetName: Date Time
          widgetData:
@@ -176,10 +178,6 @@ topbarWidgetWidth:
    4:
       val: 1
 view: 0
-modelRegistrationID: ""
-usbJoystickExtMode: 0
-usbJoystickIfMode: JOYSTICK
-usbJoystickCircularCut: 0
 radioThemesDisabled: GLOBAL
 radioGFDisabled: GLOBAL
 radioTrainerDisabled: GLOBAL
@@ -189,5 +187,5 @@ modelCurvesDisabled: GLOBAL
 modelGVDisabled: GLOBAL
 modelLSDisabled: GLOBAL
 modelSFDisabled: GLOBAL
-modelCustomScriptsDisabled: OFF
+modelCustomScriptsDisabled: GLOBAL
 modelTelemetryDisabled: GLOBAL

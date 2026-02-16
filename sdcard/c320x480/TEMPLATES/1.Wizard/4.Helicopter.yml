@@ -3,19 +3,6 @@ header:
    name: "New Helicopter"
    bitmap: ""
    labels: ""
-timers:
-   0:
-      start: 360
-      swtch: "NONE"
-      value: 0
-      mode: THR
-      countdownBeep: 0
-      minuteBeep: 1
-      persistent: 0
-      countdownStart: 0
-      showElapsed: 0
-      extraHaptic: 0
-      name: ""
 telemetryProtocol: 0
 thrTrim: 0
 noGlobalFunctions: 0
@@ -44,6 +31,30 @@ screenData:
       layoutData:
          zones:
             0:
+               widgetName: Outputs
+               widgetData:
+                  options:
+                     0:
+                        type: Signed
+                        value:
+                           signedValue: 1
+                     1:
+                        type: Bool
+                        value:
+                           boolValue: 0
+                     2:
+                        type: Color
+                        value:
+                           color: COLIDX5
+                     3:
+                        type: Color
+                        value:
+                           color: COLIDX0
+                     4:
+                        type: Color
+                        value:
+                           color: COLIDX3
+            1:
                widgetName: ModelBmp
                widgetData:
                   options:
@@ -67,71 +78,14 @@ screenData:
                         type: Bool
                         value:
                            boolValue: 1
-            1:
-               widgetName: Timer2
-               widgetData:
-                  options:
-                     0:
-                        type: Color
-                        value:
-                           color: COLIDX29
-                     1:
-                        type: Signed
-                        value:
-                           signedValue: 1
-                     2:
-                        type: Bool
-                        value:
-                           boolValue: 0
-         options:
-            0:
-               type: Bool
-               value:
-                  boolValue: 1
-            1:
-               type: Bool
-               value:
-                  boolValue: 0
             2:
-               type: Bool
-               value:
-                  boolValue: 0
-            3:
-               type: Bool
-               value:
-                  boolValue: 1
-            4:
-               type: Bool
-               value:
-                  boolValue: 0
-   1:
-      LayoutId: Layout1x1
-      layoutData:
-         zones:
-            0:
-               widgetName: Outputs
+               widgetName: Timer
                widgetData:
                   options:
                      0:
-                        type: Signed
+                        type: Unsigned
                         value:
-                           signedValue: 1
-                     1:
-                        type: Bool
-                        value:
-                           boolValue: 0
-                     2:
-                        type: Color
-                        value:
-                           color: 0x000000
-                     3:
-                        type: Color
-                        value:
-                           color: 0x000000
-                     4:
-                        type: Color
-                        value:
-                           color: 0x000000
+                           unsignedValue: 0
          options:
             0:
                type: Bool
@@ -189,10 +143,6 @@ topbarWidgetWidth:
    3:
       val: 1
 view: 0
-modelRegistrationID: ""
-usbJoystickExtMode: 0
-usbJoystickIfMode: JOYSTICK
-usbJoystickCircularCut: 0
 radioThemesDisabled: GLOBAL
 radioGFDisabled: GLOBAL
 radioTrainerDisabled: GLOBAL
@@ -202,5 +152,5 @@ modelCurvesDisabled: GLOBAL
 modelGVDisabled: GLOBAL
 modelLSDisabled: GLOBAL
 modelSFDisabled: GLOBAL
-modelCustomScriptsDisabled: OFF
+modelCustomScriptsDisabled: GLOBAL
 modelTelemetryDisabled: GLOBAL
