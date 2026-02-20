@@ -1,0 +1,1 @@
+../../../color/TEMPLATES/1.Wizard/5.Multirotor.txt

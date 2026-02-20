@@ -46,7 +46,7 @@ local function closeDialog()
 	})
 end
 
---- return an LVGL page with a layout fir the wizard
+--- return an LVGL page with a layout for the wizard
 ---@param settings table
 function wizard.page(settings)
 	--[[
@@ -231,7 +231,7 @@ end
 function wizard.summaryLine(title, chNum, text2)
 	local txt
 	if chNum ~= nil then
-		txt = "CH" .. chNum + 1
+		txt = "CH" .. (chNum + 1)
 	else
 		txt = text2
 	end

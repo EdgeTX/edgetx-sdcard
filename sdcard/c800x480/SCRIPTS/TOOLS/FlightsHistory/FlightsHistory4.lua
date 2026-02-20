@@ -128,7 +128,7 @@ end
 local function state_READ_HIST_INIT(event, touchState)
     local ui = {
         -- draw top-bar
-        {type="rectangle", x=0, y=0, w=LCD_W, h=20, color=TITLE_BGCOLOR, filled=true},
+        {type="rectangle", x=0, y=0, w=LCD_W, h=20, color=COLOR_THEME_SECONDARY1, filled=true},
         {type="label", x=160, y=1, text="Flight History Viewer", color=WHITE, font=FS.FONT_6},
         {type="label", x=440, y=1, text="v" .. app_ver, color=WHITE, font=FS.FONT_6},
         -- {type="image", x=0, y=0, w=LCD_W, h=LCD_H, file=script_folder.."bg2.png"},
@@ -154,7 +154,7 @@ local function state_FLIGHTS_COUNT_INIT(event, touchState)
     lvgl.build({
         -- draw top-bar
         {type="rectangle", x=0, y=0, w=LCD_W, h=LCD_H, color=BLACK, filled=true},
-        {type="rectangle", x=0, y=0, w=LCD_W, h=20, color=TITLE_BGCOLOR, filled=true},
+        {type="rectangle", x=0, y=0, w=LCD_W, h=20, color=COLOR_THEME_SECONDARY1, filled=true},
         {type="label", x=160, y=1, text="Flight History Viewer", color=WHITE, font=FS.FONT_6},
         {type="label", x=440, y=1, text="v" .. app_ver, color=WHITE, font=FS.FONT_6},
         -- {type="image", x=0, y=0, w=LCD_W, h=LCD_H, file=script_folder.."bg2.png"},
@@ -203,7 +203,7 @@ local function state_SHOW_FLIGHTS_init(event, touchState)
     lvgl.build({
         -- draw top-bar
         {type="rectangle", x=0, y=0, w=LCD_W, h=LCD_H, color=BLACK, filled=true},
-        {type="rectangle", x=0, y=0, w=LCD_W, h=20, color=TITLE_BGCOLOR, filled=true},
+        {type="rectangle", x=0, y=0, w=LCD_W, h=20, color=COLOR_THEME_SECONDARY1, filled=true},
         {type="label", x=160, y=1, text="Flight History Viewer", color=WHITE, font=FS.FONT_6},
         {type="label", x=440, y=1, text="v" .. app_ver, color=WHITE, font=FS.FONT_6},
         -- {type="image", x=0, y=0, w=LCD_W, h=LCD_H, file=script_folder.."bg2.png"},
