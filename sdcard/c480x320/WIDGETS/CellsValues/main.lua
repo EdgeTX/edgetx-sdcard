@@ -192,6 +192,8 @@ local function getSingleCellPercentage(T, index)
 end
 
 local function doLayout(widget)
+    if not widget or not widget.zone or (widget.zone.w or 0) == 0 then return end
+
     T = getValue(widget.options.sensor)
 
     -- Safety check: ensure T is a valid table
@@ -204,10 +206,43 @@ local function doLayout(widget)
     lvgl.clear()
 
     local zw = widget.zone.w
-    local th = getfontHeight()
+    local th = getfontHeight() or 0
     local rd = th/2
     local bh = 10
     local bx = getBoxOffset()+3
+
+    local function safeSize(idx)
+        return function()
+            local pct = getSingleCellPercentage(T, idx) or 0
+            local w = (zw or 0) / 5 * pct / 100
+            return w, bh
+        end
+    end
+
+    local function safeGradient(idx)
+        return function()
+            local pct = getSingleCellPercentage(T, idx) or 0
+            return getColorGradient(pct)
+        end
+    end
+
+    -- Helper: safely get delta text color, guarding against nil options
+    local function safeDeltaColor(w)
+        return function()
+            local tc = (w and w.options and w.options.textcolor) or COLOR_THEME_PRIMARY1
+            local ac = (w and w.options and w.options.textalarmcolor) or COLOR_THEME_WARNING
+            return (deltawarning == 0) and tc or ac
+        end
+    end
+
+    -- Helper: safely compute bottom row position
+    local function safeBottomPos(xOffset)
+        return function()
+            local count = getCellCount(T) or 0
+            local row = math.ceil(count / 2) * (th or 0)
+            return xOffset, row
+        end
+    end
 
     local lyt = {
         {type="label", text="No Cells sensor", color=COLOR_THEME_WARNING, visible=function() return getCellCount(T) == 0 end, w=zw, align=CENTER|VCENTER},
@@ -215,47 +250,47 @@ local function doLayout(widget)
          children={
              {type="circle", x=rd, y=rd, radius=rd, filled=true, color=widget.options.circlecolor, children={{type="label", text="1", x=rd/2, y=0, color=widget.options.circletext}}},
              {type="label", text=function() return getCellText(T, 1) end, x=2*rd+3, y=0, font=SMALLSIZE, color=widget.options.textcolor},
-             {type ="rectangle", x=2*rd+3+bx, y=(th-bh)/2, size = function() return zw/5*getSingleCellPercentage(T, 1)/100, bh end, filled=true, color=function() return getColorGradient(getSingleCellPercentage(T, 1)) end },
+             {type ="rectangle", x=2*rd+3+bx, y=(th-bh)/2, size=safeSize(1), filled=true, color=safeGradient(1) },
              {type ="rectangle", x=2*rd+3+bx, y=(th-bh)/2, h=bh, w=zw/5, filled=false, color=GREY },
 
              {type="circle", x=zw/2+rd, y=rd, radius=rd, filled=true, color=widget.options.circlecolor, visible=function() return getCellCount(T) > 1 end, children={{type="label", text="2", x=rd/2, y=0, color=widget.options.circletext}}},
              {type="label", text=function() return getCellText(T, 2) end, x=zw/2+2*rd+3, y=0, font=SMALLSIZE, color=widget.options.textcolor, visible=function() return getCellCount(T) > 1 end},
-             {type ="rectangle", x=zw/2+2*rd+3+bx, y=(th-bh)/2, size = function() return zw/5*getSingleCellPercentage(T, 2)/100, bh end, filled=true, color=function() return getColorGradient(getSingleCellPercentage(T, 2)) end, visible=function() return getCellCount(T) > 1 end },
+             {type ="rectangle", x=zw/2+2*rd+3+bx, y=(th-bh)/2, size=safeSize(2), filled=true, color=safeGradient(2), visible=function() return getCellCount(T) > 1 end },
              {type ="rectangle", x=zw/2+2*rd+3+bx, y=(th-bh)/2, h=bh, w=zw/5, filled=false, color=GREY, visible=function() return getCellCount(T) > 1 end },
 
              {type="circle", x=rd, y=th+rd, radius=rd, filled=true, color=widget.options.circlecolor, visible=function() return getCellCount(T) > 2 end, children={{type="label", text="3", x=rd/2, y=0, color=widget.options.circletext}}},
              {type="label", text=function() return getCellText(T, 3) end, x=2*rd+3, y=th, font=SMALLSIZE, color=widget.options.textcolor, visible=function() return getCellCount(T) > 2 end},
-             {type ="rectangle", x=2*rd+3+bx, y=th+(th-bh)/2, size = function() return zw/5*getSingleCellPercentage(T, 3)/100, bh end, filled=true, color=function() return getColorGradient(getSingleCellPercentage(T, 3)) end, visible=function() return getCellCount(T) > 2 end },
+             {type ="rectangle", x=2*rd+3+bx, y=th+(th-bh)/2, size=safeSize(3), filled=true, color=safeGradient(3), visible=function() return getCellCount(T) > 2 end },
              {type ="rectangle", x=2*rd+3+bx, y=th+(th-bh)/2, h=bh, w=zw/5, filled=false, color=GREY, visible=function() return getCellCount(T) > 2 end },
 
              {type="circle", x=zw/2+rd, y=th+rd, radius=rd, filled=true, color=widget.options.circlecolor, visible=function() return getCellCount(T) > 3 end, children={{type="label", text="4", x=rd/2, y=0, color=widget.options.circletext}}},
              {type="label", text=function() return getCellText(T, 4) end, x=zw/2+2*rd+3, y=th, font=SMALLSIZE, color=widget.options.textcolor, visible=function() return getCellCount(T) > 3 end},
-             {type ="rectangle", x=zw/2+2*rd+3+bx, y=th+(th-bh)/2, size = function() return zw/5*getSingleCellPercentage(T, 4)/100, bh end, filled=true, color=function() return getColorGradient(getSingleCellPercentage(T, 4)) end, visible=function() return getCellCount(T) > 3 end },
+             {type ="rectangle", x=zw/2+2*rd+3+bx, y=th+(th-bh)/2, size=safeSize(4), filled=true, color=safeGradient(4), visible=function() return getCellCount(T) > 3 end },
              {type ="rectangle", x=zw/2+2*rd+3+bx, y=th+(th-bh)/2, h=bh, w=zw/5, filled=false, color=GREY, visible=function() return getCellCount(T) > 3 end },
 
              {type="circle", x=rd, y=th*2+rd, radius=rd, filled=true, color=widget.options.circlecolor, visible=function() return getCellCount(T) > 4 end, children={{type="label", text="5", x=rd/2, y=0, color=widget.options.circletext}}},
              {type="label", text=function() return getCellText(T, 5) end, x=2*rd+3, y=th*2, font=SMALLSIZE, color=widget.options.textcolor, visible=function() return getCellCount(T) > 4 end},
-             {type ="rectangle", x=2*rd+3+bx, y=2*th+(th-bh)/2, size = function() return zw/5*getSingleCellPercentage(T, 5)/100, bh end, filled=true, color=function() return getColorGradient(getSingleCellPercentage(T, 5)) end, visible=function() return getCellCount(T) > 4 end },
+             {type ="rectangle", x=2*rd+3+bx, y=2*th+(th-bh)/2, size=safeSize(5), filled=true, color=safeGradient(5), visible=function() return getCellCount(T) > 4 end },
              {type ="rectangle", x=2*rd+3+bx, y=2*th+(th-bh)/2, h=bh, w=zw/5, filled=false, color=GREY, visible=function() return getCellCount(T) > 4 end },
 
              {type="circle", x=zw/2+rd, y=th*2+rd, radius=rd, filled=true, color=widget.options.circlecolor, visible=function() return getCellCount(T) > 5 end, children={{type="label", text="6", x=rd/2, y=0, color=widget.options.circletext}}},
              {type="label", text=function() return getCellText(T, 6) end, x=zw/2+2*rd+3, y=th*2, font=SMALLSIZE, color=widget.options.textcolor, visible=function() return getCellCount(T) > 5 end},
-             {type ="rectangle", x=zw/2+2*rd+3+bx, y=2*th+(th-bh)/2, size = function() return zw/5*getSingleCellPercentage(T, 6)/100, bh end, filled=true, color=function() return getColorGradient(getSingleCellPercentage(T, 6)) end, visible=function() return getCellCount(T) > 5 end },
+             {type ="rectangle", x=zw/2+2*rd+3+bx, y=2*th+(th-bh)/2, size=safeSize(6), filled=true, color=safeGradient(6), visible=function() return getCellCount(T) > 5 end },
              {type ="rectangle", x=zw/2+2*rd+3+bx, y=2*th+(th-bh)/2, h=bh, w=zw/5, filled=false, color=GREY, visible=function() return getCellCount(T) > 5 end },
 
              {type="circle", x=rd, y=th*3+rd, radius=rd, filled=true, color=widget.options.circlecolor, visible=function() return getCellCount(T) > 6 end, children={{type="label", text="7", x=rd/2, y=0, color=widget.options.circletext}}},
              {type="label", text=function() return getCellText(T, 7) end, x=2*rd+3, y=th*3, font=SMALLSIZE, color=widget.options.textcolor, visible=function() return getCellCount(T) > 6 end},
-             {type ="rectangle", x=2*rd+3+bx, y=3*th+(th-bh)/2, size = function() return zw/5*getSingleCellPercentage(T, 7)/100, bh end, filled=true, color=function() return getColorGradient(getSingleCellPercentage(T, 7)) end, visible=function() return getCellCount(T) > 6 end },
+             {type ="rectangle", x=2*rd+3+bx, y=3*th+(th-bh)/2, size=safeSize(7), filled=true, color=safeGradient(7), visible=function() return getCellCount(T) > 6 end },
              {type ="rectangle", x=2*rd+3+bx, y=3*th+(th-bh)/2, h=bh, w=zw/5, filled=false, color=GREY, visible=function() return getCellCount(T) > 6 end },
 
              {type="circle", x=zw/2+rd, y=th*3+rd, radius=rd, filled=true, color=widget.options.circlecolor, visible=function() return getCellCount(T) > 7 end, children={{type="label", text="8", x=rd/2, y=0, color=widget.options.circletext}}},
              {type="label", text=function() return getCellText(T, 8) end, x=zw/2+2*rd+3, y=th*3, font=SMALLSIZE, color=widget.options.textcolor, visible=function() return getCellCount(T) > 7 end},
-             {type ="rectangle", x=zw/2+2*rd+3+bx, y=3*th+(th-bh)/2, size = function() return zw/5*getSingleCellPercentage(T, 8)/100, bh end, filled=true, color=function() return getColorGradient(getSingleCellPercentage(T, 8)) end, visible=function() return getCellCount(T) > 7 end },
+             {type ="rectangle", x=zw/2+2*rd+3+bx, y=3*th+(th-bh)/2, size=safeSize(8), filled=true, color=safeGradient(8), visible=function() return getCellCount(T) > 7 end },
              {type ="rectangle", x=zw/2+2*rd+3+bx, y=3*th+(th-bh)/2, h=bh, w=zw/5, filled=false, color=GREY, visible=function() return getCellCount(T) > 7 end },
 
-             {type="label", text=function() return string.format("%d %%", getCellTotalPercent(T)) end, pos=function() return 0, math.ceil(getCellCount(T) / 2) * th end, font=SMALLSIZE, color=widget.options.textcolor},
-             {type="label", text=function() return getTotalText(T) end, pos=function() return zw/4, math.ceil(getCellCount(T) / 2) * th end, font=SMALLSIZE, color=widget.options.textcolor},
-             {type="label", text=function() return getDeltaText(T) end, pos=function() return 2*zw/3, math.ceil(getCellCount(T) / 2) * th end, font=SMALLSIZE, color= function() return (deltawarning == 0) and widget.options.textcolor or widget.options.textalarmcolor end},
+             {type="label", text=function() return string.format("%d %%", getCellTotalPercent(T)) end, pos=safeBottomPos(0), font=SMALLSIZE, color=widget.options.textcolor},
+             {type="label", text=function() return getTotalText(T) end, pos=safeBottomPos(zw/4), font=SMALLSIZE, color=widget.options.textcolor},
+             {type="label", text=function() return getDeltaText(T) end, pos=safeBottomPos(2*zw/3), font=SMALLSIZE, color=safeDeltaColor(widget)},
          }
         }
     }
