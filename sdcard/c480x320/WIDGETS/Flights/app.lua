@@ -48,21 +48,26 @@
 --     or
 --     flight_ended2.wav-->flight_ended.wav
 -- for Heli, the motor-switch=arm-switch (same value for both)
--- if you need a reversed arm switch (e.g. !SF) you need to do change it (for now) in the script: inverted_arm_switch_logic=0
 -- if you prefer different logics, do them on logical switches, and put that logical switch in both Arm & motor channel
--- if your recweiver does not have telemetry, use_telemetry-->off
+-- if your recweiver does not have telemetry, use: [Plane no Telemetry]
 
 ]]
 
+local args = {...}
+local triggerTypeDefs = args[1]
+
 local app_name = "Flights"
-local app_ver = "1.7"
+local app_ver = "2.1"
+
+local lvSCALE = lvgl.LCD_SCALE or 1
+local is800 = (LCD_W==800)
 
 local build_ui = nil
 ------------------------------------------------------------------------------------------------------------------
 -- configuration
 local default_flight_starting_duration = 30  -- 30 sec to detect flight success
 local default_flight_ending_duration = 8     --  8 sec to detect flight ended
-local default_min_motor_value = 200
+-- local default_min_motor_value = 200
 local enable_count_announcement_on_start = 0 -- 0=no voice, 1=play the count upon increment
 local enable_count_announcement_on_end = 1   -- 0=no voice, 1=play the count upon end of flight
 local show_dots = true                       -- false=do not show dots, true=show dbg dots
@@ -72,9 +77,7 @@ local use_flights_history = 1                -- 0=do not write flights-history, 
 
 
 -- imports
-local img = bitmap.open("/WIDGETS/" .. app_name .. "/logo.png")
-local LibLogClass = loadScript("/WIDGETS/" .. app_name .. "/lib_log.lua", "btd")
-local m_log = LibLogClass(app_name, "/WIDGETS/" .. app_name)
+local m_log = assert(loadScript("/WIDGETS/" .. app_name .. "/lib_log.lua", "btd"))(app_name, "/WIDGETS/" .. app_name)
 
 -- better font size names
 local FS={FONT_38=XXLSIZE,FONT_16=DBLSIZE,FONT_12=MIDSIZE,FONT_8=0,FONT_6=SMLSIZE}
@@ -87,21 +90,14 @@ local function update(wgt, options)
     if (wgt == nil) then return end
 
     wgt.options = options
-    wgt.use_telemetry = wgt.options.use_telemetry
+    wgt.triggerDesc = triggerTypeDefs.info[wgt.options.triggerType].desc
+    wgt.triggerFile = triggerTypeDefs.info[wgt.options.triggerType].file
     wgt.enable_sounds = wgt.options.enable_sounds
-    wgt.heli_mode = wgt.options.heli_mode == 1
-    if (wgt.options.arm_switch_id == wgt.options.motor_channel) then
-        wgt.heli_mode = true
-    end
 
     -- status
     wgt.status = {}
-    wgt.status.switch_on = nil
     wgt.status.switch_name = nil
-    wgt.status.tele_is_available = nil
-    wgt.status.motor_active = nil
     wgt.status.motor_channel_name = nil
-    wgt.status.motor_channel_direction_inv = nil
     wgt.status.flight_state = "GROUND"
     wgt.status.duration_passed = 0
     wgt.status.periodic1 = wgt.tools.periodicInit()
@@ -110,11 +106,9 @@ local function update(wgt, options)
     wgt.status.flight_start_date_time = 0
     wgt.status.flight_end_time = 0
     wgt.status.flight_duration = 0
-    wgt.status.ground_on_switch = false
 
     if (wgt.options.min_flight_duration < 0) then
         wgt.options.min_flight_duration = math.abs(wgt.options.min_flight_duration)
-        wgt.status.ground_on_switch = true
         default_flight_ending_duration = 1
     end
 
@@ -135,6 +129,19 @@ local function update(wgt, options)
         wgt.status.motor_channel_name = fi_mot.name
     end
 
+    local t_chunk = assert(loadScript("/WIDGETS/" .. app_name .. "/rules/" .. wgt.triggerFile, "btd"), "Failed to load trigger script: "..wgt.triggerFile)
+    wgt.rule = t_chunk(m_log, app_name, wgt.status.switch_name, wgt.status.motor_channel_name)
+
+    log("Using trigger type: %s (%s)", wgt.triggerDesc, wgt.triggerFile)
+    log("info: %s", wgt.rule:info())
+
+    local override_min_flight_time = wgt.rule:override_min_flight_time()
+    if (override_min_flight_time ~= nil) then
+        wgt.options.min_flight_duration = override_min_flight_time
+        log("Using override min flight duration: %s", wgt.options.min_flight_duration)
+    end
+
+
     -- auto debug mode if widget size 1/2 or 1/1
     wgt.options.is_debug = (wgt.options.auto_debug==1 and wgt.zone.h > 140)
     -- log("auto_debug: %s, is_debug: %s, wgt.zone.h: %s", wgt.options.auto_debug, wgt.options.is_debug, wgt.zone.h)
@@ -148,8 +155,8 @@ local function update(wgt, options)
     end
 
     local ver, radio, maj, minor, rev, osname = getVersion()
-    wgt.is_valid_ver = (maj == 2 and minor >= 11)
-
+    local nVer = maj*1000000 + minor*1000 + rev
+    wgt.is_valid_ver = (nVer>=2011000)
 
     build_ui(wgt)
 end
@@ -157,18 +164,13 @@ end
 local function create(zone, options)
     local wgt = {
         zone = zone,
-        options = options
+        options = options,
+
+        -- imports
+        tools = loadScript("/WIDGETS/" .. app_name .. "/lib_widget_tools.lua", "btd")(m_log, app_name),
+        flightHistory = loadScript("/WIDGETS/" .. app_name .. "/lib_flights_history.lua", "btd")(m_log, app_name),
+        -- flightCountHWriter = loadScript("/WIDGETS/" .. app_name .. "/lib_flights_count.lua", "btd")(m_log, app_name, "/flights-count.csv"),
     }
-    --wgt.options.use_days = wgt.options.use_days % 2 -- modulo due to bug that cause the value to be other than 0|1
-
-    -- imports
-    wgt.ToolsClass = loadScript("/WIDGETS/" .. app_name .. "/lib_widget_tools.lua", "btd")
-    wgt.tools = wgt.ToolsClass(m_log, app_name)
-
-    wgt.FlightsHistoryClass = loadScript("/WIDGETS/" .. app_name .. "/lib_flights_history.lua", "btd")
-    wgt.flightHistory = wgt.FlightsHistoryClass(m_log, app_name)
-    wgt.FlightsCountClass = loadScript("/WIDGETS/" .. app_name .. "/lib_flights_count.lua", "btd")
-    wgt.flightCountHWriter = wgt.FlightsCountClass(m_log, app_name, "/flights-count.csv")
 
     update(wgt, options)
     return wgt
@@ -199,72 +201,6 @@ local function getFontSize(wgt, txt)
 
     --log(string.format("SMLSIZE w: %d, h: %d, %s", w, h, time_str))
     return FS.FONT_6
-end
-
----------------------------------------------------------------------------------------------------
-
-local function updateTelemetryStatus(wgt)
-    if wgt.use_telemetry == 0 then
-        wgt.status.tele_is_available = true
-    else
-        wgt.status.tele_is_available = wgt.tools.isTelemetryAvailable()
-    end
-end
-
-local function updateMotorStatus(wgt)
-
-    -- for heli, if the motor-sw==switch-sw, then ignore motor direction detection
-    if (wgt.heli_mode == true) then
-        wgt.status.motor_active = wgt.status.switch_on
-        return
-    end
-
-    local motor_value = getValue(wgt.options.motor_channel)
-    --log(string.format("motor_value (%s): %s", wgt.options.motor_channel, motor_value))
-
-    ---- if we do not have telemetry, then the battery is not connected yet, so we can detect yet motor channel direction
-    --if (wgt.status.tele_is_available == nil or wgt.status.tele_is_available == false) then
-    --  return
-    --end
-
-    if (wgt.status.motor_channel_direction_inv == nil) then
-        -- detect motor channel direction
-        if (motor_value < (-1024 + default_min_motor_value)) then
-            wgt.status.motor_channel_direction_inv = false
-        elseif (motor_value > (1024 - default_min_motor_value)) then
-            wgt.status.motor_channel_direction_inv = true
-        else
-            -- still nil
-            return
-        end
-    end
-
-    if (wgt.status.motor_channel_direction_inv == false) then
-        -- non inverted mixer
-        if (motor_value > (-1024 + default_min_motor_value)) then
-            wgt.status.motor_active = true
-        else
-            wgt.status.motor_active = false
-        end
-    else
-        -- inverted mixer
-        if (motor_value < (1024 - default_min_motor_value)) then
-            wgt.status.motor_active = true
-        else
-            wgt.status.motor_active = false
-        end
-    end
-
-end
-
-local function updateSwitchStatus(wgt)
-    wgt.status.switch_on = getSwitchValue(wgt.options.arm_switch_id)
-
-    -- if wgt.status.switch_on==true then
-    --    log(string.format("arm_switch(%s)=ON", wgt.status.switch_name))
-    -- else
-    --    log(string.format("arm_switch(%s)=OFF", wgt.status.switch_name))
-    -- end
 end
 
 --------------------------------------------------------------------------------------------------------
@@ -345,29 +281,12 @@ local function stateChange(wgt, newState, timer_sec)
     end
 end
 
-
-local function is_flight_starting(wgt)
-    if (wgt.status.motor_active == true) and (wgt.status.switch_on == true) and (wgt.use_telemetry==0 or wgt.status.tele_is_available == true) then
-        return true
-    else
-        return false
-    end
-end
-
 local function background(wgt)
-
-    updateSwitchStatus(wgt)
-
-    updateMotorStatus(wgt) -- always after updateSwitchStatus
-
-    updateTelemetryStatus(wgt)
-
-    --log(string.format("tele_is_available: %s", wgt.status.tele_is_available))
+    wgt.rule:background(wgt)
 
     -- **** state: GROUND ***
     if wgt.status.flight_state == "GROUND" then
-        -- if (wgt.status.motor_active == true) and (wgt.status.switch_on == true) and (wgt.use_telemetry==0 or wgt.status.tele_is_available == true) then
-        if (is_flight_starting(wgt) == true) then
+        if (wgt.rule:is_flight_starting() == true) then
             stateChange(wgt, "FLIGHT_STARTING", wgt.options.min_flight_duration)
             wgt.status.last_flight_count = getFlightCount(wgt)
             wgt.status.flight_start_time = getTime() * 10 / 1000
@@ -376,11 +295,9 @@ local function background(wgt)
         end
         return
 
-        -- **** state: FLIGHT_STARTING ***
+    -- **** state: FLIGHT_STARTING ***
     elseif wgt.status.flight_state == "FLIGHT_STARTING" then
-
-        -- if (wgt.status.motor_active == false) or (wgt.status.switch_on == false) or (wgt.use_telemetry==1 and wgt.status.tele_is_available == false) then
-        if (is_flight_starting(wgt) == false) then
+        if (wgt.rule:is_flight_starting() == false) then
             stateChange(wgt, "GROUND", 0)
             return
         end
@@ -402,10 +319,11 @@ local function background(wgt)
         end
         return
 
-        -- **** state: FLIGHT_ON ***
+    -- **** state: FLIGHT_ON ***
     elseif wgt.status.flight_state == "FLIGHT_ON" then
         -- record flight duration in case we soon detect end of flight
-        if (wgt.status.motor_active == true) and (wgt.status.switch_on == true) then
+
+        if wgt.rule:is_still_on_flight() then
             wgt.status.flight_end_time = getTime() * 10 / 1000
             wgt.status.flight_duration = wgt.status.flight_end_time - wgt.status.flight_start_time
             -- log("flight_start_time: %s", wgt.status.flight_start_time)
@@ -413,13 +331,7 @@ local function background(wgt)
             -- log("flight_duration: %s", wgt.status.flight_duration)
         end
 
-        -- if  (wgt.status.ground_on_switch and wgt.status.switch_on == false) then
-        --     stateChange(wgt, "FLIGHT_ENDING", 0)
-        if (wgt.use_telemetry==1 and wgt.status.tele_is_available == false) or
-           (wgt.use_telemetry==0 and wgt.status.switch_on == false)
-           or
-           (wgt.status.ground_on_switch and wgt.status.switch_on == false)
-        then
+        if wgt.rule:is_flight_ending() then
             stateChange(wgt, "FLIGHT_ENDING", default_flight_ending_duration)
 
             local num_flights = getFlightCount(wgt)
@@ -448,8 +360,7 @@ local function background(wgt)
             doEndOfFlightTasks(wgt)
         end
 
-        if  (wgt.use_telemetry==1 and wgt.status.tele_is_available == true and wgt.status.ground_on_switch==false) or
-            (wgt.use_telemetry==0 and wgt.status.switch_on == true         and wgt.status.ground_on_switch==false) then
+        if wgt.rule:is_flight_ending() == false then
             stateChange(wgt, "FLIGHT_ON", 0)
         end
 
@@ -498,15 +409,15 @@ build_ui = function(wgt)
 
     local ts_w, ts_h = lcd.sizeText(num_flights, font_size)
     local dx = (zone_w - ts_w) / 2
-    local dyh = 5
+    local dyh = 5*lvSCALE
     local dy --  = header_h - 1
-    local is_top_bar = (zone_h < 50)
+    local is_top_bar = (zone_h < 50*lvSCALE)
 
     if is_top_bar then
         -- force minimal spaces
-        dyh = -3
+        dyh = -3*lvSCALE
     else
-        dyh = 5
+        dyh = 5*lvSCALE
     end
 
     -- global
@@ -519,41 +430,43 @@ build_ui = function(wgt)
     -- draw count
     if is_top_bar == true then
         -- pMain:label({x=zone_w-ts_w -10, y=dy, font=font_size, text=function() return getFlightCount(wgt) end, color=wgt.options.text_color})
-        pMain:label({x=10, y=13, font=font_size, text=function() return getFlightCount(wgt) end, color=wgt.options.text_color})
+        pMain:label({x=10*lvSCALE, y=13*lvSCALE, font=font_size, text=function() return getFlightCount(wgt) end, color=wgt.options.text_color})
     else
-        pMain:label({x=zone_w-ts_w-5, y=5, font=font_size, text=function() return getFlightCount(wgt) end, color=wgt.options.text_color})
+        pMain:label({x=zone_w-ts_w-5*lvSCALE, y=5*lvSCALE, font=font_size, text=function() return getFlightCount(wgt) end, color=wgt.options.text_color})
     end
 
-    -- enable_dbg_dots
+    -- enable 3 dots
     if (show_dots == true) then
-        local dxc = 7
-        pMain:circle({x=5, y=20 + dxc*0, radius=3, filled=true, color=function() return wgt.status.tele_is_available==true   and GREEN or GREY end})
-        pMain:circle({x=5, y=20 + dxc*1, radius=3, filled=true, color=function() return wgt.status.switch_on==true           and GREEN or GREY end})
-        pMain:circle({x=5, y=20 + dxc*2, radius=3, filled=true, color=function() return wgt.status.motor_active==true        and GREEN or GREY end})
+        local dxc = 7*lvSCALE
+        pMain:circle({x=5*lvSCALE, y=20*lvSCALE + dxc*0, radius=3, filled=true, color=function() return wgt.rule:is_dot_1()   and GREEN or GREY end})
+        pMain:circle({x=5*lvSCALE, y=20*lvSCALE + dxc*1, radius=3, filled=true, color=function() return wgt.rule:is_dot_2()   and GREEN or GREY end})
+        pMain:circle({x=5*lvSCALE, y=20*lvSCALE + dxc*2, radius=3, filled=true, color=function() return wgt.rule:is_dot_3()   and GREEN or GREY end})
     end
 
     -- debug
     local pInfo = lvgl.box({x=0, y=40})
     if wgt.options.is_debug == true then
-        local dx = 15
-        pInfo:label({x=dx, y=0, font=FS.FONT_6, text=function() return string.format("%s - telemetry",         ternary(wgt.status.tele_is_available)) end})
-        pInfo:label({x=dx, y=15, font=FS.FONT_6, text=function() return string.format("%s - arm_switch (%s)",   ternary(wgt.status.switch_on), wgt.status.switch_name) end})
-        pInfo:label({x=dx, y=30, font=FS.FONT_6, text=function()
-            if (wgt.heli_mode == false) then
-                return string.format("%s - throttle (%s) (inv: %s)" , ternary(wgt.status.motor_active), wgt.status.motor_channel_name, wgt.status.motor_channel_direction_inv)
-            else
-                return string.format("%s - heli mode arm (ignore throttle)", ternary(wgt.status.motor_active))
-            end
-        end})
-        pInfo:label({x=dx, y=45, font=FS.FONT_6, text=function() return string.format("timer: %.1f/%d",        wgt.status.duration_passed / 1000, wgt.tools.getDurationMili(wgt.status.periodic1) / 1000) end})
-        pInfo:label({x=dx, y=60, font=FS.FONT_6, text=function() return string.format("flight duration: %.1f", wgt.status.flight_duration) end})
+        local dx = 15*lvSCALE
+        pInfo:label({x=dx+190*lvSCALE, y= 5*lvSCALE, font=FS.FONT_8, text=function() return string.format("Rule: %s", wgt.triggerDesc) end})
+        pInfo:label({x=dx, y= 0*lvSCALE, font=FS.FONT_6, text=function() return wgt.rule:dot_1_txt() end})
+        pInfo:label({x=dx, y=15*lvSCALE, font=FS.FONT_6, text=function() return wgt.rule:dot_2_txt() end})
+        pInfo:label({x=dx, y=30*lvSCALE, font=FS.FONT_6, text=function() return wgt.rule:dot_3_txt() end})
+        pInfo:label({x=dx, y=45*lvSCALE, font=FS.FONT_6, text=function() return string.format("timer: %.1f/%d",        wgt.status.duration_passed / 1000, wgt.tools.getDurationMili(wgt.status.periodic1) / 1000) end})
+        pInfo:label({x=dx, y=60*lvSCALE, font=FS.FONT_6, text=function() return string.format("flight duration: %.1f", wgt.status.flight_duration) end})
 
-        pInfo:label({x=dx, y=85, font=FS.FONT_6, text="state:"})
-        dx = 50
-        pInfo:label({x=dx, y=85, font=FS.FONT_6, text="GROUND"         , color=function() return getColorByState(wgt, "GROUND") end})
-        pInfo:label({x=dx, y=100, font=FS.FONT_6, text="FLIGHT_STARTING", color=function() return getColorByState(wgt, "FLIGHT_STARTING") end})
-        pInfo:label({x=dx, y=115, font=FS.FONT_6, text="FLIGHT_ON"      , color=function() return getColorByState(wgt, "FLIGHT_ON") end})
-        pInfo:label({x=dx, y=130, font=FS.FONT_6, text="FLIGHT_ENDING"  , color=function() return getColorByState(wgt, "FLIGHT_ENDING") end})
+        pInfo:label({x=dx, y=80*lvSCALE, font=FS.FONT_6, text="state:"})
+        dx = 50*lvSCALE
+        pInfo:label({x=dx, y= 80*lvSCALE, font=FS.FONT_6, text="GROUND"         , color=function() return getColorByState(wgt, "GROUND") end})
+        pInfo:label({x=dx, y= 95*lvSCALE, font=FS.FONT_6, text="FLIGHT_STARTING", color=function() return getColorByState(wgt, "FLIGHT_STARTING") end})
+        pInfo:label({x=dx, y=110*lvSCALE, font=FS.FONT_6, text="FLIGHT_ON"      , color=function() return getColorByState(wgt, "FLIGHT_ON") end})
+        pInfo:label({x=dx, y=125*lvSCALE, font=FS.FONT_6, text="FLIGHT_ENDING"  , color=function() return getColorByState(wgt, "FLIGHT_ENDING") end})
+
+        pInfo:label({x=  5*lvSCALE, y=145*lvSCALE, font=FS.FONT_6, text=function() return string.format("starting:\n %s", wgt.rule.is_flight_starting()) end})
+        pInfo:label({x= 70*lvSCALE, y=145*lvSCALE, font=FS.FONT_6, text=function() return string.format("on_flight:\n %s", wgt.rule.is_still_on_flight()) end})
+        pInfo:label({x=140*lvSCALE, y=145*lvSCALE, font=FS.FONT_6, text=function() return string.format("ending:\n %s", wgt.rule.is_flight_ending()) end})
+
+        pInfo:rectangle({x=dx+160*lvSCALE, y=30*lvSCALE, w=260*lvSCALE, h=140*lvSCALE, color=LIGHTBLUE, filled=true, rounded=5})
+        pInfo:label({x=dx+(160+10)*lvSCALE, y=40*lvSCALE, font=FS.FONT_6, text=function() return wgt.rule:info() end, color=WHITE})
     end
 end
 
@@ -561,11 +474,4 @@ local function refresh(wgt, event, touchState)
     background(wgt)
 end
 
-return {
-    name = app_name,
-    create = create,
-    update = update,
-    refresh = refresh,
-    background = background,
-    useLvgl=true
-}
+return {name=app_name, create=create, update=update, refresh=refresh, background=background, useLvgl=true}
