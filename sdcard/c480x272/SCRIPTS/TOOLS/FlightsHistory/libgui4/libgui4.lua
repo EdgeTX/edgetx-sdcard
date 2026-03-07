@@ -1,4 +1,5 @@
-local libgui_dir = ...
+local args = {...}
+local libgui_dir = args[1]
 
 local app_ver = "0.0.0-dev.1"
 
