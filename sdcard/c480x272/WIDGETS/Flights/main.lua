@@ -4,6 +4,27 @@ local tool = nil
 
 local default_flight_starting_duration = 30  -- 30 sec to detect flight success
 
+local triggerTypeDefs = {
+    labels = {
+        "1. Plane with Telemetry",
+        "2. Plane no Telemetry",
+        "3. Heli [RPM]",
+        "4. Heli [Arm]",
+        "5. By switch",
+        "6. DLG [Height]",
+        "7. Glider [Height]",
+    },
+    info = {
+        {desc = "1=Plane with Telemetry (mot+Arm+Telm)", file = "1_plane_tlm.lua"    },
+        {desc = "2=Plane no Telemetry (mot+Arm)",        file = "2_plane_no_tlm.lua" },
+        {desc = "3=Heli [RPM] (RPM+Telm)",               file = "3_heli_rpm.lua"     },
+        {desc = "4=Heli [Arm] (Arm+Telm)",               file = "4_heli_arm.lua"     },
+        {desc = "5=By switch",                           file = "5_by_switch.lua"    },
+        {desc = "6=DLG [Vario] (Height)",               file = "6_dlg.lua"          },
+        {desc = "7=Glider [Vario] (mot+Arm+Height)",    file = "7_glider.lua"       },
+    }
+}
+
 -- for backward compatibility
 local function getSwitchIds(key)
     local OS_SWITCH_ID = {
@@ -21,27 +42,23 @@ end
 local DEFAULT_MOTOR_CHANNEL_ID = getSourceIndex("CH3") or getSourceIndex("thr111") or getSwitchIds("CH3")  -- motor_channel=CH3
 
 local options = {
+    { "triggerType"         , CHOICE, 1 , triggerTypeDefs.labels},
     { "arm_switch_id"       , SWITCH, "SF"..CHAR_UP}, -- CHAR_UP|-|CHAR_DOWN
     { "motor_channel"       , SOURCE, DEFAULT_MOTOR_CHANNEL_ID },
-    { "heli_mode"           , BOOL, 0},            -- ignore motor direction detection, and throttle position
     { "text_color"          , COLOR, YELLOW},--, COLOR_THEME_PRIMARY2 },
     { "min_flight_duration" , VALUE, default_flight_starting_duration, -30, 120 },
     { "enable_sounds"       , BOOL, 1},            -- 0=no sound, 1=play blip sound on increment & on flight end
-    { "use_telemetry"       , BOOL, 1},            -- 0=do not use telemetry, 1=use telemetry in state machine
     { "auto_debug"          , BOOL, 1},            -- show debug status on screen if widget is large enough
-    -- { "ground_on_switch"    , BOOL, 0},            -- 0=auto detect ground by time, 1=ground on switch is used (not auto)
 }
 
 local function translate(name)
     local translations = {
         arm_switch_id="Arm Switch Position",
         motor_channel="Motor Channel",
-        heli_mode="Heli mode (ignore motor ch)",
         min_flight_duration = "Min flight duration (sec)",
         text_color = "Text color",
         enable_sounds = "Enable sounds",
-        use_telemetry = "Use telemetry",
-        -- ground_on_switch = "Ground on switch",
+        triggerType = "Type",
         auto_debug = "Auto debug",
     }
     return translations[name]
@@ -50,7 +67,7 @@ end
 
 local function create(zone, options)
     -- print(string.format("1111 Flights create: %s", name))
-    tool = assert(loadScript("/WIDGETS/"..app_name.."/app.lua", "btd"))()
+    tool = assert(loadScript("/WIDGETS/"..app_name.."/app.lua", "btd"))(triggerTypeDefs)
     return tool.create(zone, options)
 end
 local function update(wgt, options) return tool.update(wgt, options) end
