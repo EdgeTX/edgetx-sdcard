@@ -1,4 +1,6 @@
-local m_log, app_name, useLvgl = ...
+local args = {...}
+local m_log = args[1]
+local app_name = args[2]
 
 local M = {}
 M.m_log = m_log
@@ -9,32 +11,20 @@ M.tele_src_id = nil
 local getTime = getTime
 local lcd = lcd
 
--- better font names
-local FONT_38 = XXLSIZE -- 38px
-local FONT_16 = DBLSIZE -- 16px
-local FONT_12 = MIDSIZE -- 12px
-local FONT_8 = 0 -- Default 8px
-local FONT_6 = SMLSIZE -- 6px
-
 -- better font size names
-M.FONT_SIZES = {
-    FONT_6  = SMLSIZE, -- 6px
-    FONT_8  = 0,       -- Default 8px
-    FONT_12 = MIDSIZE, -- 12px
-    FONT_16 = DBLSIZE, -- 16px
-    FONT_38 = XXLSIZE, -- 38px
-}
-M.FONT_LIST = {
-    FONT_6,
-    FONT_8,
-    FONT_12,
-    FONT_16,
-    FONT_38,
-}
+local FS={FONT_38=XXLSIZE,FONT_16=DBLSIZE,FONT_12=MIDSIZE,FONT_8=0,FONT_6=SMLSIZE}
+M.FS = FS
+M.FONT_LIST = {FS.FONT_6, FS.FONT_8, FS.FONT_12, FS.FONT_16, FS.FONT_38}
+local lvSCALE = lvgl.LCD_SCALE or 1
+
 
 ---------------------------------------------------------------------------------------------------
 local function log(fmt, ...)
-    m_log.info(fmt, ...)
+    if M.m_log then
+        M.m_log.info(fmt, ...)
+    else
+        print("[" .. M.app_name .. "] " .. string.format(fmt, ...))
+    end
 end
 ---------------------------------------------------------------------------------------------------
 
@@ -79,6 +69,10 @@ end
 function M.periodicStart(t, durationMili)
     t.startTime = getTime();
     t.durationMili = durationMili;
+end
+
+function M.periodicStop(t)
+    t.durationMili = -1;
 end
 
 function M.periodicHasPassed(t, show_log)
@@ -134,6 +128,7 @@ function M.isTelemetryAvailableOld()
         if not tele_src then tele_src = getFieldInfo("2RSS") end
         if not tele_src then tele_src = getFieldInfo("RQly") end
         if not tele_src then tele_src = getFieldInfo("VFR%") end
+        if not tele_src then tele_src = getFieldInfo("VFR") end
         if not tele_src then tele_src = getFieldInfo("TRSS") end
         if not tele_src then tele_src = getFieldInfo("RxBt") end
         if not tele_src then tele_src = getFieldInfo("A1") end
@@ -199,6 +194,8 @@ end
 ---------------------------------------------------------------------------------------------------
 
 function M.getSensorInfoByName(sensorName)
+    sensorName = string.gsub(sensorName, "-", "")
+    sensorName = string.gsub(sensorName, "+", "")
     local sensors = {}
     for i=0, 30, 1 do
         local s1 = {}
@@ -208,8 +205,8 @@ function M.getSensorInfoByName(sensorName)
         s1.type = s2.type
         --name (string) Name
         s1.name = s2.name
-        --unit (number) See list of units in the appendix of the OpenTX Lua Reference Guide
-        s1.unit = s2.unit
+        --unit (number->string) See list of units in the appendix of the OpenTX Lua Reference Guide
+        s1.unit = M.unitIdToString(s2.unit)
         --prec (number) Number of decimals
         s1.prec = s2.prec
         --id (number) Only custom sensors
@@ -219,7 +216,7 @@ function M.getSensorInfoByName(sensorName)
         --formula (number) Only calculated sensors. 0 = Add etc. see list of formula choices in Companion popup
         s1.formula = s2.formula
 
-        log("getSensorInfo: %d. name: %s, unit: %s , prec: %s , id: %s , instance: %s ", i, s2.name, s2.unit, s2.prec, s2.id, s2.instance)
+        -- log("getSensorInfo: %d. name: %s, unit: %s , prec: %s , id: %s , instance: %s ", i, s2.name, s2.unit, s2.prec, s2.id, s2.instance)
 
         if s2.name == sensorName then
             return s1
@@ -261,9 +258,10 @@ function M.isSensorExist(sensorName)
  end
 
 ---------------------------------------------------------------------------------------------------
--- workaround for bug in getFiledInfo()  -- ???? why?
+-- workaround for bug in getFiledInfo()  why?
 function M.cleanInvalidCharFromGetFiledInfo(sourceName)
-     if string.byte(string.sub(sourceName, 1, 1)) > 127 then
+
+    if string.byte(string.sub(sourceName, 1, 1)) > 127 then
         sourceName = string.sub(sourceName, 2, -1)
     end
     if string.byte(string.sub(sourceName, 1, 1)) > 127 then
@@ -307,96 +305,73 @@ function M.getFontIndex(fontSize, defaultFontSize)
 end
 
 ------------------------------------------------------------------------------------------------------
--- function M.lcdSizeTextFixed(txt, font_size)
---     local ts_w, ts_h = lcd.sizeText(txt, font_size)
-
---     local v_offset = 0
---     if font_size == FONT_38 then
---         if (useLvgl==true) then
---             v_offset = -7
---             return ts_w-3, ts_h +2*v_offset-14, v_offset
---         else
---             v_offset = -14
---         end
---     elseif font_size == FONT_16 then
---         v_offset = -8
---     elseif font_size == FONT_12 then
---         v_offset = -6
---     elseif font_size == FONT_8 then
---         v_offset = -4
---     elseif font_size == FONT_6 then
---         v_offset = -3
---     end
---     return ts_w, ts_h +2*v_offset, v_offset
--- end
 
 function M.lcdSizeTextFixed(txt, font_size)
     local ts_w, ts_h = lcd.sizeText(txt, font_size)
 
     local v_offset = 0
-    if font_size == FONT_38 then
-        if (useLvgl==true) then
-            v_offset = -7
-            ts_h = 61
-            return ts_w-3, ts_h+v_offset-14, v_offset
-            -- return ts_w-3, ts_h +2*v_offset-14, v_offset
-        else
-            v_offset = -14
-            ts_h = 61
-        end
-    elseif font_size == FONT_16 then
-        v_offset = -8
-        ts_h = 30
-    elseif font_size == FONT_12 then
-        v_offset = -6
-        ts_h = 23
-    elseif font_size == FONT_8 then
-        v_offset = -4
-        ts_h = 16
-    elseif font_size == FONT_6 then
-        v_offset = -4
-        ts_h = 13
+    if font_size == FS.FONT_38 then
+        v_offset = -6*lvSCALE
+        ts_h = 52*lvSCALE
+        ts_w=ts_w-3
+    elseif font_size == FS.FONT_16 then
+        v_offset = -6*lvSCALE
+        ts_h = 28*lvSCALE
+    elseif font_size == FS.FONT_12 then
+        v_offset = -5*lvSCALE
+        ts_h = 20*lvSCALE
+    elseif font_size == FS.FONT_8 then
+        v_offset = -3*lvSCALE
+        ts_h = 15*lvSCALE
+    elseif font_size == FS.FONT_6 then
+        v_offset = -2*lvSCALE
+        ts_h = 14*lvSCALE
     end
-    -- return ts_w, ts_h +2*v_offset, v_offset
-    return ts_w, ts_h+v_offset, v_offset
+    return ts_w, ts_h, v_offset
 end
 
 function M.getFontSize(wgt, txt, max_w, max_h, max_font_size)
-    log("getFontSize() [%s] %dx%d", txt, max_w, max_h)
     local maxFontIndex = M.getFontIndex(max_font_size, nil)
+    --log("getFontSize() [%s] %dx%d (maxIndex: %d)", txt, max_w, max_h, maxFontIndex)
 
-    if M.getFontIndex(FONT_38, nil) <= maxFontIndex then
-        local w, h, v_offset = M.lcdSizeTextFixed(txt, FONT_38)
+    if maxFontIndex>=5 then
+        local w, h, v_offset = M.lcdSizeTextFixed(txt, FS.FONT_38)
         if w <= max_w and h <= max_h then
-            log("[%s] FONT_38 %dx%d", txt, w, h)
-            return FONT_38, w, h, v_offset
+            log("[%s] FS.FONT_38 %dx%d", txt, w, h)
+            return FS.FONT_38, w, h, v_offset
         else
-            log("[%s] FONT_38 %dx%d (too small)", txt, w, h)
+            log("[%s] FS.FONT_38 %dx%d (too small)", txt, w, h)
         end
     end
 
-
-    w, h, v_offset = M.lcdSizeTextFixed(txt, FONT_16)
-    if w <= max_w and h <= max_h then
-        log("[%s] FONT_16 %dx%d", txt, w, h)
-        return FONT_16, w, h, v_offset
+    local w, h, v_offset
+    if maxFontIndex>=4 then
+        w, h, v_offset = M.lcdSizeTextFixed(txt, FS.FONT_16)
+        if w <= max_w and h <= max_h then
+            -- log("[%s] FS.FONT_16 %dx%d", txt, w, h, txt)
+            return FS.FONT_16, w, h, v_offset
+        end
     end
 
-    w, h, v_offset = M.lcdSizeTextFixed(txt, FONT_12)
-    if w <= max_w and h <= max_h then
-        log("[%s] FONT_12 %dx%d", txt, w, h)
-        return FONT_12, w, h, v_offset
+    if maxFontIndex>=3 then
+    w, h, v_offset = M.lcdSizeTextFixed(txt, FS.FONT_12)
+        if w <= max_w and h <= max_h then
+            -- log("[%s] FS.FONT_12 %dx%d", txt, w, h, txt)
+            return FS.FONT_12, w, h, v_offset
+        end
     end
 
-    w, h, v_offset = M.lcdSizeTextFixed(txt, FONT_8)
-    if w <= max_w and h <= max_h then
-        log("[%s] FONT_8 %dx%d", txt, w, h)
-        return FONT_8, w, h, v_offset
+    if maxFontIndex>=2 then
+        w, h, v_offset = M.lcdSizeTextFixed(txt, FS.FONT_8)
+        if w <= max_w and h <= max_h then
+            -- log("[%s] FS.FONT_8 %dx%d", txt, w, h, txt)
+            return FS.FONT_8, w, h, v_offset
+        end
     end
 
-    w, h, v_offset = M.lcdSizeTextFixed(txt, FONT_6)
-    log("[%s] FONT_6 %dx%d", txt, w, h)
-    return FONT_6, w, h, v_offset
+    w, h, v_offset = M.lcdSizeTextFixed(txt, FS.FONT_6)
+    -- log("[%s] FS.FONT_6 %dx%d", txt, w, h, txt)
+    return FS.FONT_6, w, h, v_offset
 end
 
 ------------------------------------------------------------------------------------------------------
