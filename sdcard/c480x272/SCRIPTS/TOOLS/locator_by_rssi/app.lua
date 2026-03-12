@@ -228,7 +228,7 @@ local function build_ui()
 
                 -- draw gauge bar
                 {type="arc", x=350*lvSCALE, y=120*lvSCALE,
-                    radius=110, thickness=28,
+                    radius=110*lvSCALE, thickness=28*lvSCALE,
                     startAngle=120, endAngle=function() return 120+(300*signalPercent/100) end, opacity=255,
                     bgStartAngle=120, bgEndAngle=60, bgColor=GREY, bgOpacity=155,
                     color=function() return signalPercentColor end,
