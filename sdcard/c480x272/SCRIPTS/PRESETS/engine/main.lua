@@ -154,7 +154,7 @@ local function state_SELECTION_INIT()
 
     pg.build({
         -- {type="image", x=0, y=0, w=LCD_W, h=LCD_H, file=ImgBackground},
-        {type="rectangle", x=20, y=55, w=450, h=43, filled=true, color=lcd.RGB(0x8B8D94), filed=true, rounded=6},
+        {type="rectangle", x=20, y=55, w=450, h=43, color=lcd.RGB(0x8B8D94), filled=true, rounded=6},
         -- {type="label", text="Preset:", x=90, y=65, color=BLACK},
         {type="choice", x=100, y=60, w=LCD_W-100-20, title="Select Preset",
             values=preset_list,
@@ -166,7 +166,7 @@ local function state_SELECTION_INIT()
         },
 
         -- draw preset info
-        {type="rectangle", x=20, y=105, w=450, h=LCD_H-30-105, filled=true, color=lcd.RGB(0x393C41), filed=true, rounded=7, opacity=200},
+        {type="rectangle", x=20, y=105, w=450, h=LCD_H-30-105, color=lcd.RGB(0x393C41), filled=true, rounded=7, opacity=200},
         {type="label", x=40, y=120, w=350, color=WHITE, font=FS.FONT_6,
             text=function()
                 if preset_info["about"] == nil then
@@ -181,8 +181,8 @@ local function state_SELECTION_INIT()
         -- Mr-Eddie
         {type="image", x=0, y=25, w=100, h=100, file=ENGINE_FOLDER .. "/img/Mr-Eddie.png"},
 
-        -- dreaw status bar
-        {type="rectangle", x=0, y=LCD_H-22, w=LCD_W, h=22, filled=true, color=lcd.RGB(0x8B8D94), filed=true, rounded=0},
+        -- draw status bar
+        {type="rectangle", x=0, y=LCD_H-22, w=LCD_W, h=22, color=lcd.RGB(0x8B8D94), filled=true, rounded=0},
         {type="label", x=10, y=LCD_H-20, color=BLACK, font=FS.FONT_6,
             text=function()
                 return string.format("Category: %s", preset_info["category"])
