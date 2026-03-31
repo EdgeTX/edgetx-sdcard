@@ -1,5 +1,5 @@
 local app_name = "Mixers"
-local app_ver = "1.0"
+local app_ver = "1.1"
 
 local M = {}
 
@@ -47,10 +47,10 @@ local function build_ui_column(wgt, from_ch, to_ch, zx, zy, zw, zh, headr_text)
         bBars:box({x=0, y=yy, w=zw, h=zh,
             children={
                 -- border
-                {type="rectangle", x=0, y=0, w=bar_area_w, h=bar_height, color=(wgt.bar_bkg_enabled and wgt.bar_bkg_color or 0), style=SOLID, filled=true, visible=function() return wgt.bar_bkg_enabled end},
+                {type="rectangle", x=0, y=0, w=bar_area_w, h=bar_height, color=(wgt.bar_bkg_enabled and wgt.bar_bkg_color or 0), filled=true, visible=function() return wgt.bar_bkg_enabled end},
 
                 -- bar
-                {type="rectangle", color=wgt.bar_color, style=SOLID, filled=true,
+                {type="rectangle", color=wgt.bar_color, filled=true,
                     pos=function()  return x_mid + math.min(0, wgt.percent[i] * bar_area_w /2/100), 0 end,
                     size=function() return         math.abs(   wgt.percent[i] * bar_area_w /2/100), bar_height end,
                 },
@@ -59,7 +59,7 @@ local function build_ui_column(wgt, from_ch, to_ch, zx, zy, zw, zh, headr_text)
                 -- {type="line", x1=0, y1=yy, x2=0 + bar_area_w, y2=yy, color=BLACK, style=SOLID},
 
                 -- middle mark
-                {type="rectangle", x=x_mid-1, y=0, w=1, h=bar_height, color=WHITE, style=SOLID, filled=true},
+                {type="rectangle", x=x_mid-1, y=0, w=1, h=bar_height, color=WHITE, filled=true},
 
                 -- text output name
                 {type="label", x=6, y=-1, text=function() return wgt.names[i] end, color=WHITE, font=FS.FONT_6},
@@ -79,7 +79,7 @@ local function build_ui_column(wgt, from_ch, to_ch, zx, zy, zw, zh, headr_text)
 end
 
 local function build_ui(wgt)
-    lvgl.rectangle({x=wgt.zone.x, y=wgt.zone.y, w=wgt.zone.w, h=wgt.zone.h, color=wgt.background_color, style=SOLID, filled=true, visible=function() return wgt.background_enabled end})
+    lvgl.rectangle({x=wgt.zone.x, y=wgt.zone.y, w=wgt.zone.w, h=wgt.zone.h, color=wgt.background_color, filled=true, visible=function() return wgt.background_enabled end})
 
     if (wgt.zone.w < 320) then
         -- single column
