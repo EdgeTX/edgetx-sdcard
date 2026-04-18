@@ -258,7 +258,7 @@ function M.isSensorExist(sensorName)
  end
 
 ---------------------------------------------------------------------------------------------------
--- workaround for bug in getFiledInfo()  why?
+-- workaround for bug in getFieldInfo()  why?
 function M.cleanInvalidCharFromGetFiledInfo(sourceName)
 
     if string.byte(string.sub(sourceName, 1, 1)) > 127 then
