@@ -293,20 +293,21 @@ local function background(widget)
     T = getCellsSensor(widget.options.sensor)
 
     -- Update the % telemetry sensor even if not displayed
-    setTelemetryValue(0x0310, 0, 1, getCellTotalPercent(T), 13, 0, "%bat")
+    if getCellCount(T) ~= 0 then
+      setTelemetryValue(0x0310, 0, 1, getCellTotalPercent(T), 13, 0, "%bat")
+    end
 end
 
 local function refresh(widget, event, touchState)
     -- Runs periodically only when widget instance is visible
     -- If full screen, then event is 0 or event value, otherwise nil
-    T = getCellsSensor(widget.options.sensor)
 
     if lvgl == nil then
         lcd.drawText(0, 0, "No LVGL detected", COLOR_THEME_WARNING)
     end
 
-    -- Create a % telemetry sensor
-    setTelemetryValue(0x0310, 0, 1, getCellTotalPercent(T), 13, 0, "%bat")
+    -- Create %bat telemetry sensor
+    background(widget)
 end
 
 return {
