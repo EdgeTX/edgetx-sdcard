@@ -248,7 +248,7 @@ local function build_ui()
                     text="Signal Type:",
                 },
                 { type="choice", x=120*lvSCALE, y=15*lvSCALE, w=130*lvSCALE, title = "Telemetry",
-                    values = {"-- Auto Detect --", "Frsky RSSI", "elrs Anntena 1", "elrs Anntena 2"},
+                    values = {"-- Auto Detect --", "Frsky RSSI", "elrs Antenna 1", "elrs Antenna 2"},
                     get = function() return signalType end,
                     set = function(i)
                         signalType = i
