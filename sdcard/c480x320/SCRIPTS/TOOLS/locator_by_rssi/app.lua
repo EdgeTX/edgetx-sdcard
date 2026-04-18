@@ -19,8 +19,8 @@
 
 -- Model Locator by RSSI
 -- Offer Shmuely (based on code from Scott Bauer 6/21/2015)
--- Date: 2022-2025
-local app_ver = "1.10"
+-- Date: 2022-2026
+local app_ver = "1.11"
 
 -- This widget help to find a lost/crashed model based on the RSSI (if still available)
 -- The widget produce audio representation (vario-meter style) of the RSSI from the lost model
@@ -51,14 +51,22 @@ local signalPercentColor = GREY
 local is_elrs = false
 local is_beep = true
 local useHaptic = false
-local signalType = 1 -- 1=no-signal, 2=RSSI, 3=1RSS, 4=2RSS
+
+local SIGNAL_NONE = 1
+local SIGNAL_RSSI = 2
+local SIGNAL_1RSS = 3
+local SIGNAL_2RSS = 4
+local signalType = SIGNAL_NONE
+
 
 -- better font size names
 local FS={FONT_38=XXLSIZE,FONT_16=DBLSIZE,FONT_12=MIDSIZE,FONT_8=0,FONT_6=SMLSIZE}
+local lvSCALE = lvgl.LCD_SCALE or 1
+local is800 = (LCD_W==800)
 
 --------------------------------------------------------------
 local function log(fmt, ...)
-    print("[locator] ".. string.format(fmt, ...))
+    -- print("[locator] ".. string.format(fmt, ...))
 end
 --------------------------------------------------------------
 
@@ -99,46 +107,43 @@ local function detectSignalType()
     -- try regular Frsky RSSI
     local fieldinfoRssi = getFieldInfo("RSSI")
     if fieldinfoRssi ~= nil then
-        is_elrs = false
-        signalType = 2 -- RSSI
+        signalType = SIGNAL_RSSI
         return
     end
 
     -- try expressLRS
+
     -- try to get transmitter power
     local txPowerFieldTpwr = getFieldInfo("TPWR")
     if txPowerFieldTpwr == nil  then
-        is_elrs = false
-        signalType = 1
+        signalType = SIGNAL_NONE
         return
     end
 
     local fieldinfo1 = getFieldInfo("1RSS")
     if fieldinfo1 ~= nil then
-        is_elrs = true
-        signalType = 3 -- 1RSS
+        signalType = SIGNAL_1RSS
         return
     end
 
     local fieldinfo2 = getFieldInfo("2RSS")
     if fieldinfo2 ~= nil then
-        is_elrs = true
-        signalType = 4 -- 2RSS
+        signalType = SIGNAL_2RSS
         return
     end
 
-    is_elrs = false
-    signalType = 1 -- no signal
+    signalType = SIGNAL_NONE -- no signal
     return
 end
 
 
 local function updateSignalValues()
-    if signalType == 1 then
+    if signalType == SIGNAL_NONE then
+        signalValue = 1
         detectSignalType()
     end
 
-    if signalType == 1 then
+    if signalType == SIGNAL_NONE then
         is_elrs = false
         signalValue = nil
         signalMin = 0
@@ -148,47 +153,52 @@ local function updateSignalValues()
     end
 
     -- Frsky RSSI
-    if signalType == 2 then
+    if signalType == SIGNAL_RSSI then
         local fieldinfo = getFieldInfo("RSSI")
+        is_elrs = false
+        signalMin = 0
+        signalMax = 100
+        txPower = nil
         if fieldinfo then
             local v = getValue("RSSI")
             log("RSSI: " .. v)
-            signalType = 2 -- RSSI
             signalValue = v
-            signalMin = 0
-            signalMax = 100
-            txPower = nil
-            return
+        else
+            signalValue = 0
         end
+        return
     end
 
     -- expressLRS
-    if is_elrs == true then
-        -- try to get transmitter power
-        local txPowerField = getFieldInfo("TPWR")
-        if txPowerField then
-            txPower = getValue("TPWR")
-        end
+    is_elrs = true
+    signalMin = -115
+    signalMax = -20
 
+    -- try to get transmitter power
+    local txPowerField = getFieldInfo("TPWR")
+    if txPowerField then
+        txPower = getValue("TPWR")
+    else
+        txPower = nil
     end
 
     local fieldinfo = nil
     local v = nil
-    if signalType == 3 then
+    if signalType == SIGNAL_1RSS then
         v = getValue("1RSS")
+        log("1RSS: " .. v)
     end
 
-    if signalType == 4 then
+    if signalType == SIGNAL_2RSS then
         v = getValue("2RSS")
+        log("2RSS: " .. v)
     end
 
     if v == 0 then
-        v = -115
+        v = signalMin
     end
 
     signalValue = v
-    signalMin = -115
-    signalMax = -20
     signalValue = math.max(signalValue, signalMin)
     signalValue = math.min(signalValue, signalMax)
     return
@@ -197,89 +207,93 @@ end
 
 -- init_func is called once when model is loaded
 local function build_ui()
-    log("build_ui()")
+    -- log("build_ui()")
 
     lvgl.clear()
-
     lvgl.build({
 
         -- background
         {type="rectangle", x=0, y=0, w=LCD_W, h=LCD_H, color=lcd.RGB(0x1F1F1F), filled=true},
 
         -- draw top-bar
-        {type="rectangle", x=0, y=0, w=LCD_W, h=30, color=DARKBLUE, filled=true},
-        {type="label", x=40, y=3, text="Model Locator by RSSI/1RSS", color=WHITE, font=FS.FONT_8},
-        {type="label", x=LCD_W - 50, y=3, text="ver: " .. app_ver, color=LIGHTGREY, font=FS.FONT_6},
-        {type="hline", x=0, y=30, w=LCD_W-1, h=1, color=WHITE, opacity=50, filled=true},
+        {type="rectangle", x=0, y=0, w=LCD_W, h=30*lvSCALE, color=DARKBLUE, filled=true},
+        {type="label", x=40*lvSCALE, y=3*lvSCALE, text="Model Locator by RSSI/1RSS", color=WHITE, font=FS.FONT_8},
+        {type="label", x=LCD_W - 50*lvSCALE, y=3*lvSCALE, text="ver: " .. app_ver, color=LIGHTGREY, font=FS.FONT_6},
+        -- {type="hline", x=0, y=30, w=LCD_W-1, h=1, color=WHITE, opacity=50, filled=true},
 
         -- signal exist
-        {type="box", x=0, y=30,
+        {type="box", x=0, y=30*lvSCALE,
             children={
                 -- {type="image", x=0,y=0,w=LCD_W,h=LCD_H-30, fill=true, file=script_folder.."/locator2.png"},
 
                 -- draw gauge bar
-                {type="arc", x=350, y=120,
-                    radius=110, thickness=28,
+                {type="arc", x=350*lvSCALE, y=120*lvSCALE,
+                    radius=110*lvSCALE, thickness=28*lvSCALE,
                     startAngle=120, endAngle=function() return 120+(300*signalPercent/100) end, opacity=255,
                     bgStartAngle=120, bgEndAngle=60, bgColor=GREY, bgOpacity=155,
                     color=function() return signalPercentColor end,
                     rounded=false
                 },
-
                 -- draw current value
-                {type="label", x=310, y=80,
+                {type="label", x=310*lvSCALE, y=80*lvSCALE, color=WHITE, font=FS.FONT_38,
                     text=function() return signalPercent end,
-                    -- color=function() return signalPercentColor or GREY end,
-                    color=WHITE,
-                    font=FS.FONT_38
                 },
-                {type="label", x=340, y=140,
+                {type="label", x=340*lvSCALE, y=140*lvSCALE, color=WHITE, font=FS.FONT_16,
                     text="%",
-                    color=WHITE,
-                    font=FS.FONT_16
                 },
 
-                -- {type="label", x=10 , y=LCD_H-22, text=function() return line1 or "" end, color=WHITE, font=FS.FONT_8},
-                {type="label", x=10 , y=20, text="Signal Type:", color=WHITE, font=FS.FONT_8},
 
-                { type = "choice", x=120, y=15, w=130, title = "Telemetry",
-                    values = {"---", "Frsky RSSI", "elrs Anntena 1", "elrs Anntena 2"},
+                -- draw settings
+                {type="label", x=10*lvSCALE , y=20*lvSCALE, color=WHITE, font=FS.FONT_8,
+                    text="Signal Type:",
+                },
+                { type="choice", x=120*lvSCALE, y=15*lvSCALE, w=130*lvSCALE, title = "Telemetry",
+                    values = {"-- Auto Detect --", "Frsky RSSI", "elrs Anntena 1", "elrs Anntena 2"},
                     get = function() return signalType end,
                     set = function(i)
                         signalType = i
-                    end ,
+                        is_elrs = (signalType == 3 or signalType == 4) and true or false
+                    end,
                 },
 
                 -- beep button
-                {type="label", x=20, y=65, text="Beep:", color=WHITE, font=FS.FONT_8},
-                {type="toggle", x=80, y=60,
+                {type="label", x=20*lvSCALE, y=65*lvSCALE, text="Beep:", color=WHITE, font=FS.FONT_8},
+                {type="toggle", x=80*lvSCALE, y=60*lvSCALE,
                     get=(function() return is_beep end),
                     set=(function(val) is_beep = (val==1) end)
                 },
                 -- haptic
-                {type="label", x=20, y=105, text="Haptic:", color=WHITE, font=FS.FONT_8},
-                {type="toggle", x=80, y=100,
+                {type="label", x=20*lvSCALE, y=105*lvSCALE, text="Haptic:", color=WHITE, font=FS.FONT_8},
+                {type="toggle", x=80*lvSCALE, y=100*lvSCALE,
                     get=(function() return useHaptic end),
                     set=(function(val) useHaptic = (val==1) end)
                 },
 
                 -- draw raw  value
-                {type="label", x=10, y=140,
+                {type="label", x=10*lvSCALE, y=140*lvSCALE,
                     text=function() return "Raw value: " .. tostring(signalValue) .. "db" end,
-                    -- color=function() return signalPercentColor or GREY end,
                     color=LIGHTGREY,
                     font=FS.FONT_8
                 },
 
                 -- tx power
-                {type="label", x=10, y=160,
-                    text=function() return "TX Power: " .. tostring(txPower) .. "mW" end,
+                {type="label", x=10*lvSCALE, y=160*lvSCALE,
+                    text=function()
+                        if txPower == nil then
+                            txPower = "N/A "
+                        end
+                        return "TX Power: " .. tostring(txPower) .. "mW"
+                    end,
                     -- color=function() return ((txPower == targetTXPower1)or(txPower == targetTXPower2)) and DARKGREEN or RED end,
                     color=LIGHTGREY,
-                    font=FS.FONT_8
+                    font=FS.FONT_8,
+                    visible=function()
+                        return is_elrs==true
+                    end,
+
                 },
 
-                {type="box", x=50, y=180,
+                {type="box", x=50*lvSCALE, y=180*lvSCALE,
                     children={
                         {type="label", x=0, y=0, text="!! Set TX Power to 25mW", color=RED, font=FS.FONT_8},
                         {type="label", x=0, y=20,text="!! Set TX Dynamic=OFF",color=RED,font=FS.FONT_8},
@@ -295,11 +309,11 @@ local function build_ui()
         },
 
         -- no signal
-        {type="box", x=0, y=30,
+        {type="box", x=0, y=30*lvSCALE,
             children={
-                {type="image", x=0,y=0,w=LCD_W,h=LCD_H-30, fill=true, file=script_folder.."/locator1.png"},
-                -- {type="rectangle", x=20, y=30+20, w=LCD_W-20*2, h=LCD_H-30-20*2, color=GREY, filled=true, opacity=230},
-                {type="label", x=50, y=170, text="No signal found \nwaiting for: RSSI/1RSS/2RSS", color=RED, font=FS.FONT_12},
+                {type="image", x=0,y=0,w=LCD_W,h=LCD_H-30*lvSCALE, fill=true, file=script_folder.."/locator1.png"},
+                -- {type="rectangle", x=20*lvSCALE, y=30*lvSCALE+20*lvSCALE, w=LCD_W-20*2*lvSCALE, h=LCD_H-30*lvSCALE-20*2*lvSCALE, color=GREY, filled=true, opacity=230},
+                {type="label", x=50*lvSCALE, y=170*lvSCALE, text="No signal found \nwaiting for: RSSI/1RSS/2RSS", color=RED, font=FS.FONT_12},
             },
             visible=function()
                 return getRSSI() == 0
@@ -322,12 +336,12 @@ local function main(event, touchState)
 
     updateSignalValues()
 
-    -- log("signalValue: %s, signalMin: %s, signalMax: %s, txPower: %s", signalValue, signalMin, signalMax, txPower)
+    log("signalValue: %s, signalMin: %s, signalMax: %s, txPower: %s", signalValue, signalMin, signalMax, txPower)
     -- log("getRSSI(): %s", getRSSI())
 
     signalPercent = math.floor(100 * ((signalValue - signalMin) / (signalMax - signalMin)))
     signalPercentColor = getRangeColor(signalPercent, 0, 100)
-    -- log("signalPercent: %s, signalPercentColor: %s", signalPercent, signalPercentColor)
+    log("signalPercent: %s, signalPercentColor: %s", signalPercent, signalPercentColor)
     -- log("signalValue: %s, signalMin: %s, signalMax: %s, txPower: %s, line1: %s", signalValue, signalMin, signalMax, txPower, line1)
     -- -- log(signalValue)
 
