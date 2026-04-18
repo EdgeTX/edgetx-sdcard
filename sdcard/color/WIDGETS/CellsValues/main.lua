@@ -277,9 +277,9 @@ local function update(widget, options)
              cellLayout(7, zw, th, rd, bw, bh, bx, by, widget),
              cellLayout(8, zw, th, rd, bw, bh, bx, by, widget),
              {type="box", pos=function() return 0, ((getCellCount(T) + 1) // 2) * th end, children={
-                 {type="label", x=0, text=function() return string.format("%d %%", getCellTotalPercent(T)) end, font=SMALLSIZE, color=widget.options.textcolor},
-                 {type="label", x=zw/4, text=function() return getTotalText(T) end, font=SMALLSIZE, color=widget.options.textcolor},
-                 {type="label", x=2*zw/3, text=function() return getDeltaText(T) end, font=SMALLSIZE, color= function() return (deltawarning == 0) and widget.options.textcolor or widget.options.textalarmcolor end},
+                 {type="label", x=0, text=function() return string.format("%d %%", getCellTotalPercent(T)) end, font=STDSIZE, color=widget.options.textcolor},
+                 {type="label", x=zw/4, text=function() return getTotalText(T) end, font=STDSIZE, color=widget.options.textcolor},
+                 {type="label", x=2*zw/3, text=function() return getDeltaText(T) end, font=STDSIZE, color= function() return (deltawarning == 0) and widget.options.textcolor or widget.options.textalarmcolor end},
              }},
          }
         }
