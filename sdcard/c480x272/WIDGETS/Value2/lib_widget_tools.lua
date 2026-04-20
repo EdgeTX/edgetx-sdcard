@@ -1,4 +1,6 @@
-local m_log, app_name = ...
+local args = {...}
+local m_log = args[1]
+local app_name = args[2]
 
 local M = {}
 M.m_log = m_log
@@ -16,7 +18,6 @@ local FONT_12 = MIDSIZE -- 12px
 local FONT_8 = 0 -- Default 8px
 local FONT_6 = SMLSIZE -- 6px
 
-local FONT_LIST = {FONT_6, FONT_8, FONT_12, FONT_16, FONT_38}
 M.FONT_LIST = {FONT_6, FONT_8, FONT_12, FONT_16, FONT_38}
 
 ---------------------------------------------------------------------------------------------------
@@ -41,11 +42,11 @@ function M.unitIdToString(unitId)
         return ""
     end
 
-    --log("idUnit: " .. unitId)
+    -- log("idUnit: " .. unitId)
 
     if (unitId > 0 and unitId <= #UNIT_ID_TO_STRING) then
         local txtUnit = UNIT_ID_TO_STRING[unitId]
-        --log("txtUnit: " .. txtUnit)
+        -- log("txtUnit: " .. txtUnit)
         return txtUnit
     end
 
@@ -56,9 +57,10 @@ end
 ---------------------------------------------------------------------------------------------------
 
 function M.periodicInit()
-    local t = {}
-    t.startTime = -1;
-    t.durationMili = -1;
+    local t = {
+        startTime = -1,
+        durationMili = -1
+    }
     return t
 end
 
@@ -96,7 +98,7 @@ end
 
 function M.periodicReset(t)
     t.startTime = getTime();
-    --log("periodicReset()");
+    -- log("periodicReset()");
     M.periodicGetElapsedTime(t)
 end
 
@@ -114,7 +116,7 @@ end
 function M.isTelemetryAvailableOld()
     -- select telemetry source
     if not M.tele_src_id then
-        --log("select telemetry source")
+        -- log("select telemetry source")
         local tele_src = getFieldInfo("RSSI")
         if not tele_src then tele_src = getFieldInfo("1RSS") end
         if not tele_src then tele_src = getFieldInfo("2RSS") end
@@ -125,12 +127,12 @@ function M.isTelemetryAvailableOld()
         if not tele_src then tele_src = getFieldInfo("A1") end
 
         if tele_src == nil then
-            --log("no telemetry sensor found")
+            -- log("no telemetry sensor found")
             M.tele_src_id = nil
             M.tele_src_name = "---"
             return false
         else
-            --log("telemetry sensor found: " .. tele_src.name)
+            -- log("telemetry sensor found: " .. tele_src.name)
             M.tele_src_id = tele_src.id
             M.tele_src_name = tele_src.name
         end
@@ -163,14 +165,14 @@ function M.detectResetEvent(wgt, callback_onTelemetryResetEvent)
         return
     end
     if (currMinRSSI == wgt.telemResetLowestMinRSSI) then
-        --log("telemetry reset event: not found")
+        -- log("telemetry reset event: not found")
         return
     end
 
     if (currMinRSSI < wgt.telemResetLowestMinRSSI) then
         -- rssi just got lower, record it
         wgt.telemResetLowestMinRSSI = currMinRSSI
-        --log("telemetry reset event: not found")
+        -- log("telemetry reset event: not found")
         return
     end
 
@@ -207,7 +209,7 @@ function M.getSensorInfoByName(sensorName)
         --formula (number) Only calculated sensors. 0 = Add etc. see list of formula choices in Companion popup
         s1.formula = s2.formula
 
-        log("getSensorInfo: %d. name: %s, unit: %s , prec: %s , id: %s , instance: %s ", i, s2.name, s2.unit, s2.prec, s2.id, s2.instance)
+        -- log("getSensorInfo: %d. name: %s, unit: %s , prec: %s , id: %s , instance: %s ", i, s2.name, s2.unit, s2.prec, s2.id, s2.instance)
 
         if s2.name == sensorName then
             return s1
@@ -220,11 +222,11 @@ function M.getSensorInfoByName(sensorName)
  function M.getSensorPrecession(sensorName)
     local sensorInfo = M.getSensorInfoByName(sensorName)
     if (sensorInfo == nil) then
-        log("getSensorPrecession: not found sensor [%s]", sensorName)
+        -- log("getSensorPrecession: not found sensor [%s]", sensorName)
         return -1
     end
 
-    log("getSensorPrecession: name: %s, prec: %s , id: %s", sensorInfo.name, sensorInfo.prec, sensorInfo.id)
+    -- log("getSensorPrecession: name: %s, prec: %s , id: %s", sensorInfo.name, sensorInfo.prec, sensorInfo.id)
     return sensorInfo.prec
 end
 
@@ -244,7 +246,7 @@ end
 function M.isSensorExist(sensorName)
     local sensorInfo = M.getSensorInfoByName(sensorName)
     local is_exist = (sensorInfo ~= nil)
-    log("getSensorInfo: [%s] is_exist: %s", sensorName, is_exist)
+    -- log("getSensorInfo: [%s] is_exist: %s", sensorName, is_exist)
     return is_exist
  end
 
@@ -272,12 +274,12 @@ end
 
 ------------------------------------------------------------------------------------------------------
 function M.getFontSizeRelative(orgFontSize, delta)
-    for i = 1, #FONT_LIST do
-        if FONT_LIST[i] == orgFontSize then
+    for i = 1, #M.FONT_LIST do
+        if M.FONT_LIST[i] == orgFontSize then
             local newIndex = i + delta
-            newIndex = math.min(newIndex, #FONT_LIST)
+            newIndex = math.min(newIndex, #M.FONT_LIST)
             newIndex = math.max(newIndex, 1)
-            return FONT_LIST[newIndex]
+            return M.FONT_LIST[newIndex]
         end
     end
     return orgFontSize
@@ -373,9 +375,7 @@ end
 
 ------------------------------------------------------------------------------------------------------
 -- usage:
---log("bbb----------------------------------------------------------")
 --wgt.tools.heap_dump(wgt, 0, 60)
---log("ccc----------------------------------------------------------")
 function M.heap_dump(tbl, indent, max_dept)
     local spaces = string.rep("  ", indent)
     if max_dept == 0 then

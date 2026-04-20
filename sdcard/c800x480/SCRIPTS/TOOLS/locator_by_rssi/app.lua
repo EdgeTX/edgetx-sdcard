@@ -20,7 +20,7 @@
 -- Model Locator by RSSI
 -- Offer Shmuely (based on code from Scott Bauer 6/21/2015)
 -- Date: 2022-2026
-local app_ver = "1.11"
+local app_ver = "1.12"
 
 -- This widget help to find a lost/crashed model based on the RSSI (if still available)
 -- The widget produce audio representation (vario-meter style) of the RSSI from the lost model
@@ -72,6 +72,7 @@ end
 
 -- This function returns green at gvalue, red at rvalue and graduate in between
 local function getRangeColor(value, red_value, green_value)
+    local r,g
     local range = math.abs(green_value - red_value)
     if range == 0 then
         return lcd.RGB(0, 0xdf, 0)
@@ -194,7 +195,7 @@ local function updateSignalValues()
         log("2RSS: " .. v)
     end
 
-    if v == 0 then
+    if v == 0 or v == nil then
         v = signalMin
     end
 
@@ -271,7 +272,7 @@ local function build_ui()
 
                 -- draw raw  value
                 {type="label", x=10*lvSCALE, y=140*lvSCALE,
-                    text=function() return "Raw value: " .. tostring(signalValue) .. "db" end,
+                    text=function() return string.format("Raw value: %s db", signalValue) end,
                     color=LIGHTGREY,
                     font=FS.FONT_8
                 },
@@ -282,7 +283,7 @@ local function build_ui()
                         if txPower == nil then
                             txPower = "N/A "
                         end
-                        return "TX Power: " .. tostring(txPower) .. "mW"
+                        return string.format("TX Power: %s mW", txPower)
                     end,
                     -- color=function() return ((txPower == targetTXPower1)or(txPower == targetTXPower2)) and DARKGREEN or RED end,
                     color=LIGHTGREY,
@@ -339,7 +340,11 @@ local function main(event, touchState)
     log("signalValue: %s, signalMin: %s, signalMax: %s, txPower: %s", signalValue, signalMin, signalMax, txPower)
     -- log("getRSSI(): %s", getRSSI())
 
-    signalPercent = math.floor(100 * ((signalValue - signalMin) / (signalMax - signalMin)))
+    if signalValue == nil or signalMax == signalMin then
+        signalPercent = 0
+    else
+        signalPercent = math.floor(100 * ((signalValue - signalMin) / (signalMax - signalMin)))
+    end
     signalPercentColor = getRangeColor(signalPercent, 0, 100)
     log("signalPercent: %s, signalPercentColor: %s", signalPercent, signalPercentColor)
     -- log("signalValue: %s, signalMin: %s, signalMax: %s, txPower: %s, line1: %s", signalValue, signalMin, signalMax, txPower, line1)

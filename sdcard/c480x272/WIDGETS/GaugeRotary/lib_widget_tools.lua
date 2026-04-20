@@ -1,4 +1,6 @@
-local m_log, app_name = ...
+local args = {...}
+local m_log = args[1]
+local app_name = args[2]
 
 local M = {}
 M.m_log = m_log
@@ -17,6 +19,7 @@ local FONT_8 = 0 -- Default 8px
 local FONT_6 = SMLSIZE -- 6px
 
 local FONT_LIST = {FONT_6, FONT_8, FONT_12, FONT_16, FONT_38}
+M.FONT_LIST = {FONT_6, FONT_8, FONT_12, FONT_16, FONT_38}
 
 ---------------------------------------------------------------------------------------------------
 local function log(fmt, ...)
@@ -55,9 +58,10 @@ end
 ---------------------------------------------------------------------------------------------------
 
 function M.periodicInit()
-    local t = {}
-    t.startTime = -1;
-    t.durationMili = -1;
+    local t = {
+        startTime = -1,
+        durationMili = -1
+    }
     return t
 end
 
@@ -110,6 +114,42 @@ function M.isTelemetryAvailable()
     return is_telem > 0
 end
 
+function M.isTelemetryAvailableOld()
+    -- select telemetry source
+    if not M.tele_src_id then
+        --log("select telemetry source")
+        local tele_src = getFieldInfo("RSSI")
+        if not tele_src then tele_src = getFieldInfo("1RSS") end
+        if not tele_src then tele_src = getFieldInfo("2RSS") end
+        if not tele_src then tele_src = getFieldInfo("RQly") end
+        if not tele_src then tele_src = getFieldInfo("VFR%") end
+        if not tele_src then tele_src = getFieldInfo("TRSS") end
+        if not tele_src then tele_src = getFieldInfo("RxBt") end
+        if not tele_src then tele_src = getFieldInfo("A1") end
+
+        if tele_src == nil then
+            --log("no telemetry sensor found")
+            M.tele_src_id = nil
+            M.tele_src_name = "---"
+            return false
+        else
+            --log("telemetry sensor found: " .. tele_src.name)
+            M.tele_src_id = tele_src.id
+            M.tele_src_name = tele_src.name
+        end
+    end
+
+    if M.tele_src_id == nil then
+        return false
+    end
+
+    local rx_val = getValue(M.tele_src_id)
+    if rx_val ~= 0 then
+        return true
+    end
+    return false
+end
+
 ---------------------------------------------------------------------------------------------------
 
 -- workaround to detect telemetry-reset event, until a proper implementation on the lua interface will be created
@@ -120,7 +160,6 @@ end
 -- on event detection, the function onTelemetryResetEvent() will be trigger
 --
 function M.detectResetEvent(wgt, callback_onTelemetryResetEvent)
-
     local currMinRSSI = getValue('RSSI-')
     if (currMinRSSI == nil) then
         log("telemetry reset event: can not be calculated")
@@ -160,8 +199,8 @@ function M.getSensorInfoByName(sensorName)
         s1.type = s2.type
         --name (string) Name
         s1.name = s2.name
-        --unit (number) See list of units in the appendix of the OpenTX Lua Reference Guide
-        s1.unit = s2.unit
+        --unit (number->string) See list of units in the appendix of the OpenTX Lua Reference Guide
+        s1.unit = M.unitIdToString(s2.unit)
         --prec (number) Number of decimals
         s1.prec = s2.prec
         --id (number) Only custom sensors
@@ -171,7 +210,7 @@ function M.getSensorInfoByName(sensorName)
         --formula (number) Only calculated sensors. 0 = Add etc. see list of formula choices in Companion popup
         s1.formula = s2.formula
 
-        log("getSensorInfo: %d. name: %s, unit: %s , prec: %s , id: %s , instance: %s ", i, s2.name, s2.unit, s2.prec, s2.id, s2.instance)
+        -- log("getSensorInfo: %d. name: %s, unit: %s , prec: %s , id: %s , instance: %s ", i, s2.name, s2.unit, s2.prec, s2.id, s2.instance)
 
         if s2.name == sensorName then
             return s1
@@ -215,23 +254,22 @@ function M.isSensorExist(sensorName)
 ---------------------------------------------------------------------------------------------------
 -- workaround for bug in getFiledInfo()  -- ???? why?
 function M.cleanInvalidCharFromGetFiledInfo(sourceName)
-
-    if string.byte(string.sub(sourceName, 1, 1)) > 127 then
+     if string.byte(string.sub(sourceName, 1, 1)) > 127 then
         sourceName = string.sub(sourceName, 2, -1)
     end
     if string.byte(string.sub(sourceName, 1, 1)) > 127 then
         sourceName = string.sub(sourceName, 2, -1)
     end
-
     return sourceName
 end
 
 -- workaround for bug in getSourceName()
 function M.getSourceNameCleaned(source)
     local sourceName = getSourceName(source)
-    print("222 a sourceName: " .. sourceName)
+    if (sourceName == nil) then
+        return "N/A"
+    end
     local sourceName = M.cleanInvalidCharFromGetFiledInfo(sourceName)
-    print("222 b sourceName: " .. sourceName)
     return sourceName
 end
 
@@ -254,17 +292,65 @@ function M.lcdSizeTextFixed(txt, font_size)
 
     local v_offset = 0
     if font_size == FONT_38 then
-        v_offset = -15
+        if (lvgl~=nil) then
+            v_offset = -7
+            return ts_w-3, 47, v_offset
+        else
+            v_offset = -14
+        end
+        ts_h = 47
     elseif font_size == FONT_16 then
         v_offset = -8
+        ts_h = 24
     elseif font_size == FONT_12 then
         v_offset = -6
+        ts_h = 17
     elseif font_size == FONT_8 then
         v_offset = -4
+        ts_h = 13
     elseif font_size == FONT_6 then
         v_offset = -3
+        ts_h = 11
     end
-    return ts_w, ts_h +2*v_offset, v_offset
+    -- return ts_w, ts_h +2*v_offset, v_offset
+    return ts_w, ts_h, v_offset
+end
+
+function M.getFontSize(wgt, txt, max_w, max_h, max_font_size)
+    log("getFontSize() [%s] %dx%d", txt, max_w, max_h)
+    local maxFontIndex = M.getFontIndex(max_font_size, nil)
+
+    if M.getFontIndex(FONT_38, nil) <= maxFontIndex then
+        local w, h, v_offset = M.lcdSizeTextFixed(txt, FONT_38)
+        if w <= max_w and h <= max_h then
+            log("[%s] FONT_38 %dx%d", txt, w, h)
+            return FONT_38, w, h, v_offset
+        else
+            log("[%s] FONT_38 %dx%d (too small)", txt, w, h)
+        end
+    end
+
+    w, h, v_offset = M.lcdSizeTextFixed(txt, FONT_16)
+    if w <= max_w and h <= max_h then
+        -- log("[%s] FONT_16 %dx%d", txt, w, h, txt)
+        return FONT_16, w, h, v_offset
+    end
+
+    w, h, v_offset = M.lcdSizeTextFixed(txt, FONT_12)
+    if w <= max_w and h <= max_h then
+        -- log("[%s] FONT_12 %dx%d", txt, w, h, txt)
+        return FONT_12, w, h, v_offset
+    end
+
+    w, h, v_offset = M.lcdSizeTextFixed(txt, FONT_8)
+    if w <= max_w and h <= max_h then
+        -- log("[%s] FONT_8 %dx%d", txt, w, h, txt)
+        return FONT_8, w, h, v_offset
+    end
+
+    w, h, v_offset = M.lcdSizeTextFixed(txt, FONT_6)
+    -- log("[%s] FONT_6 %dx%d", txt, w, h, txt)
+    return FONT_6, w, h, v_offset
 end
 
 ------------------------------------------------------------------------------------------------------

@@ -38,6 +38,8 @@ local m_utils = loadScript(ENGINE_FOLDER .. "/lib_utils", "btd")(m_log, app_name
 -- better font names
 local FS={FONT_38=XXLSIZE,FONT_16=DBLSIZE,FONT_12=MIDSIZE,FONT_8=0,FONT_6=SMLSIZE}
 
+local lvSCALE = lvgl.LCD_SCALE or 1
+local is800 = (LCD_W==800)
 
 local preset_list = {
     about="---"
@@ -140,7 +142,6 @@ local function on_change_preset_selection(i)
     log("Selected preset_name: %s. %s",i, preset_folder_name)
 
     preset_info = m_utils.readMeta(SCRIPT_FOLDER .. "/" .. preset_folder_name .. "/meta.ini")
-    preset_info.icon = bitmap.open(SCRIPT_FOLDER .. "/" .. preset_folder_name .. "/icon.png")
 
     log("Category: %s", preset_info["category"])
     log("preset_selection: %s", preset_info["name"])
@@ -156,7 +157,7 @@ local function state_SELECTION_INIT()
         -- {type="image", x=0, y=0, w=LCD_W, h=LCD_H, file=ImgBackground},
         {type="rectangle", x=20, y=55, w=450, h=43, color=lcd.RGB(0x8B8D94), filled=true, rounded=6},
         -- {type="label", text="Preset:", x=90, y=65, color=BLACK},
-        {type="choice", x=100, y=60, w=LCD_W-100-20, title="Select Preset",
+        {type="choice", x=100, y=60, w=LCD_W-100-20, title="Select Preset", popupWidth = 300*lvSCALE,
             values=preset_list,
             get=function() return preset_selection_idx end,
             set=function(val)
@@ -207,9 +208,7 @@ end
 
 local function state_SELECTION(event, touchState)
     if event == EVT_TOUCH_FIRST and (touchState.x <= 40 and touchState.y >= 100 and touchState.y <= 160) then
-        log("(%s) %s - %s", page, touchState.x, touchState.y)
     elseif event == EVT_TOUCH_FIRST and (touchState.x >= LCD_W - 40 and touchState.y >= 100 and touchState.y <= 160) then
-        log("(%s) %s - %s", page, touchState.x, touchState.y)
         log("current_preset_selection=%s", preset_selection_idx)
 
         if preset_selection_idx > 1 then
@@ -267,9 +266,7 @@ local function state_SCRIPT_RUNNER(event, touchState)
     --log("state_SCRIPT_RUNNER()")
 
     if event == EVT_TOUCH_FIRST and (touchState.x <= 40 and touchState.y >= 100 and touchState.y <= 160) then
-        log("(%s) %s - %s", page, touchState.x, touchState.y)
     elseif event == EVT_TOUCH_FIRST and (touchState.x >= LCD_W - 40 and touchState.y >= 100 and touchState.y <= 160) then
-        log("(%s) %s - %s", page, touchState.x, touchState.y)
         if preset_selection_idx > 1 then
             state = STATE.CONFIRM_REQUEST_INIT
             return 0
@@ -339,7 +336,7 @@ end
 
 ---------------------------------------------------------------------------------------------------
 
-local function state_ON_END_INIT(event, touchState)
+local function state_ON_END_INIT()
     log("state_ON_END_INIT()")
 
     local pg = build_topbar(nil, nil)
@@ -360,7 +357,7 @@ local function state_ON_END(event, touchState)
     return 0
 end
 
-local function state_ERROR_PAGE_INIT(event, touchState)
+local function state_ERROR_PAGE_INIT()
     lvgl.clear()
     local pg = build_topbar(nil, nil)
     pg:build({
@@ -395,42 +392,42 @@ local function run(event, touchState)
 
     elseif state == STATE.SELECTION_INIT then
         log("STATE.SELECTION_INIT")
-        return state_SELECTION_INIT(event, touchState)
+        return state_SELECTION_INIT()
     elseif state == STATE.SELECTION then
         -- log("STATE.SELECTION")
         return state_SELECTION(event, touchState)
 
     elseif state == STATE.SCRIPT_RUNNER_INIT then
         log("STATE.SCRIPT_RUNNER_INIT")
-        return state_SCRIPT_RUNNER_INIT(event, touchState)
+        return state_SCRIPT_RUNNER_INIT()
     elseif state == STATE.SCRIPT_RUNNER then
         log("STATE.SCRIPT_RUNNER")
         return state_SCRIPT_RUNNER(event, touchState)
 
     elseif state == STATE.CONFIRM_REQUEST_INIT then
         log("STATE.CONFIRM_REQUEST_INIT")
-        return state_CONFIRM_REQUEST_INIT(event, touchState)
+        return state_CONFIRM_REQUEST_INIT()
     elseif state == STATE.CONFIRM_REQUEST then
         log("STATE.CONFIRM_REQUEST")
         return state_CONFIRM_REQUEST(event, touchState)
 
     elseif state == STATE.UPDATE_MODEL_INIT then
         log("STATE.UPDATE_MODEL_INIT")
-        return state_UPDATE_MODEL_INIT(event, touchState)
+        return state_UPDATE_MODEL_INIT()
     elseif state == STATE.UPDATE_MODEL then
         log("STATE.UPDATE_MODEL")
         return state_UPDATE_MODEL(event, touchState)
 
     elseif state == STATE.ON_END_INIT then
         log("STATE.ON_END_INIT")
-        return state_ON_END_INIT(event, touchState)
+        return state_ON_END_INIT()
     elseif state == STATE.ON_END then
         log("STATE.ON_END")
         return state_ON_END(event, touchState)
 
     elseif state == STATE.ERROR_PAGE_INIT then
         --log("STATE.ERROR_PAGE_INIT")
-        return state_ERROR_PAGE_INIT(event, touchState)
+        return state_ERROR_PAGE_INIT()
     elseif state == STATE.ERROR_PAGE then
         --log("STATE.ERROR_PAGE")
         return state_ERROR_PAGE(event, touchState)

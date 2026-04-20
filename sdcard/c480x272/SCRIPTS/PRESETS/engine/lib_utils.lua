@@ -30,7 +30,7 @@ M.defaultChannel_0_RUD = defaultChannel(M.STICK_NUMBER_RUD)
 local lvSCALE = lvgl.LCD_SCALE or 1
 
 local function lvglPercent(p)
-    -- if lvgl.PERCENT_SIZE then 
+    -- if lvgl.PERCENT_SIZE then
     --     m_log.info("lvglPercent 1: %d%% => %d", p, lvgl.PERCENT_SIZE + p)
     --     return lvgl.PERCENT_SIZE + p
     -- else
@@ -139,14 +139,14 @@ end
 
 function M.readFileToString(filename)
     log("readFileToString: %s", filename)
-    local file = io.open(filename, "r") -- Open the file in read mode
-    if not file then
+    local hFile = io.open(filename, "r") -- Open the file in read mode
+    if not hFile then
         return nil -- File does not exist or could not be opened
     end
 
     --local content = file:read("*a") -- Read the entire file content
-    local content = io.read(file, 2000) -- Read the entire file content
-    io.close(file) -- Close the file
+    local content = io.read(hFile, 2000) -- Read the entire file content
+    io.close(hFile) -- Close the file
 
     log("readFileToString: - content: %s", content)
     return content
@@ -226,8 +226,8 @@ end
 --     if neededWidth <= maxWidth then
 --         return neededWidth
 --     else
---         return maxWidth 
---     end    
+--         return maxWidth
+--     end
 -- end
 
 return M
