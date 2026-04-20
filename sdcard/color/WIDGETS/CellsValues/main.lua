@@ -277,9 +277,9 @@ local function update(widget, options)
              cellLayout(7, zw, th, rd, bw, bh, bx, by, widget),
              cellLayout(8, zw, th, rd, bw, bh, bx, by, widget),
              {type="box", pos=function() return 0, ((getCellCount(T) + 1) // 2) * th end, children={
-                 {type="label", x=0, text=function() return string.format("%d %%", getCellTotalPercent(T)) end, font=SMALLSIZE, color=widget.options.textcolor},
-                 {type="label", x=zw/4, text=function() return getTotalText(T) end, font=SMALLSIZE, color=widget.options.textcolor},
-                 {type="label", x=2*zw/3, text=function() return getDeltaText(T) end, font=SMALLSIZE, color= function() return (deltawarning == 0) and widget.options.textcolor or widget.options.textalarmcolor end},
+                 {type="label", x=0, text=function() return string.format("%d %%", getCellTotalPercent(T)) end, font=STDSIZE, color=widget.options.textcolor},
+                 {type="label", x=zw/4, text=function() return getTotalText(T) end, font=STDSIZE, color=widget.options.textcolor},
+                 {type="label", x=2*zw/3, text=function() return getDeltaText(T) end, font=STDSIZE, color= function() return (deltawarning == 0) and widget.options.textcolor or widget.options.textalarmcolor end},
              }},
          }
         }
@@ -293,20 +293,21 @@ local function background(widget)
     T = getCellsSensor(widget.options.sensor)
 
     -- Update the % telemetry sensor even if not displayed
-    setTelemetryValue(0x0310, 0, 1, getCellTotalPercent(T), 13, 0, "%bat")
+    if getCellCount(T) ~= 0 then
+      setTelemetryValue(0x0310, 0, 1, getCellTotalPercent(T), 13, 0, "%bat")
+    end
 end
 
 local function refresh(widget, event, touchState)
     -- Runs periodically only when widget instance is visible
     -- If full screen, then event is 0 or event value, otherwise nil
-    T = getCellsSensor(widget.options.sensor)
 
     if lvgl == nil then
         lcd.drawText(0, 0, "No LVGL detected", COLOR_THEME_WARNING)
     end
 
-    -- Create a % telemetry sensor
-    setTelemetryValue(0x0310, 0, 1, getCellTotalPercent(T), 13, 0, "%bat")
+    -- Create %bat telemetry sensor
+    background(widget)
 end
 
 return {

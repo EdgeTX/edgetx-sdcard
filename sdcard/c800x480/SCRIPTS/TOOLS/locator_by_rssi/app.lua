@@ -66,7 +66,7 @@ local is800 = (LCD_W==800)
 
 --------------------------------------------------------------
 local function log(fmt, ...)
-    print("[locator] ".. string.format(fmt, ...))
+    -- print("[locator] ".. string.format(fmt, ...))
 end
 --------------------------------------------------------------
 
