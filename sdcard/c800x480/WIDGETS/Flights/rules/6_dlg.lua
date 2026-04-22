@@ -15,7 +15,7 @@ Notes:
 - Flight ends when height below 3m
 ]]
 
-local FlightLogicRule = assert(loadScript("/WIDGETS/" .. app_name .. "/rules/FlightLogicRule", "btd"), "Failed to load trigger Base Class")(m_log, app_name, wgt_status)
+local FlightLogicRule = assert(loadScript("/WIDGETS/" .. app_name .. "/rules/FlightLogicRule", "btd"), "Failed to load trigger Base Class")(m_log, app_name, switch_name, motor_channel_name)
 
 local M = FlightLogicRule:new()
 

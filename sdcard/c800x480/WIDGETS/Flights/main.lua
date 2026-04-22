@@ -1,7 +1,5 @@
 local app_name = "Flights"
 
-local tool = nil
-
 local default_flight_starting_duration = 30  -- 30 sec to detect flight success
 
 local triggerTypeDefs = {
@@ -66,12 +64,13 @@ end
 
 
 local function create(zone, options)
-    -- print(string.format("1111 Flights create: %s", name))
-    tool = assert(loadScript("/WIDGETS/"..app_name.."/app.lua", "btd"))(triggerTypeDefs)
-    return tool.create(zone, options)
+    local tool = assert(loadScript("/WIDGETS/" .. app_name .. "/app.lua", "btd"))(triggerTypeDefs)
+    local wgt = tool.create(zone, options)
+    wgt._tool = tool
+    return wgt
 end
-local function update(wgt, options) return tool.update(wgt, options) end
-local function background(wgt)      return tool.background(wgt)      end
-local function refresh(wgt)         return tool.refresh(wgt)         end
+local function update(wgt, options) return wgt._tool.update(wgt, options) end
+local function background(wgt)      return wgt._tool.background(wgt)      end
+local function refresh(wgt)         return wgt._tool.refresh(wgt)         end
 
 return {name=app_name, options=options, translate=translate, create=create,update = update, refresh=refresh, background=background, useLvgl=true}

@@ -57,12 +57,11 @@ local args = {...}
 local triggerTypeDefs = args[1]
 
 local app_name = "Flights"
-local app_ver = "2.1"
+local app_ver = "2.2"
 
 local lvSCALE = lvgl.LCD_SCALE or 1
 local is800 = (LCD_W==800)
 
-local build_ui = nil
 ------------------------------------------------------------------------------------------------------------------
 -- configuration
 local default_flight_starting_duration = 30  -- 30 sec to detect flight success
@@ -84,96 +83,6 @@ local FS={FONT_38=XXLSIZE,FONT_16=DBLSIZE,FONT_12=MIDSIZE,FONT_8=0,FONT_6=SMLSIZ
 
 local function log(fmt, ...)
     m_log.info(fmt, ...)
-end
-
-local function update(wgt, options)
-    if (wgt == nil) then return end
-
-    wgt.options = options
-    wgt.triggerDesc = triggerTypeDefs.info[wgt.options.triggerType].desc
-    wgt.triggerFile = triggerTypeDefs.info[wgt.options.triggerType].file
-    wgt.enable_sounds = wgt.options.enable_sounds
-
-    -- status
-    wgt.status = {}
-    wgt.status.switch_name = nil
-    wgt.status.motor_channel_name = nil
-    wgt.status.flight_state = "GROUND"
-    wgt.status.duration_passed = 0
-    wgt.status.periodic1 = wgt.tools.periodicInit()
-    wgt.status.last_flight_count = 0
-    wgt.status.flight_start_time = 0
-    wgt.status.flight_start_date_time = 0
-    wgt.status.flight_end_time = 0
-    wgt.status.flight_duration = 0
-
-    if (wgt.options.min_flight_duration < 0) then
-        wgt.options.min_flight_duration = math.abs(wgt.options.min_flight_duration)
-        default_flight_ending_duration = 1
-    end
-
-    if (wgt.options.arm_switch_id == nil) then
-        wgt.options.arm_switch_id = DEFAULT_ARM_SWITCH_ID -- SF up
-    end
-
-    wgt.status.switch_name = getSwitchName(wgt.options.arm_switch_id)
-    if (wgt.status.switch_name==nil) then
-        wgt.status.switch_name = "---"
-    end
-    log("wgt.options.arm_switch_id: %s, name: %s --- getSwitchIndex() %s ", wgt.options.arm_switch_id, wgt.status.switch_name, getSwitchIndex("SF"..CHAR_DOWN))
-
-    local fi_mot = getFieldInfo(wgt.options.motor_channel)
-    if (fi_mot == nil) then
-        wgt.status.motor_channel_name = "--"
-    else
-        wgt.status.motor_channel_name = fi_mot.name
-    end
-
-    local t_chunk = assert(loadScript("/WIDGETS/" .. app_name .. "/rules/" .. wgt.triggerFile, "btd"), "Failed to load trigger script: "..wgt.triggerFile)
-    wgt.rule = t_chunk(m_log, app_name, wgt.status.switch_name, wgt.status.motor_channel_name)
-
-    log("Using trigger type: %s (%s)", wgt.triggerDesc, wgt.triggerFile)
-    log("info: %s", wgt.rule:info())
-
-    local override_min_flight_time = wgt.rule:override_min_flight_time()
-    if (override_min_flight_time ~= nil) then
-        wgt.options.min_flight_duration = override_min_flight_time
-        log("Using override min flight duration: %s", wgt.options.min_flight_duration)
-    end
-
-
-    -- auto debug mode if widget size 1/2 or 1/1
-    wgt.options.is_debug = (wgt.options.auto_debug==1 and wgt.zone.h > 140)
-    -- log("auto_debug: %s, is_debug: %s, wgt.zone.h: %s", wgt.options.auto_debug, wgt.options.is_debug, wgt.zone.h)
-
-    -- backward compatibility
-    if wgt.options.text_color == 32768 or wgt.options.text_color == 65536 or wgt.options.text_color == 98304 then
-        log(string.format("wgt.options.text_color: %s", wgt.options.text_color))
-        log("flights wgt.options.text_color == <invalid value>, probably upgraded from previous ver, setting to RED")
-        wgt.options.text_color = RED
-        log(string.format("wgt.options.text_color (fixed): %s", wgt.options.text_color))
-    end
-
-    local ver, radio, maj, minor, rev, osname = getVersion()
-    local nVer = maj*1000000 + minor*1000 + rev
-    wgt.is_valid_ver = (nVer>=2011000)
-
-    build_ui(wgt)
-end
-
-local function create(zone, options)
-    local wgt = {
-        zone = zone,
-        options = options,
-
-        -- imports
-        tools = loadScript("/WIDGETS/" .. app_name .. "/lib_widget_tools.lua", "btd")(m_log, app_name),
-        flightHistory = loadScript("/WIDGETS/" .. app_name .. "/lib_flights_history.lua", "btd")(m_log, app_name),
-        -- flightCountHWriter = loadScript("/WIDGETS/" .. app_name .. "/lib_flights_count.lua", "btd")(m_log, app_name, "/flights-count.csv"),
-    }
-
-    update(wgt, options)
-    return wgt
 end
 
 local function getFontSize(wgt, txt)
@@ -211,7 +120,7 @@ local function getFlightCount(wgt)
 
     -- local model_name = model.getInfo().name
     -- local num_flights = wgt.flightCountHWriter.getValue(model_name)
-    return num_flights
+    return num_flights or 0
 end
 
 local function setFlightCount(wgt, newCount)
@@ -279,6 +188,197 @@ local function stateChange(wgt, newState, timer_sec)
         wgt.status.duration_passed = 0
         --periodicReset(wgt.status.periodic1)
     end
+end
+
+
+local function ternary(cond, T, F)
+    if cond then
+        return "ON"
+    else
+        return "OFF"
+    end
+end
+
+local function getColorByState(wgt, flight_state)
+    return (wgt.status.flight_state  == flight_state) and BLUE or 0+GREY
+end
+
+
+local function build_ui(wgt)
+
+    lvgl.clear()
+
+    if (wgt == nil) then log("refresh(nil)") return end
+    if (wgt.options == nil) then log("refresh(wgt.options=nil)") return end
+
+    -- get flight count
+    local num_flights = getFlightCount(wgt)
+
+    local font_size = getFontSize(wgt, num_flights)
+    local zone_w = wgt.zone.w
+    local zone_h = wgt.zone.h
+
+    local font_size_header = FS.FONT_6
+    -- if (event ~= nil) then
+    --     -- app mode (full screen)
+    --     font_size = FS.FONT_38
+    --     font_size_header = FS.FONT_16
+    --     zone_w = LCD_W
+    --     zone_h = LCD_H - 20
+    -- end
+
+    local ts_w, ts_h = lcd.sizeText(tostring(num_flights), font_size)
+    local dx = (zone_w - ts_w) / 2
+    local dyh = 5*lvSCALE
+    local dy --  = header_h - 1
+    local is_top_bar = (zone_h < 50*lvSCALE)
+
+    if is_top_bar then
+        -- force minimal spaces
+        dyh = -3*lvSCALE
+    else
+        dyh = 5*lvSCALE
+    end
+
+    -- global
+    -- lvgl.rectangle({x=0, y=0, w=LCD_W, h=LCD_H, color=lcd.RGB(0x11, 0x11, 0x11), filled=true})
+    local pMain = lvgl.box({x=0, y=0})
+
+    -- draw header
+    pMain:label({x=0, y=dyh, font=font_size_header, text="Flights:", color=wgt.options.text_color})
+
+    -- draw count
+    if is_top_bar == true then
+        -- pMain:label({x=zone_w-ts_w -10, y=dy, font=font_size, text=function() return getFlightCount(wgt) end, color=wgt.options.text_color})
+        pMain:label({x=10*lvSCALE, y=13*lvSCALE, font=font_size, text=function() return tostring(getFlightCount(wgt)) end, color=wgt.options.text_color})
+    else
+        pMain:label({x=zone_w-ts_w-5*lvSCALE, y=5*lvSCALE, font=font_size, text=function() return tostring(getFlightCount(wgt)) end, color=wgt.options.text_color})
+    end
+
+    -- enable 3 dots
+    if (show_dots == true) then
+        local dxc = 7*lvSCALE
+        pMain:circle({x=5*lvSCALE, y=20*lvSCALE + dxc*0, radius=3, filled=true, color=function() return wgt.rule:is_dot_1()   and GREEN or GREY end})
+        pMain:circle({x=5*lvSCALE, y=20*lvSCALE + dxc*1, radius=3, filled=true, color=function() return wgt.rule:is_dot_2()   and GREEN or GREY end})
+        pMain:circle({x=5*lvSCALE, y=20*lvSCALE + dxc*2, radius=3, filled=true, color=function() return wgt.rule:is_dot_3()   and GREEN or GREY end})
+    end
+
+    -- debug
+    local pInfo = lvgl.box({x=0, y=40})
+    if wgt.options.is_debug == true then
+        local dx = 15*lvSCALE
+        pInfo:label({x=dx+190*lvSCALE, y= 5*lvSCALE, font=FS.FONT_8, text=function() return string.format("Rule: %s", wgt.triggerDesc) end})
+        pInfo:label({x=dx, y= 0*lvSCALE, font=FS.FONT_6, text=function() return wgt.rule:dot_1_txt() end})
+        pInfo:label({x=dx, y=15*lvSCALE, font=FS.FONT_6, text=function() return wgt.rule:dot_2_txt() end})
+        pInfo:label({x=dx, y=30*lvSCALE, font=FS.FONT_6, text=function() return wgt.rule:dot_3_txt() end})
+        pInfo:label({x=dx, y=45*lvSCALE, font=FS.FONT_6, text=function() return string.format("timer: %.1f/%d",        wgt.status.duration_passed / 1000, wgt.tools.getDurationMili(wgt.status.periodic1) / 1000) end})
+        pInfo:label({x=dx, y=60*lvSCALE, font=FS.FONT_6, text=function() return string.format("flight duration: %.1f", wgt.status.flight_duration) end})
+
+        pInfo:label({x=dx, y=80*lvSCALE, font=FS.FONT_6, text="state:"})
+        dx = 50*lvSCALE
+        pInfo:label({x=dx, y= 80*lvSCALE, font=FS.FONT_6, text="GROUND"         , color=function() return getColorByState(wgt, "GROUND") end})
+        pInfo:label({x=dx, y= 95*lvSCALE, font=FS.FONT_6, text="FLIGHT_STARTING", color=function() return getColorByState(wgt, "FLIGHT_STARTING") end})
+        pInfo:label({x=dx, y=110*lvSCALE, font=FS.FONT_6, text="FLIGHT_ON"      , color=function() return getColorByState(wgt, "FLIGHT_ON") end})
+        pInfo:label({x=dx, y=125*lvSCALE, font=FS.FONT_6, text="FLIGHT_ENDING"  , color=function() return getColorByState(wgt, "FLIGHT_ENDING") end})
+
+        pInfo:label({x=  5*lvSCALE, y=145*lvSCALE, font=FS.FONT_6, text=function() return string.format("starting:\n %s", wgt.rule.is_flight_starting()) end})
+        pInfo:label({x= 70*lvSCALE, y=145*lvSCALE, font=FS.FONT_6, text=function() return string.format("on_flight:\n %s", wgt.rule.is_still_on_flight()) end})
+        pInfo:label({x=140*lvSCALE, y=145*lvSCALE, font=FS.FONT_6, text=function() return string.format("ending:\n %s", wgt.rule.is_flight_ending()) end})
+
+        pInfo:rectangle({x=dx+160*lvSCALE, y=30*lvSCALE, w=260*lvSCALE, h=140*lvSCALE, color=lcd.RGB(0x4169E1), filled=true, rounded=5})
+        pInfo:label({x=dx+(160+10)*lvSCALE, y=40*lvSCALE, font=FS.FONT_6, text=function() return wgt.rule:info() end, color=WHITE})
+    end
+end
+
+
+local function update(wgt, options)
+    if (wgt == nil) then return end
+
+    wgt.options = options
+    wgt.triggerDesc = triggerTypeDefs.info[wgt.options.triggerType].desc
+    wgt.triggerFile = triggerTypeDefs.info[wgt.options.triggerType].file
+    wgt.enable_sounds = wgt.options.enable_sounds
+
+    -- status
+    wgt.status = {}
+    wgt.status.switch_name = nil
+    wgt.status.motor_channel_name = nil
+    wgt.status.flight_state = "GROUND"
+    wgt.status.duration_passed = 0
+    wgt.status.periodic1 = wgt.tools.periodicInit()
+    wgt.status.last_flight_count = 0
+    wgt.status.flight_start_time = 0
+    wgt.status.flight_start_date_time = 0
+    wgt.status.flight_end_time = 0
+    wgt.status.flight_duration = 0
+
+    if (wgt.options.min_flight_duration < 0) then
+        wgt.options.min_flight_duration = math.abs(wgt.options.min_flight_duration)
+        default_flight_ending_duration = 1
+    end
+
+    if (wgt.options.arm_switch_id == nil) then
+        wgt.options.arm_switch_id = getSwitchIndex("SF"..CHAR_UP) -- SF up
+    end
+
+    wgt.status.switch_name = getSwitchName(wgt.options.arm_switch_id)
+    if (wgt.status.switch_name==nil) then
+        wgt.status.switch_name = "---"
+    end
+    log("wgt.options.arm_switch_id: %s, name: %s --- getSwitchIndex() %s ", wgt.options.arm_switch_id, wgt.status.switch_name, getSwitchIndex("SF"..CHAR_DOWN))
+
+    local fi_mot = getFieldInfo(wgt.options.motor_channel)
+    if (fi_mot == nil) then
+        wgt.status.motor_channel_name = "--"
+    else
+        wgt.status.motor_channel_name = fi_mot.name
+    end
+
+    local t_chunk = assert(loadScript("/WIDGETS/" .. app_name .. "/rules/" .. wgt.triggerFile, "btd"), "Failed to load trigger script: "..wgt.triggerFile)
+    wgt.rule = t_chunk(m_log, app_name, wgt.status.switch_name, wgt.status.motor_channel_name)
+
+    log("Using trigger type: %s (%s)", wgt.triggerDesc, wgt.triggerFile)
+    -- log("info: %s", wgt.rule:info())
+
+    local override_min_flight_time = wgt.rule:override_min_flight_time()
+    if (override_min_flight_time ~= nil) then
+        wgt.options.min_flight_duration = override_min_flight_time
+        log("Using override min flight duration: %s", wgt.options.min_flight_duration)
+    end
+
+
+    -- auto debug mode if widget size 1/2 or 1/1
+    wgt.options.is_debug = (wgt.options.auto_debug==1 and wgt.zone.h > 140)
+    -- log("auto_debug: %s, is_debug: %s, wgt.zone.h: %s", wgt.options.auto_debug, wgt.options.is_debug, wgt.zone.h)
+
+    -- backward compatibility
+    if wgt.options.text_color == 32768 or wgt.options.text_color == 65536 or wgt.options.text_color == 98304 then
+        log(string.format("wgt.options.text_color: %s", wgt.options.text_color))
+        log("flights wgt.options.text_color == <invalid value>, probably upgraded from previous ver, setting to RED")
+        wgt.options.text_color = RED
+        log(string.format("wgt.options.text_color (fixed): %s", wgt.options.text_color))
+    end
+
+    local ver, radio, maj, minor, rev, osname = getVersion()
+    local nVer = maj*1000000 + minor*1000 + rev
+    wgt.is_valid_ver = (nVer>=2011000)
+
+    build_ui(wgt)
+end
+
+local function create(zone, options)
+    local wgt = {
+        zone = zone,
+        options = options,
+
+        -- imports
+        tools = loadScript("/WIDGETS/" .. app_name .. "/lib_widget_tools.lua", "btd")(m_log, app_name),
+        flightHistory = loadScript("/WIDGETS/" .. app_name .. "/lib_flights_history.lua", "btd")(m_log, app_name),
+        -- flightCountHWriter = loadScript("/WIDGETS/" .. app_name .. "/lib_flights_count.lua", "btd")(m_log, app_name, "/flights-count.csv"),
+    }
+
+    update(wgt, options)
+    return wgt
 end
 
 local function background(wgt)
@@ -369,105 +469,6 @@ local function background(wgt)
 
     --log("flight_state: " .. wgt.status.flight_state)
     return
-end
-
-local function ternary(cond, T, F)
-    if cond then
-        return "ON"
-    else
-        return "OFF"
-    end
-end
-
-local function getColorByState(wgt, flight_state)
-    return (wgt.status.flight_state  == flight_state) and BLUE or 0+GREY
-end
-
-
-build_ui = function(wgt)
-
-    lvgl.clear()
-
-    if (wgt == nil) then log("refresh(nil)") return end
-    if (wgt.options == nil) then log("refresh(wgt.options=nil)") return end
-
-    -- get flight count
-    local num_flights = getFlightCount(wgt)
-
-    local font_size = getFontSize(wgt, num_flights)
-    local zone_w = wgt.zone.w
-    local zone_h = wgt.zone.h
-
-    local font_size_header = FS.FONT_6
-    -- if (event ~= nil) then
-    --     -- app mode (full screen)
-    --     font_size = FS.FONT_38
-    --     font_size_header = FS.FONT_16
-    --     zone_w = LCD_W
-    --     zone_h = LCD_H - 20
-    -- end
-
-    local ts_w, ts_h = lcd.sizeText(num_flights, font_size)
-    local dx = (zone_w - ts_w) / 2
-    local dyh = 5*lvSCALE
-    local dy --  = header_h - 1
-    local is_top_bar = (zone_h < 50*lvSCALE)
-
-    if is_top_bar then
-        -- force minimal spaces
-        dyh = -3*lvSCALE
-    else
-        dyh = 5*lvSCALE
-    end
-
-    -- global
-    -- lvgl.rectangle({x=0, y=0, w=LCD_W, h=LCD_H, color=lcd.RGB(0x11, 0x11, 0x11), filled=true})
-    local pMain = lvgl.box({x=0, y=0})
-
-    -- draw header
-    pMain:label({x=0, y=dyh, font=font_size_header, text="Flights:", color=wgt.options.text_color})
-
-    -- draw count
-    if is_top_bar == true then
-        -- pMain:label({x=zone_w-ts_w -10, y=dy, font=font_size, text=function() return getFlightCount(wgt) end, color=wgt.options.text_color})
-        pMain:label({x=10*lvSCALE, y=13*lvSCALE, font=font_size, text=function() return getFlightCount(wgt) end, color=wgt.options.text_color})
-    else
-        pMain:label({x=zone_w-ts_w-5*lvSCALE, y=5*lvSCALE, font=font_size, text=function() return getFlightCount(wgt) end, color=wgt.options.text_color})
-    end
-
-    -- enable 3 dots
-    if (show_dots == true) then
-        local dxc = 7*lvSCALE
-        pMain:circle({x=5*lvSCALE, y=20*lvSCALE + dxc*0, radius=3, filled=true, color=function() return wgt.rule:is_dot_1()   and GREEN or GREY end})
-        pMain:circle({x=5*lvSCALE, y=20*lvSCALE + dxc*1, radius=3, filled=true, color=function() return wgt.rule:is_dot_2()   and GREEN or GREY end})
-        pMain:circle({x=5*lvSCALE, y=20*lvSCALE + dxc*2, radius=3, filled=true, color=function() return wgt.rule:is_dot_3()   and GREEN or GREY end})
-    end
-
-    -- debug
-    local pInfo = lvgl.box({x=0, y=40})
-    if wgt.options.is_debug == true then
-        local dx = 15*lvSCALE
-        pInfo:label({x=dx+190*lvSCALE, y= 5*lvSCALE, font=FS.FONT_8, text=function() return string.format("Rule: %s", wgt.triggerDesc) end})
-        pInfo:label({x=dx, y= 0*lvSCALE, font=FS.FONT_6, text=function() return wgt.rule:dot_1_txt() end})
-        pInfo:label({x=dx, y=15*lvSCALE, font=FS.FONT_6, text=function() return wgt.rule:dot_2_txt() end})
-        pInfo:label({x=dx, y=30*lvSCALE, font=FS.FONT_6, text=function() return wgt.rule:dot_3_txt() end})
-        pInfo:label({x=dx, y=45*lvSCALE, font=FS.FONT_6, text=function() return string.format("timer: %.1f/%d",        wgt.status.duration_passed / 1000, wgt.tools.getDurationMili(wgt.status.periodic1) / 1000) end})
-        pInfo:label({x=dx, y=60*lvSCALE, font=FS.FONT_6, text=function() return string.format("flight duration: %.1f", wgt.status.flight_duration) end})
-
-        pInfo:label({x=dx, y=80*lvSCALE, font=FS.FONT_6, text="state:"})
-        dx = 50*lvSCALE
-        pInfo:label({x=dx, y= 80*lvSCALE, font=FS.FONT_6, text="GROUND"         , color=function() return getColorByState(wgt, "GROUND") end})
-        pInfo:label({x=dx, y= 95*lvSCALE, font=FS.FONT_6, text="FLIGHT_STARTING", color=function() return getColorByState(wgt, "FLIGHT_STARTING") end})
-        pInfo:label({x=dx, y=110*lvSCALE, font=FS.FONT_6, text="FLIGHT_ON"      , color=function() return getColorByState(wgt, "FLIGHT_ON") end})
-        pInfo:label({x=dx, y=125*lvSCALE, font=FS.FONT_6, text="FLIGHT_ENDING"  , color=function() return getColorByState(wgt, "FLIGHT_ENDING") end})
-
-        pInfo:label({x=  5*lvSCALE, y=145*lvSCALE, font=FS.FONT_6, text=function() return string.format("starting:\n %s", wgt.rule.is_flight_starting()) end})
-        pInfo:label({x= 70*lvSCALE, y=145*lvSCALE, font=FS.FONT_6, text=function() return string.format("on_flight:\n %s", wgt.rule.is_still_on_flight()) end})
-        pInfo:label({x=140*lvSCALE, y=145*lvSCALE, font=FS.FONT_6, text=function() return string.format("ending:\n %s", wgt.rule.is_flight_ending()) end})
-
-        pInfo:rectangle({x=dx+160*lvSCALE, y=30*lvSCALE, w=260*lvSCALE, h=140*lvSCALE, color=LIGHTBLUE, filled=true, rounded=5})
-        pInfo:label({x=dx+(160+10)*lvSCALE, y=40*lvSCALE, font=FS.FONT_6, text=function() return wgt.rule:info() end, color=WHITE})
-    end
 end
 
 local function refresh(wgt, event, touchState)

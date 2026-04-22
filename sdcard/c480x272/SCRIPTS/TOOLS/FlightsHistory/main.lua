@@ -17,7 +17,7 @@
 -- This script display the flights history as kept using the "Flights" widget
 -- Author: Offer Shmuely
 -- Date: 2023-2026
-local app_ver = "1.9"
+local app_ver = "1.10"
 
 -- to get help:
 -- change in lib_log.lua to "ENABLE_LOG_FILE=true"

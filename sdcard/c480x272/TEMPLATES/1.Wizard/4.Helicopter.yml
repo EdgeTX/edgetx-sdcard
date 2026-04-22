@@ -1,6 +1,6 @@
 semver: 2.12.0
 header:
-   name: "New Plane"
+   name: "New Helicopter"
    bitmap: ""
    labels: ""
 telemetryProtocol: 0

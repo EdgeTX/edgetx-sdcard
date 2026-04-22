@@ -192,7 +192,7 @@ local function state_SHOW_FLIGHTS_HIST_INIT(event, touchState)
             day,
             f_info.model_name,
             string.format("%s", f_info.flight_count),
-            string.format("(%0.1f min)", f_info.duration/100),
+            string.format("%d:%02d", math.floor(f_info.duration//100), math.floor((f_info.duration/100 % 1) * 60)),
         }
     end
 

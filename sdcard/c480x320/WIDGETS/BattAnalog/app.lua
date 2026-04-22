@@ -36,9 +36,10 @@
 -- Author : Offer Shmuely
 -- Date: 2021-2026
 local app_name = "BattAnalog"
-local app_ver = "1.9"
+local app_ver = "1.10"
 
 -- table.insert(package.searchers or package.loaders, function(filepath)
+-- enable require
 table.insert(package.searchers, function(filepath)
     local f = loadScript(filepath, "btd")
     if f == nil then
@@ -364,6 +365,7 @@ end
 -- color for battery
 -- This function returns green at 100%, red bellow 30% and graduate in between
 local function getPercentColor(percent)
+    local r, g = 0, 0
     if percent < 30 then
         return lcd.RGB(0xff, 0, 0)
     else
@@ -574,7 +576,10 @@ local function layoutZoneTopbar(wgt)
 
     local pMain = lvgl.box({x=0, y=0})
     layoutBattHorz(pMain, wgt,
-        {x=2, y=2*lvSCALE,w=wgt.zone.w-4,h=wgt.zone.h-4,segments_w=20, color=WHITE, bg_color=GREY, cath_w=10, cath_h=8, segments_h=20, cath=true, fence_thickness=1},
+        {
+            x=2, y=2*lvSCALE, w=wgt.zone.w-4*lvSCALE, h=wgt.zone.h-4*lvSCALE,
+            segments_w=20*lvSCALE, color=WHITE, bg_color=GREY, cath_w=10*lvSCALE, cath_h=8*lvSCALE, segments_h=20*lvSCALE, cath=true, fence_thickness=1*lvSCALE
+        },
         function(wgt) return wgt.vPercent end,
         function(wgt) return getFillColor(wgt) end
     )
@@ -582,7 +587,7 @@ local function layoutZoneTopbar(wgt)
 
     lvgl.build({
         -- battery values
-        {type="label", x=10*lvSCALE, y=12, w=bx-3, font=FS.FONT_8+RIGHT,
+        {type="label", x=10*lvSCALE, y=10*lvSCALE, w=nil, font=FS.FONT_8+RIGHT,
             text=function() return string.format("%2.2fV", wgt.mainValue) end,
             -- color=(function() return (wgt.vPercent < 30) and RED or wgt.text_color end)
             color=function() return wgt.text_color end
@@ -707,8 +712,6 @@ local function update(wgt, options)
     wgt.mainValue = 0
     wgt.secondaryValue = 0
     wgt.source_name = ""
-
-    --??? log("zone: %dx%d ----------------------------------------------", wgt.zone.w, wgt.zone.h);
 
     local ver, radio, maj, minor, rev, osname = getVersion()
     local nVer = maj*1000000+minor*1000+rev

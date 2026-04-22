@@ -16,7 +16,7 @@ end
 function M.log(fmt, ...)
     print(string.format("libgui4: " .. fmt, ...))
 end
-function log(fmt, ...)
+local function log(fmt, ...)
     M.log(fmt, ...)
 end
 

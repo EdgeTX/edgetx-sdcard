@@ -20,7 +20,7 @@
 -- 3djc & Offer Shmuely
 -- Date: 2022
 local app_name = "BattCheck"
-local app_ver = "0.9"
+local app_ver = "0.10"
 
 local lib_sensors = loadScript("/WIDGETS/" .. app_name .. "/lib_sensors.lua", "btd")(m_log,app_name)
 local DEFAULT_SOURCE = lib_sensors.findSourceId( {"Cels"})
@@ -346,6 +346,7 @@ end
 -- color for battery
 -- This function returns green at 100%, red bellow 30% and graduate in between
 local function getPercentColor(percent)
+    local r, g = 0, 0
     if percent < 30 then
         return lcd.RGB(0xff, 0, 0)
     else
@@ -358,6 +359,7 @@ end
 -- color for cell
 -- This function returns green at gvalue, red at rvalue and graduate in between
 local function getRangeColor(value, green_value, red_value)
+    local r, g = 0, 0
     local range = math.abs(green_value - red_value)
     if range == 0 then
         return lcd.RGB(0, 0xdf, 0)

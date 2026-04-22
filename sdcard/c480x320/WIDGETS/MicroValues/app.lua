@@ -27,7 +27,7 @@
 -- Author : Offer Shmuely
 -- Date: 2025
 local app_name = "MicroValues"
-local app_ver = "1.2"
+local app_ver = "1.3"
 
 
 -- imports

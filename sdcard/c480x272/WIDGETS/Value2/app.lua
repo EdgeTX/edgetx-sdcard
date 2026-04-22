@@ -29,13 +29,13 @@
 -- Author : Offer Shmuely
 -- Date: 2021-2025
 local app_name = "Value2"
-local app_ver = "0.13"
+local app_ver = "0.16"
 
 
 -- imports
-local LibLogClass = loadScript("/WIDGETS/" .. app_name .. "/lib_log.lua", "btd")
-local LibWidgetToolsClass = loadScript("/WIDGETS/" .. app_name .. "/lib_widget_tools.lua", "btd")
-local UtilsSensorsClass = loadScript("/WIDGETS/" .. app_name .. "/lib_sensors.lua", "btd")
+local LibLogClass = assert(loadScript("/WIDGETS/" .. app_name .. "/lib_log.lua", "btd"))
+local LibWidgetToolsClass = assert(loadScript("/WIDGETS/" .. app_name .. "/lib_widget_tools.lua", "btd"))
+local UtilsSensorsClass = assert(loadScript("/WIDGETS/" .. app_name .. "/lib_sensors.lua", "btd"))
 
 local m_log = LibLogClass(app_name, "/WIDGETS/" .. app_name)
 
@@ -88,14 +88,14 @@ local function update(wgt, options)
         wgt.unit = wgt.tools.unitIdToString(wgt.fieldinfo.unit)
 
         local base_source_name = wgt.source_name
-        log("getFieldInfo    base_source_id: %s", wgt.options.Source)
-        log("getFieldInfo    base_source_name: %s", base_source_name)
-        log("getFieldInfo    #base_source_name: %d", #base_source_name)
+        -- log("getFieldInfo    base_source_id: %s", wgt.options.Source)
+        -- log("getFieldInfo    base_source_name: %s", base_source_name)
+        -- log("getFieldInfo    #base_source_name: %d", #base_source_name)
         local last_char = string.sub(base_source_name, #base_source_name,#base_source_name)
-        log("getFieldInfo    last_char: %s", last_char)
+        -- log("getFieldInfo    last_char: %s", last_char)
         if last_char=="-" or last_char=="+" then
             base_source_name = string.sub(base_source_name, 1, #base_source_name - 1)
-            log("getFieldInfo  fixed  base_source_name: %s", base_source_name)
+            -- log("getFieldInfo  fixed  base_source_name: %s", base_source_name)
         end
 
         wgt.precession = wgt.tools.getSensorPrecession(base_source_name)
@@ -109,11 +109,11 @@ local function update(wgt, options)
 
         -- update max id
         local source_max_obj = getFieldInfo(base_source_name .. "+")
-        if source_min_obj ~= nil then
+        if source_max_obj ~= nil then
             wgt.source_max_id = source_max_obj.id
             -- log("source_max_id: %d", wgt.source_max_id)
         end
-        --log("source_min_id: %d, source_max_id: %d", wgt.source_min_id, wgt.source_max_id)
+        -- log("source_min_id: %d, source_max_id: %d", wgt.source_min_id, wgt.source_max_id)
     end
 
 
@@ -338,7 +338,7 @@ local function refresh_widget_no_telem(wgt)
             local dx = (wgt.zone.w - ts_mm_w) / 2
             if (ts_mm_h <= wgt.zone.h - last_y) and (ts_mm_w <= wgt.zone.w) then
                wgt.tools.drawBadgedText(val_str_mm, wgt.zone.x + dx - 5, wgt.zone.h - ts_mm_h +v_offset, font_size_mm, wgt.options.TextColor, bkgColor)
-               --log("wgt.zone.y: %d, wgt.zone.h: %d, ts_mm_h: %d", wgt.zone.y,wgt.zone.h,ts_mm_h)
+               -- log("wgt.zone.y: %d, wgt.zone.h: %d, ts_mm_h: %d", wgt.zone.y,wgt.zone.h,ts_mm_h)
             end
         end
     end
@@ -368,7 +368,7 @@ local function refresh_widget_no_telem(wgt)
     --         log("aaa222 if (ts_mm_h:%d <= wgt.zone.h:%d - last_y:%d)", ts_mm_h, wgt.zone.h, last_y)
     --         if (ts_mm_h <= wgt.zone.h - last_y) and (ts_mm_w <= wgt.zone.w) then
     --             wgt.tools.drawBadgedText(val_str_mm, wgt.zone.x + dx - 5, wgt.zone.y + last_y, font_size_mm, wgt.options.TextColor, bkgColor)
-    --             --log("wgt.zone.y: %d, wgt.zone.h: %d, ts_mm_h: %d", wgt.zone.y,wgt.zone.h,ts_mm_h)
+    --             -- log("wgt.zone.y: %d, wgt.zone.h: %d, ts_mm_h: %d", wgt.zone.y,wgt.zone.h,ts_mm_h)
     --         end
     --     end
     -- end
@@ -396,4 +396,4 @@ local function refresh(wgt, event, touchState)
     -- lcd.drawText(wgt.zone.x + wgt.zone.w, wgt.zone.y+20, string.format("isTypeSensor: %s", wgt.isTypeSensor), FS.FONT_6 + GREY + RIGHT) -- ???
 end
 
-return { name=app_name, options=options, translate=translate, create=create, update=update, background=background, refresh=refresh }
+return { name=app_name, create=create, update=update, background=background, refresh=refresh}
