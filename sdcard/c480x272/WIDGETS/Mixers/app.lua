@@ -1,5 +1,5 @@
 local app_name = "Mixers"
-local app_ver = "1.1"
+local app_ver = "1.2"
 
 local M = {}
 
@@ -44,7 +44,7 @@ local function build_ui_column(wgt, from_ch, to_ch, zx, zy, zw, zh, headr_text)
         -- text channel
         bZone2:label({x=6, y=yy-1, text=string.format("CH%d", i), color=wgt.text_color, font=FS.FONT_6})
 
-        bBars:box({x=0, y=yy, w=zw, h=zh,
+        bBars:box({x=0, y=yy, w=bar_area_w, h=line_height,
             children={
                 -- border
                 {type="rectangle", x=0, y=0, w=bar_area_w, h=bar_height, color=(wgt.bar_bkg_enabled and wgt.bar_bkg_color or 0), filled=true, visible=function() return wgt.bar_bkg_enabled end},
@@ -65,29 +65,28 @@ local function build_ui_column(wgt, from_ch, to_ch, zx, zy, zw, zh, headr_text)
                 {type="label", x=6, y=-1, text=function() return wgt.names[i] end, color=WHITE, font=FS.FONT_6},
 
                 -- text percent
-                {type="label", color=WHITE, font=FS.FONT_6,
+                {type="label", color=WHITE, font=FS.FONT_6, text=function() return string.format("%d%%", wgt.percent[i]) end,
                     pos=function()
                         local dx = (wgt.percent[i] > 0) and -37*lvSCALE or 15*lvSCALE
                         return x_mid + dx, -1
                     end,
-                    text=function() return string.format("%d%%", wgt.percent[i]) end,
                 }
-
             }
         })
     end
 end
 
 local function build_ui(wgt)
+    lvgl.clear()
     lvgl.rectangle({x=wgt.zone.x, y=wgt.zone.y, w=wgt.zone.w, h=wgt.zone.h, color=wgt.background_color, filled=true, visible=function() return wgt.background_enabled end})
 
     if (wgt.zone.w < 320) then
         -- single column
-        build_ui_column(wgt, 1, 16, 0,            wgt.zone.y, wgt.zone.w -5,   wgt.zone.h, "Mixers")
+        build_ui_column(wgt, 1, 16, 0,            wgt.zone.y, wgt.zone.w -5*lvSCALE,   wgt.zone.h, "Mixers")
     else
         -- two columns
-        build_ui_column(wgt, 1, 8,  0,            wgt.zone.y, wgt.zone.w /2 -5, wgt.zone.h, "Mixers 1-8")
-        build_ui_column(wgt, 9, 16, wgt.zone.w/2, wgt.zone.y, wgt.zone.w /2 -5, wgt.zone.h, "Mixers 9-16")
+        build_ui_column(wgt, 1, 8,  0,            wgt.zone.y, wgt.zone.w /2 -5*lvSCALE, wgt.zone.h, "Mixers 1-8")
+        build_ui_column(wgt, 9, 16, wgt.zone.w/2, wgt.zone.y, wgt.zone.w /2 -5*lvSCALE, wgt.zone.h, "Mixers 9-16")
     end
 end
 
