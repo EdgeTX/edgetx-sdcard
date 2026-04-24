@@ -2,7 +2,7 @@
 -- Offer Shmuely
 -- Date: 2021-2026
 local app_name = "Timer2"
-local app_ver = "1.0"
+local app_ver = "1.1"
 
 local function log(fmt, ...)
     print(string.format("[%s] " .. fmt, app_name, ...))
@@ -56,12 +56,21 @@ local function formatTime(wgt, t1)
     return time_str, isNegative
 end
 
-local function getTimerHeader(wgt, t1)
+local function getTimerHeader(wgt, t1, forceMinimalWidth)
     local timerInfo = ""
-    if (string.len(t1.name) == 0) then
-        timerInfo = string.format("Timer %s: ", wgt.options.Timer)
+    local timer_have_name = string.len(t1.name) > 0
+    if timer_have_name then
+        if forceMinimalWidth then
+            timerInfo = string.format("T%s:%s", wgt.options.Timer, t1.name)
+        else
+            timerInfo = string.format("%s: (Timer %s)", t1.name, wgt.options.Timer)
+        end
     else
-        timerInfo = string.format("%s: (Timer %s)", t1.name, wgt.options.Timer)
+        if forceMinimalWidth then
+            timerInfo = string.format("T %s: ", wgt.options.Timer)
+        else
+            timerInfo = string.format("Timer %s: ", wgt.options.Timer)
+        end
     end
     return timerInfo
 end
@@ -104,8 +113,12 @@ local function calculate_info(wgt)
     local t1 = model.getTimer(wgt.options.Timer - 1)
 
     -- calculate timer info
-    wgt.timerInfo = getTimerHeader(wgt, t1)
-    local _, timer_info_h = lcd.sizeText(wgt.timerInfo, FS.FONT_6)
+    wgt.timerInfo = getTimerHeader(wgt, t1, false)
+    wgt.font_size_header = FS.FONT_6
+    local timer_info_w, timer_info_h = lcd.sizeText(wgt.timerInfo, wgt.font_size_header)
+    if timer_info_w > wgt.zone.w then
+        wgt.timerInfo = getTimerHeader(wgt, t1, true)
+    end
 
     -- calculate timer time
     wgt.time_str, wgt.isNegative = formatTime(wgt, t1)
@@ -119,7 +132,6 @@ local function calculate_info(wgt)
         wgt.textColor = wgt.options.TextColor
     end
 
-    wgt.font_size_header = FS.FONT_8
 
     local wide_time_str = string.gsub(wgt.time_str, "[1-9]", "0")
     local ts_w, ts_h = lcd.sizeText(wide_time_str, wgt.font_size)
