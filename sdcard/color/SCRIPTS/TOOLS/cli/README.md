@@ -88,9 +88,10 @@ mode; `exit` reboots it back to MSP.
   `textEdit` placeholder and keyboard Enter handling. Without them the app
   still works: generic port wording, the stock `---` placeholder in empty
   fields, and sending with the on-screen Enter button.
-- Very large dumps stress the firmware's Lua serial buffer. On firmware where
-  that buffer is 256 bytes, a `dump` at 115200 (~11 kB/s) can lose bytes;
-  prefer a lower baud rate on both sides for big dumps.
+- Very large dumps stress the serial RX buffer: a device answering at 115200
+  can push ~11 kB/s (a Betaflight `dump` is ~26 kB), and if a script cycle is
+  delayed the buffer can overflow. If you see corruption on huge dumps, lower
+  the baud rate on both sides.
 - The disconnect watchdog assumes the device echoes or answers something
   within a second. A device with echo disabled running a silent command may
   be flagged as disconnected by mistake — any received byte revives the
