@@ -530,7 +530,13 @@ local function buildTerminal()
               autoMode = false
               baudIdx = i - 1
               if setSerialBaudrate then setSerialBaudrate(BAUD_RATES[baudIdx]) end
-              if session == "wait" then probePhase = "hop" end
+              if session == "wait" then
+                -- drop the previous rate's diagnosis so the wait screen does
+                -- not show it against the newly picked rate (the Auto branch
+                -- gets this via startWaiting())
+                probePhase = "hop"
+                diagBytes, diagRatio, diagMsp, diagRate = 0, 0, false, nil
+              end
             end
           end,
         })
