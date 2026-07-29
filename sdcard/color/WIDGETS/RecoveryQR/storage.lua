@@ -5,6 +5,7 @@
 --
 
 local M = {}
+local FILE_NOT_FOUND = 4
 
 local function defaultRead(path)
     local handle = io.open(path, "r")
@@ -91,7 +92,8 @@ function M.clear(paths, customOperations)
     local ops = operations(customOperations)
     ops.delete(paths.temporary)
     ops.delete(paths.backup)
-    return ops.delete(paths.current) == 0
+    local result = ops.delete(paths.current)
+    return result == 0 or result == FILE_NOT_FOUND
 end
 
 return M

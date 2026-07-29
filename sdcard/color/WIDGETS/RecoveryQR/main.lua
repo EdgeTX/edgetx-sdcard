@@ -84,7 +84,7 @@ local function loadStoredRecord(widget)
     widget.record = storage.load(widget.paths, logic.parseRecord)
     if widget.record ~= nil then
         widget.lastSavedSignature = logic.serializeRecord(widget.record)
-        widget.lastSavedAt = getTime()
+        widget.lastSavedAt = nil
     end
 end
 

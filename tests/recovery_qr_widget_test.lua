@@ -151,6 +151,8 @@ expect(storage.clear(paths, memoryOperations(false)))
 expectEqual(files[paths.current], nil)
 expectEqual(files[paths.temporary], nil)
 expectEqual(files[paths.backup], nil)
+expect(storage.clear(paths, memoryOperations(false)),
+    "clearing an already absent record should succeed")
 
 -- Exercise the widget lifecycle with a small EdgeTX API mock. This catches
 -- integration errors in main.lua without requiring a radio.
@@ -355,6 +357,18 @@ widgetModule.update(restarted, widgetOptions)
 expectEqual(restarted.state, "stored",
     "a new widget instance should restore the saved position")
 expectEqual(logic.mapsUrl(restarted.record), qrObject.data)
+
+gpsValue = { lat = 40.2, lon = -74.3, delay = 0 }
+currentSecond = 21
+now = 1802
+widgetModule.refresh(restarted, nil, nil)
+expect(string.find(
+    widgetFiles["/WIDGETS/RecoveryQR/last_Rescue_Plane.txt"],
+    "lat=40.200000",
+    1,
+    true
+) ~= nil, "the first new fix after loading should persist immediately")
+gpsValue = 0
 
 currentModelFilename = "Another Model.yml"
 currentModelName = "Another Model"
