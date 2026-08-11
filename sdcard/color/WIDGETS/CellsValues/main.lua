@@ -22,16 +22,19 @@
 local name = "Cells Values"
 local cellsT = {}
 local T = {}
--- When the difference between the lowest and highest cell exceeds 0.1,
--- the delta value is then displayed in red
+-- When the difference between the lowest and highest cell exceeds the
+-- chemistry dependent threshold, the delta value is then displayed in red.
+-- LiFe cells have a much flatter discharge curve than LiPo ones, so a
+-- smaller spread already indicates an unbalanced pack.
 local deltawarning = 0
+local deltathreshold = 0.1
 
 -- Create a table with default options
 -- Options can be changed by the user from the Widget Settings menu
 -- Notice that each line is a table inside { }
 local options = {
     { "sensor", SOURCE, getSourceIndex(CHAR_TELEMETRY.."Cels") },
-    { "battchemistry", CHOICE, 1 , {"LiPo", "LiPo-HV (high voltage)"} },
+    { "battchemistry", CHOICE, 1 , {"LiPo", "LiPo-HV (high voltage)", "LiFe (LiFePO4)"} },
     { "circlecolor", COLOR, COLOR_THEME_PRIMARY2},
     { "circletext", COLOR, COLOR_THEME_PRIMARY1},
     { "textcolor", COLOR, COLOR_THEME_PRIMARY1},
@@ -171,7 +174,7 @@ end
 local function getDeltaText(tbl)
     local min, max = getCellMinMax(tbl)
     local delta = max - min
-    deltawarning = (delta > 0.1) and 1 or 0
+    deltawarning = (delta > deltathreshold) and 1 or 0
     return string.format("D:%0.2f V", delta)
 end
 
@@ -221,6 +224,7 @@ local function update(widget, options)
 
     if options.battchemistry == 2 then
         -- Lipo HV
+        deltathreshold = 0.1
         cellsT = {
             { {3.000,  0}},
             { {3.093,  1}, {3.196,  2}, {3.301,  3}, {3.401,  4}, {3.477,  5}, {3.544,  6}, {3.601,  7}, {3.637,  8}, {3.664,  9}, {3.679, 10} },
@@ -234,8 +238,25 @@ local function update(widget, options)
             { {4.109, 81}, {4.119, 82}, {4.130, 83}, {4.141, 84}, {4.154, 85}, {4.169, 86}, {4.184, 87}, {4.197, 88}, {4.211, 89}, {4.220, 90} },
             { {4.229, 91}, {4.237, 92}, {4.246, 93}, {4.254, 94}, {4.264, 95}, {4.278, 96}, {4.302, 97}, {4.320, 98}, {4.339, 99}, {4.350,100} },
         }
+    elseif options.battchemistry == 3 then
+        -- LiFe (LiFePO4)
+        deltathreshold = 0.05
+        cellsT = {
+            { {2.800,  0}},
+            { {2.840,  1}, {2.880,  2}, {2.920,  3}, {2.960,  4}, {3.000,  5}, {3.026,  6}, {3.052,  7}, {3.078,  8}, {3.104,  9}, {3.130, 10} },
+            { {3.137, 11}, {3.144, 12}, {3.151, 13}, {3.158, 14}, {3.165, 15}, {3.172, 16}, {3.179, 17}, {3.186, 18}, {3.193, 19}, {3.200, 20} },
+            { {3.202, 21}, {3.204, 22}, {3.206, 23}, {3.208, 24}, {3.210, 25}, {3.212, 26}, {3.214, 27}, {3.216, 28}, {3.218, 29}, {3.220, 30} },
+            { {3.223, 31}, {3.226, 32}, {3.229, 33}, {3.232, 34}, {3.235, 35}, {3.238, 36}, {3.241, 37}, {3.244, 38}, {3.247, 39}, {3.250, 40} },
+            { {3.251, 41}, {3.252, 42}, {3.253, 43}, {3.254, 44}, {3.255, 45}, {3.256, 46}, {3.257, 47}, {3.258, 48}, {3.259, 49}, {3.260, 50} },
+            { {3.261, 51}, {3.262, 52}, {3.263, 53}, {3.264, 54}, {3.265, 55}, {3.266, 56}, {3.267, 57}, {3.268, 58}, {3.269, 59}, {3.270, 60} },
+            { {3.273, 61}, {3.276, 62}, {3.279, 63}, {3.282, 64}, {3.285, 65}, {3.288, 66}, {3.291, 67}, {3.294, 68}, {3.297, 69}, {3.300, 70} },
+            { {3.302, 71}, {3.304, 72}, {3.306, 73}, {3.308, 74}, {3.310, 75}, {3.312, 76}, {3.314, 77}, {3.316, 78}, {3.318, 79}, {3.320, 80} },
+            { {3.323, 81}, {3.326, 82}, {3.329, 83}, {3.332, 84}, {3.335, 85}, {3.338, 86}, {3.341, 87}, {3.344, 88}, {3.347, 89}, {3.350, 90} },
+            { {3.360, 91}, {3.370, 92}, {3.380, 93}, {3.390, 94}, {3.400, 95}, {3.440, 96}, {3.480, 97}, {3.520, 98}, {3.560, 99}, {3.600,100} },
+        }
     else
         -- Lipo
+        deltathreshold = 0.1
         cellsT = {
             { {3.000,  0}},
             { {3.093,  1}, {3.196,  2}, {3.301,  3}, {3.401,  4}, {3.477,  5}, {3.544,  6}, {3.601,  7}, {3.637,  8}, {3.664,  9}, {3.679, 10} },
