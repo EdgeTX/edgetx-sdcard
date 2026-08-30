@@ -1,0 +1,30 @@
+name: Validate sdcard.json
+
+on:
+  push:
+    branches:
+      - 'master'
+      - '[0-9]+.[0-9]+'
+    paths:
+      - 'sdcard.json'
+      - 'sdcard/**'
+      - 'validate_sdcard_json.py'
+      - 'sdcard_json_utils.py'
+  pull_request:
+    branches:
+      - master
+    paths:
+      - 'sdcard.json'
+      - 'sdcard/**'
+      - 'validate_sdcard_json.py'
+      - 'sdcard_json_utils.py'
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.0.1
+      - name: Validate sdcard.json
+        run: uv run validate_sdcard_json.py
