@@ -1,0 +1,17 @@
+[project]
+name = "edgetx-sdcard-tools"
+version = "0.0.0"
+requires-python = ">=3.11"
+dependencies = ["rich>=13"]
+
+[dependency-groups]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.format]
+quote-style = "double"

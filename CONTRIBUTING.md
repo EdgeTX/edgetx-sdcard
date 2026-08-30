@@ -1,0 +1,28 @@
+# Contributing
+
+## Building the distribution zips
+
+The per-variant SD card zips (`dist/*.zip`) are built by `generate.py` from the `sdcard/` tree and `sdcard.json`. It's a small [uv](https://docs.astral.sh/uv/)-managed Python project — no separate install step, `uv` resolves and runs everything from `pyproject.toml`.
+
+Install `uv` (see [the uv install docs](https://docs.astral.sh/uv/getting-started/installation/)), then from the repo root:
+
+```sh
+# Build the zips into dist/
+uv run generate.py
+
+# Run the test suite
+uv run pytest
+
+# Lint and format-check
+uv run ruff check .
+uv run ruff format --check .
+
+# Auto-fix formatting
+uv run ruff format .
+```
+
+`generate.py`'s logic lives in plain, independently testable functions (variant extraction, directory merging, zip building) — see `tests/test_generate.py` for examples. When changing its behavior, add or update a test alongside the change.
+
+## Working with symlinks
+
+See the [README](README.md#for-developers) for details on the symlink layout used to avoid duplicating shared template files across screen sizes, and the Windows sync-script fallback for environments without symlink support.
