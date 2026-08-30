@@ -1,0 +1,51 @@
+name: Sync sdcard.json with fw.json
+
+on:
+  schedule:
+    - cron: '0 3 * * 1' # Weekly on Monday at 3 AM UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.0.1
+
+      - name: Check EdgeTX/edgetx fw.json for drift
+        id: sync
+        run: uv run sync_fw_json.py | tee "$RUNNER_TEMP/sync-summary.md"
+
+      - name: Validate updated sdcard.json
+        id: validate
+        # Non-blocking: a new target can land on a screen resolution with
+        # no sdcard/<resolution>/ directory yet (no template content),
+        # which this legitimately fails on. Still open the PR in that
+        # case so a human sees it - the "Validate sdcard.json" check on
+        # the PR itself (validate_sdcard_json.yml) will show the same
+        # failure there, which is what should block merging it.
+        continue-on-error: true
+        run: uv run validate_sdcard_json.py
+
+      - name: Note validation failure in PR body
+        if: steps.validate.outcome == 'failure'
+        run: |
+          {
+            echo ""
+            echo "---"
+            echo "⚠️ **\`validate_sdcard_json.py\` failed on the updated file** - likely a new target landed on a screen resolution with no matching \`sdcard/<resolution>/\` directory yet. Check the \"Validate sdcard.json\" status check on this PR before merging; it needs template content added under \`sdcard/\` first."
+          } >> "$RUNNER_TEMP/sync-summary.md"
+
+      - name: Open pull request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          commit-message: "chore(sdcard.json): sync target list with edgetx/edgetx fw.json"
+          branch: chore/sync-fw-json
+          delete-branch: true
+          title: "chore(sdcard.json): sync target list with edgetx/edgetx fw.json"
+          body-path: ${{ runner.temp }}/sync-summary.md
+          add-paths: sdcard.json
