@@ -17,15 +17,31 @@ on:
 
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  build-artifact:
+  test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - name: Generate ZIPs
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.0.1
+      - name: Run tests
+        run: uv run pytest
+      - name: Lint
         run: |
-          chmod +x generate.sh
-          ./generate.sh
+          uv run ruff check .
+          uv run ruff format --check .
+
+  build-artifact:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.0.1
+      - name: Generate ZIPs
+        run: uv run generate.py
       - name: Upload a Build Artifact
         uses: actions/upload-artifact@v7
         with:
@@ -41,7 +57,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - uses: actions/download-artifact@v8
@@ -55,7 +71,12 @@ jobs:
           git push -f origin latest
       - name: Delete previous latest release
         if: github.ref == 'refs/heads/master'
-        run: gh release delete latest --yes || true
+        run: |
+          if gh release view latest >/dev/null 2>&1; then
+            gh release delete latest --yes
+          else
+            echo "No existing 'latest' release found; skipping delete."
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Deploy latest prerelease

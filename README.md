@@ -54,6 +54,8 @@ A non-exhaustive list of targets (look at the [sdcard.json](https://github.com/E
 
 ## For Developers
 
+See [CONTRIBUTING.md](CONTRIBUTING.md) for how to build the distribution zips locally (`uv run generate.py`) and run the test suite.
+
 ### Working with Symlinks (Linux/macOS/Windows)
 
 This repository uses symlinks to avoid duplicating shared template files across different screen sizes. The same `.lua`, `.txt` files, and `img/` folders are used across multiple screen configurations, with only the `.yml` configuration files being unique to each screen size.
