@@ -19,64 +19,73 @@
 -- GNU General Public License for more details.
 --
 
-local ail, ele, rud, thr
-local prev_ail, prev_ele, prev_rud, prev_thr = 0, 0, 0, 0
-local delta_ail, delta_ele, delta_rud, delta_thr = 0, 0, 0, 0
+local sticks = { ail = 0, ele = 0, rud = 0, thr = 0 }
+local prev   = { ail = 0, ele = 0, rud = 0, thr = 0 }
+local deltas = { ail = 0, ele = 0, rud = 0, thr = 0 }
 
--- Configuration constants for delta thresholds
-local DELTA_THRESHOLD_HIGH = 50   -- High delta change threshold
-local DELTA_THRESHOLD_MED = 25    -- Medium delta change threshold
-local DELTA_THRESHOLD_LOW = 10    -- Low delta change threshold
-local DELTA_MIN_MOVEMENT = 3      -- Minimum delta to allow LED updates
+-- Which stick drives which ring, per radio mode:
+-- { ring 0 horizontal, ring 0 vertical, ring 1 horizontal, ring 1 vertical }
+-- ring 0 is the right gimbal, ring 1 the left gimbal
+local MODE_AXES = {
+  [1] = { "ail", "thr", "rud", "ele" },
+  [2] = { "ail", "ele", "rud", "thr" },
+  [3] = { "rud", "thr", "ail", "ele" },
+  [4] = { "rud", "ele", "ail", "thr" },
+}
 
 -- Base LED settings
-local BASE_LED_R, BASE_LED_G, BASE_LED_B = 50, 0, 0
+local BASE_LED_R, BASE_LED_G, BASE_LED_B = 0, 50, 0
+
+-- The strip is the two gimbal rings, ring 0 first then ring 1. Hardcoded
+-- rather than read from LED_STRIP_LENGTH, which is unreliable here.
+local LED_COUNT = 20
+local RING_SIZE = 10
+
+-- Radios with a LED ring around each gimbal, and how each ring is wired:
+-- the sign to apply to the horizontal and vertical stick axis so that the lit
+-- LED follows the stick. Rings do not all start at the same place nor run in
+-- the same direction, so this differs per radio and per ring.
+local RING_SIGNS = {
+  tx15     = { [0] = { h = -1, v = 1 }, [1] = { h = 1, v = -1 } },
+  gx15     = { [0] = { h = -1, v = 1 }, [1] = { h = 1, v =  1 } },
+  tx16smk3 = { [0] = { h = -1, v = 1 }, [1] = { h = 1, v = -1 } },
+}
+
+local function readSticks()
+  for name in pairs(sticks) do
+    sticks[name] = getValue(name) or 0
+  end
+end
 
 local function init()
   -- Initialize all values to current stick positions
-  ail = getValue("ail") or 0
-  thr = getValue("thr") or 0
-  rud = getValue("rud") or 0
-  ele = getValue("ele") or 0  
+  readSticks()
 end
 
 local function calculateDeltas()
   -- Calculate delta values for all controls
-  delta_ail = math.abs(ail - prev_ail)
-  delta_thr = math.abs(thr - prev_thr)
-  delta_rud = math.abs(rud - prev_rud)
-  delta_ele = math.abs(ele - prev_ele)
+  for name, value in pairs(sticks) do
+    deltas[name] = math.abs(value - prev[name])
+  end
 end
 
-local function shouldUpdateLeds()
-  -- Check if any control has moved enough to warrant LED updates
-  local max_delta = math.max(delta_ail, delta_thr, delta_rud, delta_ele)
-  return max_delta >= DELTA_MIN_MOVEMENT
-end
-
-local function setLed(ring, h, v)
+local function setLed(ring, h, v, delta)
   local magnitude = math.sqrt(h^2 + v^2)
   if magnitude < 0.1 then return end
-  
+
   local angle = math.atan2(v, h)
   angle = (math.deg(angle) + 360) % 360
-  local center_index = math.floor(angle / 36 + 0.5) % 10
-  center_index = center_index + ring * 10
-  
-  -- Scale intensity based on delta values for more responsive feedback
-  local delta_factor = 1.0
-  if ring == 0 then
-    delta_factor = 1.0 + (delta_ail + delta_thr) / 200
-  else
-    delta_factor = 1.0 + (delta_rud + delta_ele) / 200
-  end
-  
+  local center_index = math.floor(angle / (360 / RING_SIZE) + 0.5) % RING_SIZE
+
+  -- Scale intensity based on the delta of the two axes driving this ring
+  local delta_factor = 1.0 + delta / 200
+
   local base_intensity = 250 * magnitude * math.min(delta_factor, 2.0)
   base_intensity = math.min(255, base_intensity)
-  
+
   local spread = 2
   for offset = -spread, spread do
-    local index = (center_index + offset) % 10 + ring * 10
+    local index = (center_index + offset) % RING_SIZE + ring * RING_SIZE
     local distance = math.abs(offset)
     local factor = math.exp(-0.5 * (distance ^ 2))
     local intensity = math.floor(base_intensity * factor)
@@ -84,47 +93,47 @@ local function setLed(ring, h, v)
   end
 end
 
+local function setRing(signs, ring, h_axis, v_axis)
+  local sign = signs[ring]
+  setLed(ring, sign.h * sticks[h_axis] / 1024, sign.v * sticks[v_axis] / 1024,
+         deltas[h_axis] + deltas[v_axis])
+end
+
 local function run()
-  -- this scripts is hardcoded for tx15 ring lights
+  -- this script needs the gimbal ring lights
   local ver, radio, maj, minor, rev, osname = getVersion()
-  if radio ~= "tx15" then
+  local signs = RING_SIGNS[radio]
+  if not signs then
+    return
+  end
+
+  local axes = MODE_AXES[getStickMode()]
+  if not axes then
     return
   end
 
   -- Get current values
-  ail = getValue("ail")
-  thr = getValue("thr")
-  rud = getValue("rud")
-  ele = getValue("ele")
-  
+  readSticks()
+
   -- Calculate deltas
   calculateDeltas()
-  
-  -- Only update LEDs if there's significant movement
-  if not shouldUpdateLeds() then
-    -- Skip LED updates for very small movements
-    return
-  end
-  
-  -- Set base LED color (will be overridden by delta actions if triggered)
-  for i = 0, LED_STRIP_LENGTH - 1 do
+
+  -- Paint the whole strip every cycle, so the part of the ring the stick is
+  -- not pointing at always shows the base colour instead of staying dark
+  for i = 0, LED_COUNT - 1 do
     setRGBLedColor(i, BASE_LED_R, BASE_LED_G, BASE_LED_B)
   end
 
   -- Apply normal LED patterns (enhanced with delta feedback)
-  local radioMode = getStickMode()
-  if radioMode == 1 then
-    setLed(0, -ail/1024, thr/1024)
-    setLed(1, rud/1024, -ele/1024)
-  elseif radioMode == 2 then
-    setLed(0, -ail/1024, ele/1024)
-    setLed(1, rud/1024, -thr/1024)
-  end
-  
+  setRing(signs, 0, axes[1], axes[2])
+  setRing(signs, 1, axes[3], axes[4])
+
   applyRGBLedColors()
-  
+
   -- Store previous values
-  prev_ail, prev_ele, prev_rud, prev_thr = ail or 0, ele or 0, rud or 0, thr or 0
+  for name, value in pairs(sticks) do
+    prev[name] = value
+  end
 end
 
 local function background()
