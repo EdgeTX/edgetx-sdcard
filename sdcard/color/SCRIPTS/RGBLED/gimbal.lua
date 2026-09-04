@@ -48,7 +48,7 @@ local RING_SIZE = 10
 local RING_SIGNS = {
   tx15     = { [0] = { h = -1, v = 1 }, [1] = { h = 1, v = -1 } },
   gx15     = { [0] = { h = -1, v = 1 }, [1] = { h = 1, v =  1 } },
-  tx16smk3 = { [0] = { h = -1, v = 1 }, [1] = { h = 1, v = -1 } },
+  tx16smk3 = { [0] = { h = -1, v = 1 }, [1] = { h = 1, v =  1 } },
 }
 
 local function readSticks()
