@@ -42,7 +42,7 @@ A non-exhaustive list of targets (look at the [sdcard.json](https://github.com/E
     - FrSky Horus x12s
     - Jumper T16
     - Jumper T18
-    - RadioMaster TX16s / TX16s mkII
+    - RadioMaster TX16S / TX16S Mark II
 - **c480x320.zip** (480x320 pixel, landscape orientation)
     - Flysky PL18
     - Flysky Paladin EV (PL18EV)
