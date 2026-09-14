@@ -42,6 +42,7 @@
     ["RadioMaster TX15", "tx15-", "c480x320"],
     ["RadioMaster TX16S / TX16S Mark II", "tx16s-", "c480x272"],
     ["RadioMaster TX16S MK3", "tx16smk3-", "c800x480"],
-    ["RadioMaster Zorro", "zorro-", "bw128x64"]
+    ["RadioMaster Zorro", "zorro-", "bw128x64"],
+    ["Senduwing H17", "h17-", "c480x272"]
   ]
 }
