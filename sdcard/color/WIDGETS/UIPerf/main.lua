@@ -13,7 +13,7 @@
 -- GNU General Public License for more details.
 --
 
--- Displays UI rendering performance from getUIPerf() and, optionally,
+-- Displays UI rendering performance from lvgl.getPerf() and, optionally,
 -- publishes it as Lua telemetry sensors (FPS, CPU) that can be
 -- logged, used in logical switches or shown in other widgets.
 
@@ -23,7 +23,7 @@ local name = "UI Perf"
 local SENSOR_ID = 0x5F00
 local SENSOR_INSTANCE = 0xE0
 
--- getUIPerf() refreshes its figures every 300ms, no need to poll faster
+-- lvgl.getPerf() refreshes its figures every 300ms, no need to poll faster
 local UPDATE_PERIOD = 30 -- 10ms ticks
 
 local options = {
@@ -46,7 +46,7 @@ local function sample(widget)
     end
     widget.lastUpdate = now
 
-    widget.fps, widget.cpu = getUIPerf()
+    widget.fps, widget.cpu = lvgl.getPerf()
 
     if widget.options.sensors == 1 then
         setTelemetryValue(SENSOR_ID, 0, SENSOR_INSTANCE, widget.fps, UNIT_RAW, 0, "FPS")
@@ -58,7 +58,7 @@ local function create(zone, options)
     return {
         zone = zone,
         options = options,
-        supported = getUIPerf ~= nil,
+        supported = lvgl ~= nil and lvgl.getPerf ~= nil,
         lastUpdate = -UPDATE_PERIOD,
         fps = 0,
         cpu = 0,
@@ -80,7 +80,7 @@ local function refresh(widget, event, touchState)
     local color = widget.options.textcolor
 
     if not widget.supported then
-        lcd.drawText(z.x + 2, z.y + 2, "getUIPerf() not available", SMLSIZE + COLOR_THEME_WARNING)
+        lcd.drawText(z.x + 2, z.y + 2, "lvgl.getPerf() not available", SMLSIZE + COLOR_THEME_WARNING)
         return
     end
 
