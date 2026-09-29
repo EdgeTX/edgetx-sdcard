@@ -13,9 +13,9 @@
 -- GNU General Public License for more details.
 --
 
--- Displays UI rendering performance from lvgl.getPerf() and the MCU load
+-- Displays UI rendering performance from lvgl.getPerf() and the CPU load
 -- from getCpuLoad() and, optionally, publishes them as Lua telemetry
--- sensors (FPS, TASK, MCU) that can be logged, used in logical switches or
+-- sensors (FPS, TASK, CPU) that can be logged, used in logical switches or
 -- shown in other widgets.
 
 local name = "UI Perf"
@@ -64,9 +64,9 @@ local function sample(widget)
         widget.text.FPS = string.format("%d", widget.fps)
         widget.text.TASK = string.format("%d%%", widget.taskload)
     end
-    if widget.hasMcu then
-        widget.mcu = getCpuLoad()
-        widget.text.MCU = widget.mcu and string.format("%d%%", widget.mcu) or nil
+    if widget.hasCpu then
+        widget.cpu = getCpuLoad()
+        widget.text.CPU = widget.cpu and string.format("%d%%", widget.cpu) or nil
     end
     format_texts(widget)
 
@@ -75,8 +75,8 @@ local function sample(widget)
             setTelemetryValue(SENSOR_ID, 0, SENSOR_INSTANCE, widget.fps, UNIT_RAW, 0, "FPS")
             setTelemetryValue(SENSOR_ID + 1, 0, SENSOR_INSTANCE, widget.taskload, UNIT_PERCENT, 0, "TASK")
         end
-        if widget.mcu then
-            setTelemetryValue(SENSOR_ID + 2, 0, SENSOR_INSTANCE, widget.mcu, UNIT_PERCENT, 0, "MCU")
+        if widget.cpu then
+            setTelemetryValue(SENSOR_ID + 2, 0, SENSOR_INSTANCE, widget.cpu, UNIT_PERCENT, 0, "CPU")
         end
     end
 end
@@ -89,7 +89,7 @@ local function build(widget)
     local z = widget.zone
     local color = widget.options.textcolor
 
-    if not (widget.hasPerf or widget.hasMcu) then
+    if not (widget.hasPerf or widget.hasCpu) then
         lvgl.label({ x = 2, y = 2, text = "lvgl.getPerf() / getCpuLoad() not available",
                      font = SMLSIZE, color = COLOR_THEME_WARNING })
         return
@@ -101,8 +101,8 @@ local function build(widget)
         keys[#keys + 1] = "TASK"
     end
     -- getCpuLoad() returns nil in the simulator
-    if widget.hasMcu and getCpuLoad() ~= nil then
-        keys[#keys + 1] = "MCU"
+    if widget.hasCpu and getCpuLoad() ~= nil then
+        keys[#keys + 1] = "CPU"
     end
 
     widget.keys = keys
@@ -132,11 +132,11 @@ local function create(zone, options)
         zone = zone,
         options = options,
         hasPerf = lvgl ~= nil and lvgl.getPerf ~= nil,
-        hasMcu = getCpuLoad ~= nil,
+        hasCpu = getCpuLoad ~= nil,
         lastUpdate = -UPDATE_PERIOD,
         fps = 0,
         taskload = 0,
-        mcu = nil,
+        cpu = nil,
         text = {},
         label = {},
         line = "",
@@ -149,7 +149,7 @@ local function update(widget, options)
 end
 
 local function background(widget)
-    if widget.hasPerf or widget.hasMcu then
+    if widget.hasPerf or widget.hasCpu then
         sample(widget)
     end
 end
