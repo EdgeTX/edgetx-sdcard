@@ -15,7 +15,7 @@
 
 -- Displays UI rendering performance from lvgl.getPerf() and the MCU load
 -- from getCpuLoad() and, optionally, publishes them as Lua telemetry
--- sensors (FPS, CPU, MCU) that can be logged, used in logical switches or
+-- sensors (FPS, TASK, MCU) that can be logged, used in logical switches or
 -- shown in other widgets.
 
 local name = "UI Perf"
@@ -60,9 +60,9 @@ local function sample(widget)
     widget.lastUpdate = now
 
     if widget.hasPerf then
-        widget.fps, widget.cpu = lvgl.getPerf()
+        widget.fps, widget.taskload = lvgl.getPerf()
         widget.text.FPS = string.format("%d", widget.fps)
-        widget.text.CPU = string.format("%d%%", widget.cpu)
+        widget.text.TASK = string.format("%d%%", widget.taskload)
     end
     if widget.hasMcu then
         widget.mcu = getCpuLoad()
@@ -73,7 +73,7 @@ local function sample(widget)
     if widget.options.sensors == 1 then
         if widget.hasPerf then
             setTelemetryValue(SENSOR_ID, 0, SENSOR_INSTANCE, widget.fps, UNIT_RAW, 0, "FPS")
-            setTelemetryValue(SENSOR_ID + 1, 0, SENSOR_INSTANCE, widget.cpu, UNIT_PERCENT, 0, "CPU")
+            setTelemetryValue(SENSOR_ID + 1, 0, SENSOR_INSTANCE, widget.taskload, UNIT_PERCENT, 0, "TASK")
         end
         if widget.mcu then
             setTelemetryValue(SENSOR_ID + 2, 0, SENSOR_INSTANCE, widget.mcu, UNIT_PERCENT, 0, "MCU")
@@ -98,7 +98,7 @@ local function build(widget)
     local keys = {}
     if widget.hasPerf then
         keys[#keys + 1] = "FPS"
-        keys[#keys + 1] = "CPU"
+        keys[#keys + 1] = "TASK"
     end
     -- getCpuLoad() returns nil in the simulator
     if widget.hasMcu and getCpuLoad() ~= nil then
@@ -135,7 +135,7 @@ local function create(zone, options)
         hasMcu = getCpuLoad ~= nil,
         lastUpdate = -UPDATE_PERIOD,
         fps = 0,
-        cpu = 0,
+        taskload = 0,
         mcu = nil,
         text = {},
         label = {},
