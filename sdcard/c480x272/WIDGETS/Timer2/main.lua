@@ -2,16 +2,17 @@ local app_name = "Timer2"
 
 local options = {
   { "TextColor", COLOR, YELLOW },
-  { "Timer", VALUE, 1, 1, 3},
-  { "use_days", BOOL, 0 }   -- if greater than 24 hours: 0=still show as hours, 1=use days
-
+  { "timer_combo", CHOICE, 1, {"Timer 1", "Timer 2", "Timer 3"} },
+  { "use_days", BOOL, 0 },   -- if greater than 24 hours: 0=still show as hours, 1=use days
+  { "header_format", CHOICE, 1, {"Timer Name & Number", "Timer Name", "Timer Number", "No Header"} },
 }
 
 local function translate(nam)
     local translations = {
         TextColor = "Text Color",
-        Timer = "Timer",
+        timer_combo = "Timer",
         use_days = "Use Days",
+        header_format = "Header",
     }
     return translations[nam]
 end

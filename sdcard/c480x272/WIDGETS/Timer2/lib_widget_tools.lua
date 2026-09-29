@@ -12,9 +12,10 @@ local getTime = getTime
 local lcd = lcd
 
 -- better font size names
-local FS={FONT_38=XXLSIZE,FONT_16=DBLSIZE,FONT_12=MIDSIZE,FONT_8=0,FONT_6=SMLSIZE}
+local FS={FONT_38=XXLSIZE,FONT_24=XLSIZE, FONT_16=DBLSIZE,FONT_12=MIDSIZE,FONT_8=0,FONT_6=SMLSIZE}
+local isFONT24 = (XLSIZE ~= nil)
 M.FS = FS
-M.FONT_LIST = {FS.FONT_6, FS.FONT_8, FS.FONT_12, FS.FONT_16, FS.FONT_38}
+M.FONT_LIST = {FS.FONT_6, FS.FONT_8, FS.FONT_12, FS.FONT_16, FS.FONT_24, FS.FONT_38}
 local lvSCALE = lvgl.LCD_SCALE or 1
 
 
@@ -130,6 +131,7 @@ function M.isTelemetryAvailableOld()
         if not tele_src then tele_src = getFieldInfo("VFR%") end
         if not tele_src then tele_src = getFieldInfo("VFR") end
         if not tele_src then tele_src = getFieldInfo("TRSS") end
+        if not tele_src then tele_src = getFieldInfo("Volt") end
         if not tele_src then tele_src = getFieldInfo("RxBt") end
         if not tele_src then tele_src = getFieldInfo("A1") end
 
@@ -200,27 +202,29 @@ function M.getSensorInfoByName(sensorName)
     for i=0, 30, 1 do
         local s1 = {}
         local s2 = model.getSensor(i)
+        if s2 ~= nil then
+            --type (number) 0 = custom, 1 = calculated
+            s1.type = s2.type
+            --name (string) Name
+            s1.name = s2.name
+            --unit (number->string) See list of units in the appendix of the OpenTX Lua Reference Guide
+            s1.unit = M.unitIdToString(s2.unit)
+            --prec (number) Number of decimals
+            s1.prec = s2.prec
+            --id (number) Only custom sensors
+            s1.id = s2.id
+            --instance (number) Only custom sensors
+            s1.instance = s2.instance
+            --formula (number) Only calculated sensors. 0 = Add etc. see list of formula choices in Companion popup
+            s1.formula = s2.formula
 
-        --type (number) 0 = custom, 1 = calculated
-        s1.type = s2.type
-        --name (string) Name
-        s1.name = s2.name
-        --unit (number->string) See list of units in the appendix of the OpenTX Lua Reference Guide
-        s1.unit = M.unitIdToString(s2.unit)
-        --prec (number) Number of decimals
-        s1.prec = s2.prec
-        --id (number) Only custom sensors
-        s1.id = s2.id
-        --instance (number) Only custom sensors
-        s1.instance = s2.instance
-        --formula (number) Only calculated sensors. 0 = Add etc. see list of formula choices in Companion popup
-        s1.formula = s2.formula
+            -- log("getSensorInfo: %d. name: %s, unit: %s , prec: %s , id: %s , instance: %s ", i, s2.name, s2.unit, s2.prec, s2.id, s2.instance)
 
-        -- log("getSensorInfo: %d. name: %s, unit: %s , prec: %s , id: %s , instance: %s ", i, s2.name, s2.unit, s2.prec, s2.id, s2.instance)
-
-        if s2.name == sensorName then
-            return s1
+            if s2.name == sensorName then
+                return s1
+            end
         end
+
     end
 
     return nil
@@ -229,11 +233,11 @@ function M.getSensorInfoByName(sensorName)
  function M.getSensorPrecession(sensorName)
     local sensorInfo = M.getSensorInfoByName(sensorName)
     if (sensorInfo == nil) then
-        log("getSensorPrecession: not found sensor [%s]", sensorName)
+        -- log("getSensorPrecession: not found sensor [%s]", sensorName)
         return -1
     end
 
-    log("getSensorPrecession: name: %s, prec: %s , id: %s", sensorInfo.name, sensorInfo.prec, sensorInfo.id)
+    -- log("getSensorPrecession: name: %s, prec: %s , id: %s", sensorInfo.name, sensorInfo.prec, sensorInfo.id)
     return sensorInfo.prec
 end
 
@@ -253,7 +257,7 @@ end
 function M.isSensorExist(sensorName)
     local sensorInfo = M.getSensorInfoByName(sensorName)
     local is_exist = (sensorInfo ~= nil)
-    log("getSensorInfo: [%s] is_exist: %s", sensorName, is_exist)
+    -- log("getSensorInfo: [%s] is_exist: %s", sensorName, is_exist)
     return is_exist
  end
 
@@ -311,9 +315,12 @@ function M.lcdSizeTextFixed(txt, font_size)
 
     local v_offset = 0
     if font_size == FS.FONT_38 then
-        v_offset = -6*lvSCALE
-        ts_h = 52*lvSCALE
+        v_offset = -4*lvSCALE
+        ts_h = 50*lvSCALE
         ts_w=ts_w-3
+    elseif isFONT24==true and font_size == FS.FONT_24 then
+        v_offset = -4*lvSCALE
+        ts_h = 38*lvSCALE
     elseif font_size == FS.FONT_16 then
         v_offset = -6*lvSCALE
         ts_h = 28*lvSCALE
@@ -331,13 +338,13 @@ function M.lcdSizeTextFixed(txt, font_size)
 end
 
 function M.getFontSize(wgt, txt, max_w, max_h, max_font_size)
-    local maxFontIndex = M.getFontIndex(max_font_size, nil)
+    local maxFontIndex = M.getFontIndex(max_font_size or FS.FONT_38, nil)
     --log("getFontSize() [%s] %dx%d (maxIndex: %d)", txt, max_w, max_h, maxFontIndex)
 
-    if maxFontIndex>=5 then
+    if maxFontIndex>=6 then
         local w, h, v_offset = M.lcdSizeTextFixed(txt, FS.FONT_38)
         if w <= max_w and h <= max_h then
-            log("[%s] FS.FONT_38 %dx%d", txt, w, h)
+            -- log("[%s] FS.FONT_38 %dx%d", txt, w, h)
             return FS.FONT_38, w, h, v_offset
         else
             -- log("[%s] FS.FONT_38 %dx%d (too small)", txt, w, h)
@@ -345,6 +352,17 @@ function M.getFontSize(wgt, txt, max_w, max_h, max_font_size)
     end
 
     local w, h, v_offset
+
+    if isFONT24==true then
+        if maxFontIndex>=5 then
+            w, h, v_offset = M.lcdSizeTextFixed(txt, FS.FONT_24)
+            if w~=0 and w <= max_w and h <= max_h then
+                -- log("[%s] FS.FONT_24 %dx%d", txt, w, h)
+                return FS.FONT_24, w, h, v_offset
+            end
+        end
+    end
+
     if maxFontIndex>=4 then
         w, h, v_offset = M.lcdSizeTextFixed(txt, FS.FONT_16)
         if w <= max_w and h <= max_h then
@@ -376,9 +394,7 @@ end
 
 ------------------------------------------------------------------------------------------------------
 -- usage:
---log("bbb----------------------------------------------------------")
 --wgt.tools.heap_dump(wgt, 0, 60)
---log("ccc----------------------------------------------------------")
 function M.heap_dump(tbl, indent, max_dept)
     local spaces = string.rep("  ", indent)
     if max_dept == 0 then
