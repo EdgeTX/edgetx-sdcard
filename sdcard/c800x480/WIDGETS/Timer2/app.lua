@@ -2,7 +2,7 @@
 -- Offer Shmuely
 -- Date: 2021-2026
 local app_name = "Timer2"
-local app_ver = "1.2"
+local app_ver = "1.3"
 
 local lvSCALE = lvgl.LCD_SCALE or 1
 local is800 = (LCD_W==800)
@@ -17,7 +17,7 @@ local function log(fmt, ...)
 end
 
 -- better font size names
-local FS={FONT_38=XXLSIZE,FONT_16=DBLSIZE,FONT_12=MIDSIZE,FONT_8=0,FONT_6=SMLSIZE}
+local FS={FONT_38=XXLSIZE,FONT_24=XLSIZE, FONT_16=DBLSIZE,FONT_12=MIDSIZE,FONT_8=0,FONT_6=SMLSIZE}
 
 ------------------------------------------------------------
 
@@ -66,26 +66,26 @@ end
 
 local function getTimerHeader(wgt, t1, forceMinimalWidth)
     local timerInfo = ""
-    local timer_have_name = string.len(t1.name) > 0
-    if timer_have_name then
-        if forceMinimalWidth then
-            timerInfo = string.format("T%s:%s", wgt.options.Timer, t1.name)
+    local t_id_format = ""
+
+    if wgt.use_timer_name == true then
+        timerInfo = timerInfo .. string.format("%s", t1.name)
+    end
+
+    if wgt.use_timer_id==true then
+        if wgt.use_timer_name == true then
+            t_id_format = (forceMinimalWidth==false) and ": (Timer %s)" or " (T%s)"
         else
-            timerInfo = string.format("%s: (Timer %s)", t1.name, wgt.options.Timer)
+            t_id_format = (forceMinimalWidth==false) and "Timer %s " or "T %s"
         end
-    else
-        if forceMinimalWidth then
-            timerInfo = string.format("T %s: ", wgt.options.Timer)
-        else
-            timerInfo = string.format("Timer %s: ", wgt.options.Timer)
-        end
+        timerInfo = timerInfo .. string.format(t_id_format, wgt.Timer)
     end
     return timerInfo
 end
 
 
 local function calculate_info(wgt)
-    local t1 = model.getTimer(wgt.options.Timer - 1)
+    local t1 = model.getTimer(wgt.Timer - 1)
 
     -- calculate timer info
     wgt.timerInfo = getTimerHeader(wgt, t1, false)
@@ -111,7 +111,7 @@ local function calculate_info(wgt)
     local wide_time_str = string.gsub(wgt.time_str, "[1-9]", "0")
     local ts_w, ts_h, v_offset = wgt.tools.lcdSizeTextFixed(wide_time_str, wgt.font_size)
     wgt.dx = (zone_w - ts_w) / 2
-    wgt.dy = timer_info_h + v_offset + 4*lvSCALE
+    wgt.dy = timer_info_h + v_offset
     if (timer_info_h + ts_h > zone_h) and (zone_h < 50*lvSCALE) then
         log("--- not enough height, force minimal spaces")
         log("timer_info_h: %s, ts_h: %s > zone_h: %s, font_size: %s", timer_info_h, ts_h, zone_h, wgt.font_size)
@@ -149,6 +149,37 @@ local function update(wgt, options)
     if (wgt == nil) then return end
     wgt.options = options
     wgt.options.use_days = wgt.options.use_days % 2 -- modulo due to bug that cause the value to be other than 0|1
+
+    wgt.Timer = wgt.options.timer_combo
+    if wgt.Timer < 1 then
+        wgt.Timer = 1
+    end
+
+    wgt.use_timer_name = false
+    wgt.use_timer_id = false
+    if wgt.options.header_format == 1 then
+        wgt.use_timer_name = true
+        wgt.use_timer_id = true
+    elseif wgt.options.header_format == 2 then
+        wgt.use_timer_name = true
+        wgt.use_timer_id = false
+    elseif wgt.options.header_format == 3 then
+        wgt.use_timer_name = false
+        wgt.use_timer_id = true
+    elseif wgt.options.header_format == 4 then
+        wgt.use_timer_name = false
+        wgt.use_timer_id = false
+    elseif wgt.options.header_format < 1 then -- transition from int to combo
+        wgt.use_timer_name = true
+        wgt.use_timer_id = true
+    end
+
+    local t1 = model.getTimer(wgt.Timer - 1)
+    local timer_have_name = string.len(t1.name) > 0
+    if timer_have_name == false then
+        wgt.use_timer_name = false
+    end
+
 
     wgt.tools = LibWidgetToolsClass(m_log, app_name)
     build_ui(wgt)
