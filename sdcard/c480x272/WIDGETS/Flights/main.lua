@@ -23,14 +23,18 @@ local triggerTypeDefs = {
     }
 }
 
--- use the fixed Lua field name ("ch3") rather than getSourceIndex("CH3"),
--- as source display names are translated (e.g. "KA3" in Swedish firmware)
+-- default motor channel is the throttle channel from the radio's Default Channel
+-- Order (e.g. CH3 for AETR, CH1 for TAER). Use the fixed Lua field name ("chN")
+-- rather than getSourceIndex("CH3"), as source display names are translated
+-- (e.g. "KA3" in Swedish firmware)
 local function getMotorChannelDefault()
-    local fi = getFieldInfo("ch3")
+    -- throttle stick is 2 on air radios (RETA), 1 on surface radios (ST/TH)
+    local thr = defaultChannel(2) or defaultChannel(1) or 2
+    local fi = getFieldInfo("ch" .. (thr + 1))
     return fi and fi.id or 0
 end
 
-local DEFAULT_MOTOR_CHANNEL_ID = getMotorChannelDefault()  -- motor_channel=CH3
+local DEFAULT_MOTOR_CHANNEL_ID = getMotorChannelDefault()
 
 local options = {
     { "triggerType"         , CHOICE, 1 , triggerTypeDefs.labels},
