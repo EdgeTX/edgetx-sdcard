@@ -23,21 +23,14 @@ local triggerTypeDefs = {
     }
 }
 
--- for backward compatibility
-local function getSwitchIds(key)
-    local OS_SWITCH_ID = {
-        ["2.7"]  = {SA=112, SB=113, SC=114, SD=115, SE=116, SF=117, STICK3 = 89, INPUT3 = 3, CH3 = 204},
-        ["2.8"]  = {SA=120, SB=121, SC=122, SD=123, SE=124, SF=125, STICK3 = 89, INPUT3 = 3, CH3 = 212},
-        ["2.9"]  = {SA=120, SB=121, SC=122, SD=123, SE=124, SF=125, STICK3 = 89, INPUT3 = 3, CH3 = 212},
-        ["2.10"] = {SA=126, SB=127, SC=128, SD=129, SE=130, SF=131, STICK3 = 89, INPUT3 = 3, CH3 = 228},
-        ["2.11"] = {SA=126, SB=127, SC=128, SD=129, SE=130, SF=131, STICK3 = 89, INPUT3 = 3, CH3 = 228},
-    }
-    local ver, radio, maj, minor, rev, osname = getVersion()
-    local os1 = string.format("%d.%d", maj, minor)
-    return OS_SWITCH_ID[os1][key]
+-- use the fixed Lua field name ("ch3") rather than getSourceIndex("CH3"),
+-- as source display names are translated (e.g. "KA3" in Swedish firmware)
+local function getMotorChannelDefault()
+    local fi = getFieldInfo("ch3")
+    return fi and fi.id or 0
 end
 
-local DEFAULT_MOTOR_CHANNEL_ID = getSourceIndex("CH3") or getSourceIndex("thr111") or getSwitchIds("CH3")  -- motor_channel=CH3
+local DEFAULT_MOTOR_CHANNEL_ID = getMotorChannelDefault()  -- motor_channel=CH3
 
 local options = {
     { "triggerType"         , CHOICE, 1 , triggerTypeDefs.labels},
