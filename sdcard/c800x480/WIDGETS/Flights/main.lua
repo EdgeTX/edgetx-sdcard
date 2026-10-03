@@ -24,20 +24,24 @@ local triggerTypeDefs = {
 }
 
 -- for backward compatibility
+-- uses the fixed Lua field names (e.g. "sf", "ch3", "input3", "thr") rather than
+-- getSourceIndex(), as source display names are translated (e.g. "KA3" in Swedish
+-- firmware). Valid keys: SA..SZ, STICK3, INPUTn, CHn
 local function getSwitchIds(key)
-    local OS_SWITCH_ID = {
-        ["2.7"]  = {SA=112, SB=113, SC=114, SD=115, SE=116, SF=117, STICK3 = 89, INPUT3 = 3, CH3 = 204},
-        ["2.8"]  = {SA=120, SB=121, SC=122, SD=123, SE=124, SF=125, STICK3 = 89, INPUT3 = 3, CH3 = 212},
-        ["2.9"]  = {SA=120, SB=121, SC=122, SD=123, SE=124, SF=125, STICK3 = 89, INPUT3 = 3, CH3 = 212},
-        ["2.10"] = {SA=126, SB=127, SC=128, SD=129, SE=130, SF=131, STICK3 = 89, INPUT3 = 3, CH3 = 228},
-        ["2.11"] = {SA=126, SB=127, SC=128, SD=129, SE=130, SF=131, STICK3 = 89, INPUT3 = 3, CH3 = 228},
-    }
-    local ver, radio, maj, minor, rev, osname = getVersion()
-    local os1 = string.format("%d.%d", maj, minor)
-    return OS_SWITCH_ID[os1][key]
+    local LUA_FIELD_NAMES = { STICK3 = "thr" }
+    local fi = getFieldInfo(LUA_FIELD_NAMES[key] or string.lower(key))
+    return fi and fi.id
 end
 
-local DEFAULT_MOTOR_CHANNEL_ID = getSourceIndex("CH3") or getSourceIndex("thr111") or getSwitchIds("CH3")  -- motor_channel=CH3
+-- default motor channel is the throttle channel from the radio's Default Channel
+-- Order (e.g. CH3 for AETR, CH1 for TAER)
+local function getMotorChannelDefault()
+    -- throttle stick is 2 on air radios (RETA), 1 on surface radios (ST/TH)
+    local thr = defaultChannel(2) or defaultChannel(1) or 2
+    return getSwitchIds("CH" .. (thr + 1)) or 0
+end
+
+local DEFAULT_MOTOR_CHANNEL_ID = getMotorChannelDefault()
 
 local options = {
     { "triggerType"         , CHOICE, 1 , triggerTypeDefs.labels},
