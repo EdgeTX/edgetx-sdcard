@@ -19,125 +19,179 @@
 -- GNU General Public License for more details.
 --
 
-local sticks = { ail = 0, ele = 0, rud = 0, thr = 0 }
-local prev   = { ail = 0, ele = 0, rud = 0, thr = 0 }
-local deltas = { ail = 0, ele = 0, rud = 0, thr = 0 }
+-- Base LED color when stick centered (0 - 1.0)
+local MIN_R, MIN_G, MIN_B = 0.0, 0.2, 0.0    	-- Green
 
--- Which stick drives which ring, per radio mode:
--- { ring 0 horizontal, ring 0 vertical, ring 1 horizontal, ring 1 vertical }
--- ring 0 is the right gimbal, ring 1 the left gimbal
-local MODE_AXES = {
-  [1] = { "ail", "thr", "rud", "ele" },
-  [2] = { "ail", "ele", "rud", "thr" },
-  [3] = { "rud", "thr", "ail", "ele" },
-  [4] = { "rud", "ele", "ail", "thr" },
+-- Maximum LED scale when stick at extreme end (0 - 1.0)
+local MAX_R, MAX_G, MAX_B = 1.0, 1.0, 1.0    	-- White
+
+-- radio gimbal LED details
+-- per radio table with the following properties:
+--    per_gimbal      - number of LEDs around each gimbal
+--    right           - table of properties for the right gimbal
+--        offset      - index of first LED
+--        direction   - rotation direction for LEDs 1 = counter clock wise, -1 = clockwise
+--        start_angle - angular position of the first LED in degrees (0 = right, 90 = up)
+--    left            - table of properties for the left gimbal (as per the right gimbal)
+-- assumes each gimbal has the same number of LEDs and the LEDs are equally spaced around the gimbal
+local gimbal_leds = {
+  tx15     = { per_gimbal = 10, right = { offset =  0, direction = -1, start_angle = 190 }, left = { offset = 10, direction = -1, start_angle =  10 } },
+  tx16smk3 = { per_gimbal = 10, right = { offset =  0, direction = -1, start_angle = 190 }, left = { offset = 10, direction =  1, start_angle = 350 } },
+  gx15     = { per_gimbal = 10, right = { offset =  0, direction = -1, start_angle = 190 }, left = { offset = 10, direction =  1, start_angle = 350 } },
+  st16     = { per_gimbal =  6, right = { offset =  6, direction = -1, start_angle =  30 }, left = { offset =  0, direction = -1, start_angle = 330 } },
+-- V16 does not have consistent LED ring orientation
+--  v16      = { per_gimbal = 16, right = { offset = 16, direction = -1, start_angle = 270 }, left = { offset =  0, direction = -1, start_angle =  90 } },
 }
 
--- Base LED settings
-local BASE_LED_R, BASE_LED_G, BASE_LED_B = 0, 50, 0
+-- Axis positions in tables
+local RH = 1
+local RV = 2
+local LH = 3
+local LV = 4
 
--- The strip is the two gimbal rings, ring 0 first then ring 1. Hardcoded
--- rather than read from LED_STRIP_LENGTH, which is unreliable here.
-local LED_COUNT = 20
-local RING_SIZE = 10
+-- Minimum delta to allow LED updates
+local DELTA_MIN_MOVEMENT = 3
 
--- Radios with a LED ring around each gimbal, and how each ring is wired:
--- the sign to apply to the horizontal and vertical stick axis so that the lit
--- LED follows the stick. Rings do not all start at the same place nor run in
--- the same direction, so this differs per radio and per ring.
-local RING_SIGNS = {
-  tx15     = { [0] = { h = -1, v = 1 }, [1] = { h = 1, v = -1 } },
-  gx15     = { [0] = { h = -1, v = 1 }, [1] = { h = 1, v =  1 } },
-  tx16smk3 = { [0] = { h = -1, v = 1 }, [1] = { h = 1, v =  1 } },
-}
+local axis = {}
+local sticks = {}
+local prev = { 0, 0, 0, 0 }
+local dif_r, dif_g, dif_b
+local min_r, min_g, min_b
+local fade
 
-local function readSticks()
-  for name in pairs(sticks) do
-    sticks[name] = getValue(name) or 0
+local leds
+local angles = {}
+
+local function getLedDetails()
+  -- values for setting LED intensity
+  dif_r, dif_g, dif_b = MAX_R - MIN_R, MAX_G - MIN_G, MAX_B - MIN_B
+  min_r, min_g, min_b = MIN_R * 255, MIN_G * 255, MIN_B * 255
+
+  -- Get gimbal led details for current radio
+  local ver, radio, maj, minor, rev, osname = getVersion()
+  radio = string.gsub(radio, "-simu", "")
+  leds = gimbal_leds[radio]
+
+  if leds then
+    local led_angle = 360 / leds.per_gimbal
+
+    fade = 180 / leds.per_gimbal
+    if MIN_R + MIN_G + MIN_B > 0.1 then fade = fade * 1.5 end
+
+    for i = leds.right.offset, leds.right.offset + leds.per_gimbal - 1 do
+      angles[i+1] = (leds.right.start_angle + i * led_angle * leds.right.direction) % 360
+    end
+
+    for i = leds.left.offset, leds.left.offset + leds.per_gimbal - 1 do
+      angles[i+1] = (leds.left.start_angle + i * led_angle * leds.left.direction) % 360
+    end
+  end
+
+  for i = RH, LV do
+    prev[i] = 10000
   end
 end
 
-local function init()
-  -- Initialize all values to current stick positions
-  readSticks()
-end
-
-local function calculateDeltas()
-  -- Calculate delta values for all controls
-  for name, value in pairs(sticks) do
-    deltas[name] = math.abs(value - prev[name])
+local function getAxisNames()
+  -- get axis names based on mode
+  local radioMode = getStickMode()
+  if radioMode < 3 then
+    axis[LH] = "rud"
+    axis[RH] = "ail"
+  else
+    axis[LH] = "ail"
+    axis[RH] = "rud"
+  end
+  if radioMode == 1 or radioMode == 3 then
+    axis[LV] = "ele"
+    axis[RV] = "thr"
+  else
+    axis[LV] = "thr"
+    axis[RV] = "ele"
   end
 end
 
-local function setLed(ring, h, v, delta)
-  local magnitude = math.sqrt(h^2 + v^2)
-  if magnitude < 0.1 then return end
-
-  local angle = math.atan2(v, h)
-  angle = (math.deg(angle) + 360) % 360
-  local center_index = math.floor(angle / (360 / RING_SIZE) + 0.5) % RING_SIZE
-
-  -- Scale intensity based on the delta of the two axes driving this ring
-  local delta_factor = 1.0 + delta / 200
-
-  local base_intensity = 250 * magnitude * math.min(delta_factor, 2.0)
-  base_intensity = math.min(255, base_intensity)
-
-  local spread = 2
-  for offset = -spread, spread do
-    local index = (center_index + offset) % RING_SIZE + ring * RING_SIZE
-    local distance = math.abs(offset)
-    local factor = math.exp(-0.5 * (distance ^ 2))
-    local intensity = math.floor(base_intensity * factor)
-    setRGBLedColor(index, intensity, intensity, intensity)
+local function getValues()
+  -- Get current values
+  for i = RH, LV do
+    sticks[i] = getValue(axis[i]) or 0
   end
 end
 
-local function setRing(signs, ring, h_axis, v_axis)
-  local sign = signs[ring]
-  setLed(ring, sign.h * sticks[h_axis] / 1024, sign.v * sticks[v_axis] / 1024,
-         deltas[h_axis] + deltas[v_axis])
+local function shouldUpdate(h, v)
+  -- Check if any control has moved enough to warrant LED updates
+  local dh = math.abs(sticks[h] - prev[h])
+  local dv = math.abs(sticks[v] - prev[v])
+  return math.max(dh, dv) >= DELTA_MIN_MOVEMENT
+end
+
+local function setLeds(first_led, led_count, ih, iv)
+  -- save values for next update
+  prev[ih], prev[iv] = sticks[ih], sticks[iv]
+
+  -- get position
+  local h = sticks[ih] / 1024
+  local v = sticks[iv] / 1024
+
+  -- get vector for stick position
+  local magnitude = math.min(255, 255 * math.sqrt(h^2 + v^2))
+  local angle = (math.deg(math.atan2(v, h)) + 360) % 360
+
+  -- check if centered
+  if magnitude < 0.1 then
+    for i = first_led, first_led + led_count - 1 do
+      setRGBLedColor(i, min_r, min_g, min_b)
+    end
+    return
+  end
+
+  -- Set all LEDs from stick position
+  for i = first_led + 1, first_led + led_count do
+    local distance = math.abs((angle - angles[i] + 180) % 360 - 180) / fade
+    local intensity = math.floor(magnitude * math.exp(-0.5 * (distance ^ 2)))
+    setRGBLedColor(i-1,
+          dif_r * intensity + min_r,
+          dif_g * intensity + min_g,
+          dif_b * intensity + min_b)
+  end
 end
 
 local function run()
   -- this script needs the gimbal ring lights
-  local ver, radio, maj, minor, rev, osname = getVersion()
-  local signs = RING_SIGNS[radio]
-  if not signs then
-    return
-  end
-
-  local axes = MODE_AXES[getStickMode()]
-  if not axes then
-    return
-  end
+  if not leds then return end
 
   -- Get current values
-  readSticks()
+  getValues()
 
-  -- Calculate deltas
-  calculateDeltas()
+  local update = false
 
-  -- Paint the whole strip every cycle, so the part of the ring the stick is
-  -- not pointing at always shows the base colour instead of staying dark
-  for i = 0, LED_COUNT - 1 do
-    setRGBLedColor(i, BASE_LED_R, BASE_LED_G, BASE_LED_B)
+  -- Only update LEDs if there's significant movement
+  if shouldUpdate(RH, RV) then
+    -- Apply LED patterns
+    setLeds(leds.right.offset, leds.per_gimbal, RH, RV)
+
+    update = true
   end
 
-  -- Apply normal LED patterns (enhanced with delta feedback)
-  setRing(signs, 0, axes[1], axes[2])
-  setRing(signs, 1, axes[3], axes[4])
+  -- Only update LEDs if there's significant movement
+  if shouldUpdate(LH, LV) then
+    -- Apply LED patterns
+    setLeds(leds.left.offset, leds.per_gimbal, LH, LV)
 
-  applyRGBLedColors()
+    update = true
+  end
 
-  -- Store previous values
-  for name, value in pairs(sticks) do
-    prev[name] = value
+  if update then
+    applyRGBLedColors()
   end
 end
 
 local function background()
-  -- Called periodically while the Special Function switch is off
+end
+
+local function init()
+  getAxisNames()
+  getLedDetails()
 end
 
 return { run=run, background=background, init=init }
