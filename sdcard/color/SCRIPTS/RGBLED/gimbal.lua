@@ -38,8 +38,9 @@ local gimbal_leds = {
   tx15     = { per_gimbal = 10, right = { offset =  0, direction = -1, start_angle = 190 }, left = { offset = 10, direction = -1, start_angle =  10 } },
   tx16smk3 = { per_gimbal = 10, right = { offset =  0, direction = -1, start_angle = 190 }, left = { offset = 10, direction =  1, start_angle = 350 } },
   gx15     = { per_gimbal = 10, right = { offset =  0, direction = -1, start_angle = 190 }, left = { offset = 10, direction =  1, start_angle = 350 } },
-  v16      = { per_gimbal = 16, right = { offset = 16, direction = -1, start_angle = 270 }, left = { offset =  0, direction = -1, start_angle =  90 } },
   st16     = { per_gimbal =  6, right = { offset =  6, direction = -1, start_angle =  30 }, left = { offset =  0, direction = -1, start_angle = 330 } },
+-- V16 does not have consistent LED ring orientation
+--  v16      = { per_gimbal = 16, right = { offset = 16, direction = -1, start_angle = 270 }, left = { offset =  0, direction = -1, start_angle =  90 } },
 }
 
 -- Axis positions in tables
