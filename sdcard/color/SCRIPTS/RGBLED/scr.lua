@@ -1,10 +1,18 @@
+-- Set to true to also drive the LEDs of custom switches that are set to NONE
+local USE_FULL_STRIP = false
+
+local NUM_LEDS = LED_STRIP_LENGTH
+if not USE_FULL_STRIP and (BLING_LED_STRIP_LENGTH or 0) > 0 then
+  NUM_LEDS = BLING_LED_STRIP_LENGTH
+end
+
 local function init()
   scroll_oldtime = getTime()
   scroll_cycle = 0
 end
 
 local function run()
-  for i=0, LED_STRIP_LENGTH - 1, 1
+  for i=0, NUM_LEDS - 1, 1
   do
     if (i == scroll_cycle) then
       setRGBLedColor(i, 0, 50, 0)
@@ -15,7 +23,7 @@ local function run()
   if ((getTime() - scroll_oldtime) > 8) then
     scroll_oldtime = getTime()
     scroll_cycle = scroll_cycle + 1
-    if (scroll_cycle >= LED_STRIP_LENGTH) then
+    if (scroll_cycle >= NUM_LEDS) then
       scroll_cycle = 0
     end
   end
