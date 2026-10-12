@@ -26,6 +26,7 @@ local MIN_R, MIN_G, MIN_B = 0.0, 0.2, 0.0    	-- Green
 local MAX_R, MAX_G, MAX_B = 1.0, 1.0, 1.0    	-- White
 
 -- radio gimbal LED details
+-- used when the firmware does not provide them with getRGBLedInfo()
 -- per radio table with the following properties:
 --    per_gimbal      - number of LEDs around each gimbal
 --    right           - table of properties for the right gimbal
@@ -67,10 +68,25 @@ local function getLedDetails()
   dif_r, dif_g, dif_b = MAX_R - MIN_R, MAX_G - MIN_G, MAX_B - MIN_B
   min_r, min_g, min_b = MIN_R * 255, MIN_G * 255, MIN_B * 255
 
-  -- Get gimbal led details for current radio
-  local ver, radio, maj, minor, rev, osname = getVersion()
-  radio = string.gsub(radio, "-simu", "")
-  leds = gimbal_leds[radio]
+  -- Get gimbal led details, preferably from the firmware
+  if getRGBLedInfo then
+    local groups = getRGBLedInfo().groups
+    local r, l = groups.gimbal_right, groups.gimbal_left
+    if r and l and r.direction and l.direction and r.count == l.count then
+      leds = {
+        per_gimbal = r.count,
+        right = { offset = r.first, direction = r.direction, start_angle = r.startAngle },
+        left  = { offset = l.first, direction = l.direction, start_angle = l.startAngle },
+      }
+    end
+  end
+
+  -- otherwise from the table above, for older firmware
+  if not leds then
+    local ver, radio, maj, minor, rev, osname = getVersion()
+    radio = string.gsub(radio, "-simu", "")
+    leds = gimbal_leds[radio]
+  end
 
   if leds then
     local led_angle = 360 / leds.per_gimbal
@@ -79,11 +95,11 @@ local function getLedDetails()
     if MIN_R + MIN_G + MIN_B > 0.1 then fade = fade * 1.5 end
 
     for i = leds.right.offset, leds.right.offset + leds.per_gimbal - 1 do
-      angles[i+1] = (leds.right.start_angle + i * led_angle * leds.right.direction) % 360
+      angles[i+1] = (leds.right.start_angle + (i - leds.right.offset) * led_angle * leds.right.direction) % 360
     end
 
     for i = leds.left.offset, leds.left.offset + leds.per_gimbal - 1 do
-      angles[i+1] = (leds.left.start_angle + i * led_angle * leds.left.direction) % 360
+      angles[i+1] = (leds.left.start_angle + (i - leds.left.offset) * led_angle * leds.left.direction) % 360
     end
   end
 
