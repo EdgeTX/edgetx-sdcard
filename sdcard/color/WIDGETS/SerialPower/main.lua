@@ -1,5 +1,5 @@
 ---------------------------------------------------------------------------
--- Control serial port power via touch.                                  --
+-- Control serial port power via touch or keys.                          --
 --                                                                       --
 -- Copyright (C) EdgeTX                                                  --
 --                                                                       --
@@ -15,43 +15,22 @@
 -- GNU General Public License for more details.                          --
 ---------------------------------------------------------------------------
 
-local name = "SerialPower"
-local nameLG = "libGUI"
-local libGUI
+-- Every widget's main.lua is loaded at boot, so this only holds the name and
+-- options. The widget code lives in app.lua and is loaded on create().
 
--- Return GUI library table
-function loadGUI()
-  if not libGUI then
-  -- Loadable code chunk is called immediately and returns libGUI
-  	libGUI = loadScript("/WIDGETS/" .. nameLG .. "/libgui.lua")
-  end
-  
-  return libGUI()
-end
+local name = "SerialPower"
+
+local options = {
+  { "Color", COLOR, COLOR_THEME_PRIMARY1 },
+}
 
 local function create(zone, options)
-  -- Loadable code chunk is called immediately and returns a widget table
-  return loadScript("/WIDGETS/" .. name .. "/loadable.lua")(zone, options)
+  local tool = assert(loadScript("/WIDGETS/" .. name .. "/app.lua", "btd"))()
+  local wgt = tool.create(zone, options)
+  wgt._tool = tool
+  return wgt
 end
+local function update(wgt, options) return wgt._tool.update(wgt, options) end
+local function refresh(wgt, event, touchState) return wgt._tool.refresh(wgt, event, touchState) end
 
-local function refresh(widget, event, touchState)
-  widget.refresh(event, touchState)
-end
-
-local function background(widget)
-end
-
-local options = { 
-}
-
-local function update(widget, options)
-end
-
-return {
-  name = name,
-  create = create,
-  refresh = refresh,
-  background = background,
-  options = options,
-  update = update
-}
+return { name = name, options = options, create = create, update = update, refresh = refresh, useLvgl = true }
