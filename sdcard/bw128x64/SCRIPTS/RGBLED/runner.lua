@@ -1,3 +1,11 @@
+-- Set to true to also drive the LEDs of custom switches that are set to NONE
+local USE_FULL_STRIP = false
+
+local NUM_LEDS = LED_STRIP_LENGTH
+if not USE_FULL_STRIP and (BLING_LED_STRIP_LENGTH or 0) > 0 then
+  NUM_LEDS = BLING_LED_STRIP_LENGTH
+end
+
 local function init()
     colorChangeTime = getTime()  -- Initialize time
     phase = 0
@@ -37,10 +45,10 @@ local function run()
     if ((getTime() - colorChangeTime) > 2) then  -- Use an interval of 4 time units
         colorChangeTime = getTime()
         phase = phase + 1  -- Update color phase
-        currentLed = (currentLed + 1) % LED_STRIP_LENGTH  -- Move to the next LED
+        currentLed = (currentLed + 1) % NUM_LEDS  -- Move to the next LED
     end
 
-    for i = 0, LED_STRIP_LENGTH - 1, 1 do
+    for i = 0, NUM_LEDS - 1, 1 do
         local r, g, b = getColor(phase, 255)
         if i <= currentLed then
             setRGBLedColor(i, r, g, b)

@@ -1,8 +1,16 @@
+-- Set to true to also drive the LEDs of custom switches that are set to NONE
+local USE_FULL_STRIP = false
+
+local NUM_LEDS = LED_STRIP_LENGTH
+if not USE_FULL_STRIP and (BLING_LED_STRIP_LENGTH or 0) > 0 then
+  NUM_LEDS = BLING_LED_STRIP_LENGTH
+end
+
 local function init()
 end
 
 local function run()
-    for i=0, LED_STRIP_LENGTH - 1, 1
+    for i=0, NUM_LEDS - 1, 1
     do
         setRGBLedColor(i, 255, 255, 255)  -- Set to white color
     end

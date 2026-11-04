@@ -1,3 +1,11 @@
+-- Set to true to also drive the LEDs of custom switches that are set to NONE
+local USE_FULL_STRIP = false
+
+local NUM_LEDS = LED_STRIP_LENGTH
+if not USE_FULL_STRIP and (BLING_LED_STRIP_LENGTH or 0) > 0 then
+  NUM_LEDS = BLING_LED_STRIP_LENGTH
+end
+
 local function init()
     colorChangeTime = getTime()  -- Initialize time
     phase = 0
@@ -42,7 +50,7 @@ end
 local colorPhase = 0  -- Initialize color phase
 
 local function run()
-    for i=LED_STRIP_LENGTH - 1, 0, -1 do  -- Reverse iteration
+    for i=NUM_LEDS - 1, 0, -1 do  -- Reverse iteration
         if (i == scroll_cycle) then
             local r, g, b = getColor(colorPhase, 255)
             setRGBLedColor(i, r, g, b)
@@ -54,7 +62,7 @@ local function run()
         scroll_oldtime = getTime()
         scroll_cycle = scroll_cycle - 1  -- Decrement scroll_cycle
         if (scroll_cycle < 0) then
-            scroll_cycle = LED_STRIP_LENGTH - 1  -- Reset scroll_cycle to the end of the strip
+            scroll_cycle = NUM_LEDS - 1  -- Reset scroll_cycle to the end of the strip
         end
     end
     colorPhase = (colorPhase + 1) % 255  -- Update color phase
