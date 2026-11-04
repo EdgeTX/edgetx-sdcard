@@ -54,9 +54,9 @@ local function buildWidget(wgt)
   local rowH = z.h // #PORTS
 
   local font = SMLSIZE
-  if rowH >= 40 * lvSCALE then
+  if rowH >= (40 * lvSCALE) then
     font = MIDSIZE
-  elseif rowH >= 20 * lvSCALE then
+  elseif rowH >= (20 * lvSCALE) then
     font = 0
   end
 
@@ -68,7 +68,7 @@ local function buildWidget(wgt)
         { type = "rectangle", x = PAD, y = (rowH - dot) // 2, w = dot, h = dot,
           rounded = dot // 2, filled = true,
           color = function() return stateColor(p.id) end },
-        { type = "label", x = PAD * 2 + dot, text = p.name, font = font,
+        { type = "label", x = (PAD * 2) + dot, text = p.name, font = font,
           align = VCENTER, color = wgt.options.Color },
         { type = "label", x = 0, w = z.w - PAD, font = font,
           align = RIGHT + VCENTER, color = wgt.options.Color,
@@ -89,12 +89,12 @@ local function buildFullScreen()
 
   if serialSetPower == nil then
     lvgl.label(pg, { text = "Serial port power control is not available on this radio.",
-      color = COLOR_THEME_PRIMARY1 })
+      w = LCD_W - (PAD * 4), color = COLOR_THEME_PRIMARY1 })
     return
   end
 
-  local rowW = LCD_W - PAD * 2
-  local toggleX = rowW - PAD * 2 - 52 * lvSCALE
+  local rowW = LCD_W - (PAD * 2)
+  local toggleX = rowW - (PAD * 2) - (52 * lvSCALE)
 
   for _, p in ipairs(PORTS) do
     local row = lvgl.setting(pg, { title = p.name .. " power", w = rowW })
