@@ -37,6 +37,7 @@
     ["Jumper T-Pro S", "tpros-", "bw128x64"],
     ["Jumper T-Pro V2", "tprov2-", "bw128x64"],
     ["RadioMaster Boxer", "boxer-", "bw128x64"],
+    ["RadioMaster GX10", "gx10-", "c320x240"],
     ["RadioMaster GX12", "gx12-", "bw128x64"],
     ["RadioMaster GX15", "gx15-", "c480x320"],
     ["RadioMaster MT12", "mt12-", "bw128x64"],
