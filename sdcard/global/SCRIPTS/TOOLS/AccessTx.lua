@@ -325,6 +325,10 @@ end
 
 local function init()
   candidates = {}
+  if not accessFramePush then
+    state, message = "error", "Needs newer EdgeTX"
+    return
+  end
   for idx = 0, 1 do
     local m = model.getModule(idx)
     if m and PXX2_MODULES[m.Type] then candidates[#candidates + 1] = idx end

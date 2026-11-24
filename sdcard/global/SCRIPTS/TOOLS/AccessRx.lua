@@ -185,14 +185,20 @@ end
 -- Receivers scan
 -----------------------------------------------------------------------------
 
+local oldFirmware       -- ACCESS module, but EdgeTX without accessFramePush / Pop
+
 local function findCandidates()
-  candidates = {}
+  candidates, oldFirmware = {}, false
   for module = 0, 1 do
     local m = model.getModule(module)
     if m then
       if (m.Type == MODULE_ISRM and m.subType == 0) or R9M_ACCESS[m.Type] then
-        for slot = 0, 2 do
-          candidates[#candidates + 1] = { module = module, slot = slot, r9m = R9M_ACCESS[m.Type] }
+        if not accessFramePush then
+          oldFirmware = true
+        else
+          for slot = 0, 2 do
+            candidates[#candidates + 1] = { module = module, slot = slot, r9m = R9M_ACCESS[m.Type] }
+          end
         end
       elseif m.Type == MODULE_MULTI and m.protocol == MULTI_FRSKYA then
         candidates[#candidates + 1] = { module = module, slot = 0, multi = true }
@@ -219,7 +225,8 @@ local function scanNext()
     state, sel, top = "pick", 1, 1
   else
     state = "error"
-    message = #candidates == 0 and "No ACCESS module" or "No receiver found"
+    message = oldFirmware and "Needs newer EdgeTX"
+      or #candidates == 0 and "No ACCESS module" or "No receiver found"
   end
 end
 
