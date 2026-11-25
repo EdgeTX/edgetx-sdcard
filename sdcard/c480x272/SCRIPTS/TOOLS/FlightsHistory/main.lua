@@ -1,4 +1,4 @@
--- TNS|Flights History|TNE
+local toolName = "TNS|Flights History|TNE"
 ---- #########################################################################
 ---- #                                                                       #
 ---- # License GPLv3: https://www.gnu.org/licenses/gpl-3.0.html              #
