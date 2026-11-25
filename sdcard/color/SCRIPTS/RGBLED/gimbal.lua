@@ -38,6 +38,7 @@ local MAX_R, MAX_G, MAX_B = 1.0, 1.0, 1.0    	-- White
 local gimbal_leds = {
   tx15     = { per_gimbal = 10, right = { offset =  0, direction = -1, start_angle = 190 }, left = { offset = 10, direction = -1, start_angle =  10 } },
   tx16smk3 = { per_gimbal = 10, right = { offset =  0, direction = -1, start_angle = 190 }, left = { offset = 10, direction =  1, start_angle = 350 } },
+  gx10     = { per_gimbal = 10, right = { offset = 10, direction = -1, start_angle =  80 }, left = { offset =  0, direction =  1, start_angle = 100 } },
   gx15     = { per_gimbal = 10, right = { offset =  0, direction = -1, start_angle = 190 }, left = { offset = 10, direction =  1, start_angle = 350 } },
   st16     = { per_gimbal =  6, right = { offset =  6, direction = -1, start_angle =  30 }, left = { offset =  0, direction = -1, start_angle = 330 } },
 -- V16 does not have consistent LED ring orientation
@@ -59,6 +60,7 @@ local prev = { 0, 0, 0, 0 }
 local dif_r, dif_g, dif_b
 local min_r, min_g, min_b
 local fade
+local lastUpdate = 0
 
 local leds
 local angles = {}
@@ -102,7 +104,9 @@ local function getLedDetails()
       angles[i+1] = (leds.left.start_angle + (i - leds.left.offset) * led_angle * leds.left.direction) % 360
     end
   end
+end
 
+local function forceUpdate()
   for i = RH, LV do
     prev[i] = 10000
   end
@@ -175,6 +179,11 @@ end
 local function run()
   -- this script needs the gimbal ring lights
   if not leds then return end
+
+  if getTime() - lastUpdate > 20 then
+    forceUpdate()
+  end
+  lastUpdate = getTime()
 
   -- Get current values
   getValues()
