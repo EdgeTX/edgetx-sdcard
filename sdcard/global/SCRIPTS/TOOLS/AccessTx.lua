@@ -1,4 +1,4 @@
----- TNS|ACCESS Module Options|TNE
+local toolName = "TNS|ACCESS Module Options|TNE"
 ---- #########################################################################
 ---- #                                                                       #
 ---- # Options of FrSky ACCESS modules (ISRM, R9M ACCESS, XJT Lite)          #

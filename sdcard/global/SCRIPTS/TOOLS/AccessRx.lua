@@ -1,4 +1,4 @@
----- TNS|ACCESS RX Options|TNE
+local toolName = "TNS|ACCESS RX Options|TNE"
 ---- #########################################################################
 ---- #                                                                       #
 ---- # Receiver options of FrSky ACCESS receivers                            #
