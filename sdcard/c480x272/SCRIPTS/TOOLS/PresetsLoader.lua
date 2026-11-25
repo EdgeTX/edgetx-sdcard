@@ -1,4 +1,4 @@
--- TNS|Presets|TNE
+local toolName = "TNS|Presets|TNE"
 
 local function run()
   return "/SCRIPTS/PRESETS/engine/main.lua"

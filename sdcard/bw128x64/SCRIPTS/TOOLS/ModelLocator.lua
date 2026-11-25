@@ -1,4 +1,4 @@
----- TNS|Model Locator|TNE
+local toolName = "TNS|Model Locator|TNE"
 ---- #########################################################################
 ---- #                                                                       #
 ---- # Telemetry Widget script for b&w 128x64 radios                         #
